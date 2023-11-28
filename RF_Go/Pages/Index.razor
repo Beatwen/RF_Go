@@ -1,0 +1,128 @@
+﻿@page "/"
+
+@using Newtonsoft.Json
+@using System.IO
+@using RF_Go.Models
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<h1>Devices Selection</h1>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="AddDevice">Add Devices</MudButton>
+dotnet tool update -g dotnet -ef
+<div>
+    @if (isAddingDevice)
+    {
+        <div>
+            <select class="form-control" @bind="selectedBrand">
+                <option value="" disabled selected hidden>Choose a brand...</option>
+                @foreach (var brand in deviceData.Brands.Keys)
+                {
+                    <option value="@brand">@brand</option>
+                }
+            </select>
+
+            @if (!string.IsNullOrEmpty(selectedBrand))
+            {
+                <select class="form-control" @bind="selectedModel">
+                    <option value="" disabled selected hidden>Choose a model...</option>
+                    @foreach (var model in deviceData.Brands[selectedBrand].Keys)
+                    {
+                        <option value="@model">@model</option>
+                    }
+                </select>
+            }
+
+
+            @if (!string.IsNullOrEmpty(selectedModel) && deviceData.Brands.ContainsKey(selectedBrand) && deviceData.Brands[selectedBrand].ContainsKey(selectedModel))
+            {
+                <select class="form-control" @bind="selectedFrequency">
+                    <option value="" disabled selected hidden>Choose a range of frequency...</option>
+                    @foreach (var frequency in deviceData.Brands[selectedBrand][selectedModel].Keys)
+                    {
+                        <option value="@frequency">@frequency</option>
+                    }
+                </select>
+            }
+            @if (!string.IsNullOrEmpty(selectedFrequency)
+           )
+            {
+                <select class="form-control" @bind="selectedQuantity">
+                    @for (int i = 1; i <= 99; i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                </select>
+
+                <button class="btn btn-success" @onclick="AddDeviceToList">Add To </button>
+            }
+        </div>
+    }
+</div>
+
+<div>
+    <h3>Device List</h3>
+    <ul>
+        @foreach (var device in devices)
+        {
+            <li>
+                @device.Brand - @device.Model - @device.Frequency
+            </li>
+        }
+    </ul>
+</div>
+<div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary">Push to the frequency tab</MudButton>
+
+
+</div>
+
+@code {
+    private bool isAddingDevice = false;
+    private string selectedBrand = "";
+    private string selectedModel = "";
+    private string selectedFrequency = "";
+    private int selectedQuantity = 1; // Default quantity to 1
+    private DeviceData deviceData;
+    private int id;
+
+    public List<RFDevice> devices = new List<RFDevice>();
+
+    private void AddDevice()
+    {
+        var json = File.ReadAllText("C:\\Users\\c_bou\\Desktop\\Dev\\RF_Go\\RF_Go\\Shared\\Devices.json");
+        deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+        isAddingDevice = true;
+    }
+
+    private void AddDeviceToList()
+    {
+        for (int i = 0; i < selectedQuantity; i++)
+        {
+            devices.Add(new RFDevice
+                {
+                    ID = id,
+                    Brand = selectedBrand,
+                    Model = selectedModel,
+                    Frequency = selectedFrequency,
+                    Range = deviceData.Brands[selectedBrand][selectedModel][selectedFrequency]
+                });
+                id++;
+        }
+
+
+        // Reset form
+        selectedBrand = "";
+        selectedModel = "";
+        selectedFrequency = "";
+
+        isAddingDevice = false;
+    }
+
+    private class DeviceData
+    {
+        public Dictionary<string, Dictionary<string, Dictionary<string, List<float>>>> Brands { get; set; }
+
+    }
+}
+
