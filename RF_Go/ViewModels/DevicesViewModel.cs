@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using RF_Go.Data;
 using RF_Go.Models;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace RF_Go.ViewModels
 {
@@ -20,22 +21,32 @@ namespace RF_Go.ViewModels
 
         [ObservableProperty]
         private string _busyText;
-                
+
         public async Task LoadDevicesAsync()
         {
-            await ExecuteAsync(async () =>
+            Debug.WriteLine("calling loaddevice");
+            try
             {
                 var devices = await _context.GetAllAsync<RFDevice>();
-                if (devices is not null && Devices.Any())
+                if (devices != null && devices.Any())
                 {
-                    Devices ??= new ObservableCollection<RFDevice>();
-
-                    foreach (var device in Devices)
+                    Devices.Clear(); // Clear existing devices
+                    foreach (var device in devices)
                     {
                         Devices.Add(device);
                     }
+                    Debug.WriteLine($"Number of devices loaded: {Devices.Count}");
                 }
-            }, "Fetching Devices...");
+                else
+                {
+                    Debug.WriteLine("No devices found in the database.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading devices: {ex.Message}");
+                throw; // Rethrow the exception to propagate it
+            }
         }
 
         [RelayCommand]
@@ -49,9 +60,9 @@ namespace RF_Go.ViewModels
         [RelayCommand]
         public async Task SaveDeviceAsync()
         {
-            System.Diagnostics.Debug.WriteLine("Save function called !");
-            System.Diagnostics.Debug.WriteLine(_context == null);
-            System.Diagnostics.Debug.WriteLine(OperatingDevice.Name);
+            Debug.WriteLine("Save function called !");
+            Debug.WriteLine(_context == null);
+            Debug.WriteLine(OperatingDevice.ChannelName);
 
             if (OperatingDevice is null)
                 return;
@@ -121,7 +132,9 @@ namespace RF_Go.ViewModels
             }
             catch(Exception ex)
             {
-                Console.WriteLine($"Error creating table for : {ex.Message}");
+                Console.WriteLine($"Error loading devices: {ex.Message}");
+
+
                 throw; // Rethrow the exception to propagate it
                 /*
                  * {System.TypeInitializationException: The type initializer for 'SQLite.SQLiteConnection' threw an exception.

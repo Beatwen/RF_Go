@@ -70,9 +70,6 @@ namespace RF_Go.Data
             await CreateTableIfNotExists<TTable>();
             return await Database.DeleteAsync<TTable>(primaryKey) > 0;
         }
-        public async ValueTask DisposeAsync()
-        {
-            await _connection?.CloseAsync();
-        }
+        public async ValueTask DisposeAsync() => await _connection?.CloseAsync();
     }
 }
