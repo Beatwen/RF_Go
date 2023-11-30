@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace RF_Go
 {
     public static class MauiProgram
@@ -21,18 +22,17 @@ namespace RF_Go
                 });
             builder.Services.AddMudServices();
             builder.Services.AddMauiBlazorWebView();
-            
-            builder.Configuration.AddJsonFile("appsettings.json");
-            string v_ConnectionString = builder.Configuration.GetConnectionString("StringConnection");
+
+            builder.Services.AddBlazorWebViewDeveloperTools();
 
 #if DEBUG
-            
-            builder.Services.AddBlazorWebViewDeveloperTools();
-		builder.Logging.AddDebug();
+
+            builder.Logging.AddDebug();
 #endif
-            builder.Services.AddSingleton<DatabaseContext>();
-            builder.Services.AddSingleton<DevicesViewModel>();
-            builder.Services.AddSingleton<MainPage>();
+            builder.Services.AddScoped<DatabaseContext>();
+            builder.Services.AddScoped<DevicesViewModel>();
+            builder.Services.AddScoped<MainPage>();
+
 
             return builder.Build();
         }

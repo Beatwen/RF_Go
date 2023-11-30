@@ -1,4 +1,6 @@
-﻿using SQLite;
+﻿using Newtonsoft.Json;
+using SQLite;
+
 
 namespace RF_Go.Models
 {
@@ -14,7 +16,14 @@ namespace RF_Go.Models
         public string Brand { get; set; }
         public string Model { get; set; }
         public string Frequency { get; set; }
+        [Ignore] // Exclude from database mapping
         public List<float> Range { get; set; }
+
+        public string RangeSerialized
+        {
+            get => JsonConvert.SerializeObject(Range);
+            set => Range = JsonConvert.DeserializeObject<List<float>>(value);
+        }
         public int Quantity { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }

@@ -7,8 +7,6 @@
 
 
     <p>List is empty. Go to the device tab to add a device.</p>
-else
-{
     <MudTable Hover="true" Dense="false" Bordered="false" Striped="true" @bind-SelectedItem="selectedItem1" @ref="mudTable"
               RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc">
         <ToolBarContent>
@@ -58,7 +56,7 @@ else
     {
         foreach (var device in selectedDevices)
         {
-            deviceService.Devices.Remove(device);
+            ;
         }
 
         // Clear the selectedDevices collection

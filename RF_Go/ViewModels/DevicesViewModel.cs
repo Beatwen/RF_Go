@@ -6,20 +6,14 @@ using System.Collections.ObjectModel;
 
 namespace RF_Go.ViewModels
 {
-    public partial class DevicesViewModel : ObservableObject
+    public partial class DevicesViewModel(DatabaseContext context) : ObservableObject
     {
-        private readonly DatabaseContext _context;
-
-        public DevicesViewModel(DatabaseContext context)
-        {
-            _context = context;
-        }
-
+        private readonly DatabaseContext _context = context ?? throw new ArgumentNullException(nameof(context));
         [ObservableProperty]
         private ObservableCollection<RFDevice> _devices = new();
 
         [ObservableProperty]
-        private RFDevice _operatingDevice = new();
+        public RFDevice _operatingDevice = new();
 
         [ObservableProperty]
         private bool _isBusy;
@@ -45,11 +39,20 @@ namespace RF_Go.ViewModels
         }
 
         [RelayCommand]
-        private void SetOperatingDevice(RFDevice Device) => OperatingDevice = Device ?? new();
+        public void SetOperatingDevice(RFDevice Device)
+        {
+            System.Diagnostics.Debug.WriteLine("edit device!");
+            OperatingDevice = Device ?? new();
+        }
+
 
         [RelayCommand]
-        private async Task SaveDeviceAsync()
+        public async Task SaveDeviceAsync()
         {
+            System.Diagnostics.Debug.WriteLine("Save function called !");
+            System.Diagnostics.Debug.WriteLine(_context == null);
+            System.Diagnostics.Debug.WriteLine(OperatingDevice.Name);
+
             if (OperatingDevice is null)
                 return;
 
@@ -92,7 +95,7 @@ namespace RF_Go.ViewModels
         }
 
         [RelayCommand]
-        private async Task DeleteDeviceAsync(int id)
+        public async Task DeleteDeviceAsync(int id)
         {
             await ExecuteAsync(async () =>
             {
@@ -118,6 +121,8 @@ namespace RF_Go.ViewModels
             }
             catch(Exception ex)
             {
+                Console.WriteLine($"Error creating table for : {ex.Message}");
+                throw; // Rethrow the exception to propagate it
                 /*
                  * {System.TypeInitializationException: The type initializer for 'SQLite.SQLiteConnection' threw an exception.
                  ---> System.IO.FileNotFoundException: Could not load file or assembly 'SQLitePCLRaw.provider.dynamic_cdecl, Version=2.0.4.976, Culture=neutral, PublicKeyToken=b68184102cba0b3b' or one of its dependencies.

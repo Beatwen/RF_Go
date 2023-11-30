@@ -2,9 +2,13 @@
 
 @using Newtonsoft.Json
 @using System.IO
+@using System
 @using RF_Go.Models
+@using RF_Go.ViewModels
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject DevicesViewModel DevicesViewModel
+
 
 <h1>Devices Selection</h1>
 
@@ -33,7 +37,6 @@ dotnet tool update -g dotnet -ef
                 </select>
             }
 
-
             @if (!string.IsNullOrEmpty(selectedModel) && deviceData.Brands.ContainsKey(selectedBrand) && deviceData.Brands[selectedBrand].ContainsKey(selectedModel))
             {
                 <select class="form-control" @bind="selectedFrequency">
@@ -44,8 +47,7 @@ dotnet tool update -g dotnet -ef
                     }
                 </select>
             }
-            @if (!string.IsNullOrEmpty(selectedFrequency)
-           )
+            @if (!string.IsNullOrEmpty(selectedFrequency))
             {
                 <select class="form-control" @bind="selectedQuantity">
                     @for (int i = 1; i <= 99; i++)
@@ -63,7 +65,7 @@ dotnet tool update -g dotnet -ef
 <div>
     <h3>Device List</h3>
     <ul>
-        @foreach (var device in devices)
+        @foreach (var device in DevicesViewModel.Devices)
         {
             <li>
                 @device.Brand - @device.Model - @device.Frequency
@@ -73,9 +75,126 @@ dotnet tool update -g dotnet -ef
 </div>
 <div>
     <MudButton Variant="Variant.Filled" Color="Color.Primary">Push to the frequency tab</MudButton>
-
-
 </div>
+
+<div class="container">
+
+    <h3>devices</h3>
+
+    <div class="device-list">
+        @if (DevicesViewModel.Devices.Any())
+        {
+            <div class="device-grid">
+                @foreach (var device in DevicesViewModel.Devices)
+                {
+                    <div class="device-item">
+                        <div class="device-info">
+                            <p class="device-name">@device.Name</p>
+                            <p class="device-frequency">Frequency: @device.Frequency</p>
+                        </div>
+                        <div class="device-buttons">
+                            <button class="edit-button" @onclick="() => DevicesViewModel.SetOperatingDevice(device)">Edit</button>
+                            <button class="delete-button" @onclick="() => DevicesViewModel.DeleteDeviceAsync(device.ID)">Del</button>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine("No Device!");
+            <div class="empty-view">
+                <p>No devices Found</p>
+                <p>Try creating a device from the form below</p>
+            </div>
+        }
+    </div>
+
+    <div class="form">
+        <hr />
+        <h4>Name</h4>
+        <input @bind="DevicesViewModel.OperatingDevice.Name" placeholder="Device name" />
+
+        <h4>Price</h4>
+        <input @bind="DevicesViewModel.OperatingDevice.Price" placeholder="Device price" type="number" />
+
+        <button @onclick="DevicesViewModel.SaveDeviceAsync">
+            @((DevicesViewModel.OperatingDevice.ID == 0) ? "Create device" : "Update device")
+        </button>
+    </div>
+</div>
+
+<style>
+    .container {
+        padding: 10px;
+    }
+
+    .loading {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .device-list {
+        margin-bottom: 20px;
+    }
+
+    .device-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .device-item {
+        border: 1px solid #ECECEC;
+        padding: 5px;
+        background-color: #ECECEC;
+    }
+
+    .device-info {
+        font-weight: bold;
+    }
+
+    .device-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+    }
+
+    .edit-button,
+    .delete-button {
+        padding: 0;
+        height: 25px;
+        font-size: 12px;
+        border-radius: 2px;
+        margin-right: 5px;
+    }
+
+    .empty-view {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .form {
+        padding: 20px;
+        background-color: #CCBFFA;
+        border-radius: 5px;
+    }
+
+    input {
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
+
 
 @code {
     private bool isAddingDevice = false;
@@ -107,9 +226,8 @@ dotnet tool update -g dotnet -ef
                     Frequency = selectedFrequency,
                     Range = deviceData.Brands[selectedBrand][selectedModel][selectedFrequency]
                 });
-                id++;
+            id++;
         }
-
 
         // Reset form
         selectedBrand = "";
@@ -122,7 +240,5 @@ dotnet tool update -g dotnet -ef
     private class DeviceData
     {
         public Dictionary<string, Dictionary<string, Dictionary<string, List<float>>>> Brands { get; set; }
-
     }
 }
-
