@@ -24,7 +24,6 @@ namespace RF_Go.Models
             get => JsonConvert.SerializeObject(Range);
             set => Range = JsonConvert.DeserializeObject<List<float>>(value);
         }
-        public int Quantity { get; set; }
         public string ChannelName { get; set; }
         public string IpAddress { get; set; }
         public string InclusionGroup { get; set; }

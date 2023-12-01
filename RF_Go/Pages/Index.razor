@@ -6,14 +6,15 @@
 @using RF_Go.Data
 @using RF_Go.Models
 @using RF_Go.ViewModels
+@using System.Diagnostics
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
 
 
 <h1>Devices Selection</h1>
-
 <MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="AddDevice">Add Devices</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="RFCalcul">Calculate</MudButton>
 <div id="SelectDeviceMenu">
     @if (isAddingDevice)
     {
@@ -21,7 +22,7 @@
             <MudItem>
                 <MudSelect T="string" HelperText="Choose device brand" Placeholder="Please Select" 
                     AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" 
-                        @bind-Value="DevicesViewModel.OperatingDevice.Brand">
+                        @bind-Value="Device.Brand">
                     @foreach (var brand in deviceData.Brands.Keys)
                     {
                         <MudSelectItem T="string" value="@brand">@brand</MudSelectItem>
@@ -29,37 +30,37 @@
                 </MudSelect>
             </MudItem>
 
-            @if (!string.IsNullOrEmpty(DevicesViewModel.OperatingDevice.Brand))
+            @if (!string.IsNullOrEmpty(Device.Brand))
             {
                 <MudItem>
                     <MudSelect T="string" HelperText="Choose device model" Placeholder="Please Select"
                                AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" 
-                        @bind-Value="DevicesViewModel.OperatingDevice.Model">
+                        @bind-Value="Device.Model">
                         <option value="" disabled selected hidden>Choose a model...</option>
-                        @foreach (var model in deviceData.Brands[DevicesViewModel.OperatingDevice.Brand].Keys)
+                        @foreach (var model in deviceData.Brands[Device.Brand].Keys)
                         {
                             <MudSelectItem T="string" value="@model">@model</MudSelectItem>
-                        }
                         }
                     </MudSelect>
                 </MudItem>
             }
 
-            @if (!string.IsNullOrEmpty(DevicesViewModel.OperatingDevice.Model) && deviceData.Brands.ContainsKey(DevicesViewModel.OperatingDevice.Brand) && deviceData.Brands[DevicesViewModel.OperatingDevice.Brand].ContainsKey(DevicesViewModel.OperatingDevice.Model))
+            @if (!string.IsNullOrEmpty(Device.Model) && deviceData.Brands.ContainsKey(Device.Brand) && deviceData.Brands[Device.Brand].ContainsKey(Device.Model))
             {
                 <MudItem>
                     <MudSelect T="string" HelperText="Choose device model" Placeholder="Please Select"
                                AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" 
-                        @bind-Value="DevicesViewModel.OperatingDevice.Frequency">            
+                        @bind-Value="Device.Frequency">            
                         <option value="" disabled selected hidden>Choose a range of frequency...</option>
-                        @foreach (var frequency in deviceData.Brands[DevicesViewModel.OperatingDevice.Brand][DevicesViewModel.OperatingDevice.Model].Keys)
+                        @foreach (var frequency in deviceData.Brands[Device.Brand][Device.Model].Keys)
                         {
                             <MudSelectItem T="string" value="@frequency">@frequency</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
+                
             }
-            @if (!string.IsNullOrEmpty(DevicesViewModel.OperatingDevice.Frequency))
+            @if (!string.IsNullOrEmpty(Device.Frequency))
             {
                 <MudItem>
                     <MudSelect HelperText="Choose device frequency" Placeholder="Please Select"
@@ -72,8 +73,8 @@
                     </MudSelect>
                 </MudItem>
 
-                <button class="btn btn-success" @onclick="SaveDeviceInDB">
-            @((DevicesViewModel.OperatingDevice.ID == 0) ? "Create device" : "Update device")</button>
+                <button class="btn btn-success" @onclick="() => SaveDeviceInDB(Device)">
+            @((Device.ID == 0) ? "Create device" : "Update device")</button>
             }
         </MudGrid>
     }
@@ -87,90 +88,45 @@
         <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh>Cross</MudTh>
+        <MudTh>ID</MudTh>
         <MudTh>Brand</MudTh>
         <MudTh>Model</MudTh>
         <MudTh>Frequency</MudTh>
-        <MudTh>Frequency Range</MudTh>
-        <MudTh>Edit</MudTh>
-        <MudTh>Delete</MudTh>
+        <MudTh>Frequency Range (MHz)</MudTh>
+        <MudTh>Number Of Channels</MudTh>
+        <MudTh>RFZone</MudTh>
+        <MudTh>Tags</MudTh>
+        <MudTh>Inclusion Group</MudTh>
+        <MudTh>IP Address</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>Cross</MudTd>
+            <MudTd>@context.ID</MudTd>
             <MudTd>@context.Brand</MudTd>
             <MudTd>@context.Model</MudTd>
             <MudTd>@context.Frequency</MudTd>
-            <MudTd>@context.Range</MudTd>
+            <MudTd>@GetFrequencyDetails(context)</MudTd>
+            <MudTd>@SetGetNumberOfChannels(context)</MudTd>
+            <MudTd>@context.RFZone</MudTd>
+            <MudTd>@context.Tags</MudTd>
+            <MudTd>@context.InclusionGroup</MudTd>
+            <MudTd>@context.IpAddress</MudTd>
             <MudTd>
-                <MudButton class="edit-button" @onclick="() => DevicesViewModel.SetOperatingDevice(context)">Edit</MudButton>
-                <MudButton class="delete-button" @onclick="() => DevicesViewModel.DeleteDeviceAsync(context.ID)">Del</MudButton>
+                <MudButton Color=Color.Primary class="edit-button" >Edit</MudButton>
+                <MudButton Color=Color.Secondary class ="delete-button" @onclick="() => DevicesViewModel.DeleteDeviceAsync(context.ID)">Del</MudButton>
             </MudTd>
     </RowTemplate>
         <PagerContent>
             <MudTablePager />
         </PagerContent>
     </MudTable>
-<div>
-    <h3>Device List</h3>
-
-    <ul>
-        @foreach (var device in DevicesViewModel.Devices)
-        {
-            <li>
-                @device.Brand - @device.Model - @device.Frequency - @device.ID
-            </li>
-        }
-    </ul>
-</div>
 <div> 
     <MudButton Variant="Variant.Filled" Color="Color.Primary">Push to the frequency tab</MudButton>
 </div>
 
-<div class="container">
-
-    <h3>devices</h3>
-
-    <div class="device-list">
-        @if (DevicesViewModel.Devices.Any())
-        {
-            <div class="device-grid">
-                @foreach (var device in DevicesViewModel.Devices)
-                {
-                    <div class="device-item">
-                        <div class="device-info">
-                            <p class="device-name">@device.ChannelName</p>
-                            <p class="device-frequency">Frequency: @device.Frequency</p>
-                        </div>
-                        <div class="device-buttons">
-                            <MudButton class="edit-button" @onclick="() => DevicesViewModel.SetOperatingDevice(device)">Edit</MudButton>
-                            <MudButton class="delete-button" @onclick="() => DevicesViewModel.DeleteDeviceAsync(device.ID)">Del</MudButton>
-
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            System.Diagnostics.Debug.WriteLine("No Device!");
-            <div class="empty-view">
-                <p>No devices Found</p>
-                <p>Try creating a device from the form below</p>
-            </div>
-        }
-    </div>
-
-    <div class="form">
-        <hr />
 
 
-
-    </div>
-</div>
-
-
-
-@code {
+    @code {
+    private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool _selectOnRowClick = true;
     private bool isAddingDevice = false;
     private int selectedQuantity = 1;
@@ -181,7 +137,6 @@
     private int selectedRowNumber = -1;
     private bool selectAll { get; set; }
     private List<string> clickedEvents = new();
-    private List<RFDevice> selectedDevices = new List<RFDevice>();
     private string searchString1 = "";
     private RFDevice selectedItem1 = null;
 
@@ -194,14 +149,15 @@
     }
     private void AddDevice()
     {
-        var json = File.ReadAllText("C:\\Users\\c_bou\\Desktop\\Dev\\RF_Go\\RF_Go\\Shared\\Devices.json");
-        deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+
         isAddingDevice = true;
     }
     protected override async Task OnInitializedAsync()
     {
         var context = new DatabaseContext();
         DevicesViewModel = new DevicesViewModel(context); 
+        var json = File.ReadAllText("C:\\Users\\c_bou\\Desktop\\Dev\\RF_Go\\RF_Go\\Shared\\Devices.json");
+        deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
         await base.OnInitializedAsync();
     }
@@ -210,8 +166,10 @@
     {
         public Dictionary<string, Dictionary<string, Dictionary<string, List<float>>>> Brands { get; set; }
     }
-    private async Task SaveDeviceInDB()
+
+    private async Task SaveDeviceInDB(RFDevice device)
     {
+        device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
         for (int i = 0; i < selectedQuantity; i++)
         {
             DevicesViewModel.SaveDeviceAsync();
@@ -221,22 +179,17 @@
         await DevicesViewModel.LoadDevicesAsync();
     }
 
-    private void LogSelectedDevices()
+    private string GetFrequencyDetails(RFDevice context)
     {
+        float startRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][0];
+        float endRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][1];
+        return $"{startRange:#,0} - {endRange:#,0}";
     }
-
-    private void DeleteSelected()
+    private int SetGetNumberOfChannels(RFDevice context)
     {
-        foreach (var device in selectedDevices)
-        {
-            ;
-        }
-
-        // Clear the selectedDevices collection
-        selectedDevices.Clear();
-        selectAll = false;
+        context.numberOfChannels = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][2];
+        return context.numberOfChannels;
     }
-
     private string SelectedRowClassFunc(RFDevice device, int rowNumber)
     {
         if (selectedRowNumber == rowNumber)
@@ -256,5 +209,11 @@
             return string.Empty;
         }
     }
-
+    private void RFCalcul()
+    {
+        foreach(RFDevice device in DevicesViewModel.Devices )
+        {
+            
+        }
+    }
 }
