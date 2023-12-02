@@ -94,6 +94,7 @@
         <MudTh>Frequency</MudTh>
         <MudTh>Frequency Range (MHz)</MudTh>
         <MudTh>Number Of Channels</MudTh>
+        <MudTh>Set Frequencies</MudTh>
         <MudTh>RFZone</MudTh>
         <MudTh>Tags</MudTh>
         <MudTh>Inclusion Group</MudTh>
@@ -106,6 +107,13 @@
             <MudTd>@context.Frequency</MudTd>
             <MudTd>@GetFrequencyDetails(context)</MudTd>
             <MudTd>@SetGetNumberOfChannels(context)</MudTd>
+            <MudTd>
+                <MudTable @bind-Items="@context.Channels" Hover="true">
+                    <RowTemplate Context="chan">
+                        <MudTd>@string.Format("{0:#,0}", chan.Frequency)</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudTd>
             <MudTd>@context.RFZone</MudTd>
             <MudTd>@context.Tags</MudTd>
             <MudTd>@context.InclusionGroup</MudTd>
@@ -170,9 +178,12 @@
     private async Task SaveDeviceInDB(RFDevice device)
     {
         device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
+        device.step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
+        device.numberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
+
         for (int i = 0; i < selectedQuantity; i++)
         {
-            DevicesViewModel.SaveDeviceAsync();
+            await DevicesViewModel.SaveDeviceAsync();
         }
 
         // Reload devices after saving
@@ -181,6 +192,7 @@
 
     private string GetFrequencyDetails(RFDevice context)
     {
+        context.Range = deviceData.Brands[context.Brand][context.Model][context.Frequency];
         float startRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][0];
         float endRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][1];
         return $"{startRange:#,0} - {endRange:#,0}";
@@ -188,6 +200,7 @@
     private int SetGetNumberOfChannels(RFDevice context)
     {
         context.numberOfChannels = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][2];
+        context.step = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][3];
         return context.numberOfChannels;
     }
     private string SelectedRowClassFunc(RFDevice device, int rowNumber)
@@ -211,9 +224,10 @@
     }
     private void RFCalcul()
     {
+        Debug.WriteLine("calcul called");
         foreach(RFDevice device in DevicesViewModel.Devices )
         {
-            
+            device.SetRandomFrequency();
         }
     }
 }

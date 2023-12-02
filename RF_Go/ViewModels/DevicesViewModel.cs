@@ -63,7 +63,7 @@ namespace RF_Go.ViewModels
             Debug.WriteLine("Save function called !");
             Debug.WriteLine(_context == null);
             Debug.WriteLine(OperatingDevice.ChannelName);
-
+            OperatingDevice.ID = 0;
             if (OperatingDevice is null)
                 return;
 
@@ -73,7 +73,7 @@ namespace RF_Go.ViewModels
                 await Shell.Current.DisplayAlert("Validation Error", errorMessage, "Ok");
                 return;
             }
-
+            
             var busyText = OperatingDevice.ID == 0 ? "Creating Device..." : "Updating Device...";
             await ExecuteAsync(async () =>
             {
@@ -81,7 +81,7 @@ namespace RF_Go.ViewModels
                 {
                     // Create Device
                     await _context.AddItemAsync<RFDevice>(OperatingDevice);
-                    Devices.Add(OperatingDevice);
+                    evices.Add(OperatingDevice);
                 }
                 else
                 {
@@ -101,7 +101,7 @@ namespace RF_Go.ViewModels
                         return;
                     }
                 }
-                SetOperatingDeviceCommand.Execute(new());
+                //SetOperatingDeviceCommand.Execute(new());
             }, busyText);
         }
 
