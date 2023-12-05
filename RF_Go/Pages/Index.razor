@@ -56,7 +56,7 @@
                         <option value="" disabled selected hidden>Choose a range of frequency...</option>
                         @foreach (var frequency in deviceData.Brands[Device.Brand][Device.Model].Keys)
                         {
-                            <MudSelectItem T="string" value="@frequency">@frequency</MudSelectItem>
+                            <MudSelectItem T="string" value="@frequency">@frequency ( @deviceData.Brands[Device.Brand][Device.Model][frequency][0] - @deviceData.Brands[Device.Brand][Device.Model][frequency][1] )</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -65,8 +65,7 @@
             @if (!string.IsNullOrEmpty(Device.Frequency))
             {
                 <MudItem>
-                    <MudSelect HelperText="Choose device frequency" Placeholder="Please Select"
-                               AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary"
+                    <MudSelect HelperText="Choose device frequency" Placeholder="Please Select" AdornmentColor="Color.Primary"
                                @bind-Value="selectedQuantity">
                         @foreach (var option in frequencyOptions)
                         {
@@ -81,7 +80,7 @@
     }
 </div>
 
-<MudTable Hover="true" Dense="false" Bordered="false" Striped="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
+<MudTable Hover="true" Dense="true"  Bordered="false" Striped="true" HorizontalScrollbar="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
           RowClass="cursor-pointer"  RowClassFunc="@SelectedRowClassFunc">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Devices</MudText>
@@ -93,26 +92,31 @@
         <MudTh>Brand</MudTh>
         <MudTh>Model</MudTh>
         <MudTh>Frequency</MudTh>
-        <MudTh>Frequency Range (MHz)</MudTh>
-        <MudTh>Number Of Channels</MudTh>
+        <MudTh>Frequency Range</MudTh>
+        <MudTh>Channels</MudTh>
         <MudTh>Set Frequencies</MudTh>
         <MudTh>Lock Frequency</MudTh>
         <MudTh>RFZone</MudTh>
         <MudTh>Tags</MudTh>
         <MudTh>Inclusion Group</MudTh>
         <MudTh>IP Address</MudTh>
+        <MudTd>Edit</MudTd>
     </HeaderContent>
-    <RowTemplate>
-            <MudTd>@context.ID</MudTd>
+    <RowTemplate >
+        <MudTd Style="">@context.ID</MudTd>
             <MudTd>@context.Brand</MudTd>
             <MudTd>@context.Model</MudTd>
             <MudTd>@context.Frequency</MudTd>
             <MudTd>@GetFrequencyDetails(context)</MudTd>
             <MudTd>@SetGetNumberOfChannels(context)</MudTd>
-            <MudTd>
+            <MudTd Style="min-width:250px">
                 <MudTable @bind-Items="@context.Channels" Hover="true">
                     <RowTemplate Context="chan">
-                        <MudTd>@string.Format("{0:#,0}", chan.Frequency) <MudCheckBox @bind-Checked="@chan.IsLocked"></MudCheckBox></MudTd>
+                       @*  <MudTd>@string.Format("{0:#,0}", chan.Frequency) </MudTd> *@
+                        <MudTd>
+                            <MudNumericField @bind-Value="chan.Frequency" Min="@context.Range[0]" Max="@context.Range[1]" Step="@context.Step"/>
+                            <MudCheckBox @bind-Checked="@chan.IsLocked"></MudCheckBox>
+                        </MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudTd>
@@ -152,6 +156,7 @@
     private RFDevice selectedItem1 = null;
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
+    private string value1, value2;
 
 
 
@@ -179,7 +184,7 @@
 
     private class DeviceData
     {
-        public Dictionary<string, Dictionary<string, Dictionary<string, List<float>>>> Brands { get; set; }
+        public Dictionary<string, Dictionary<string, Dictionary<string, List<int>>>> Brands { get; set; }
     }
 
     private async Task SaveDeviceInDB(RFDevice device)
@@ -199,8 +204,8 @@
 
     private string GetFrequencyDetails(RFDevice context)
     {
-        float startRange = context.Range[0];
-        float endRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][1];
+        int startRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][0];
+        int endRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][1];
         return $"{startRange:#,0} - {endRange:#,0}";
     }
     private int SetGetNumberOfChannels(RFDevice context)
@@ -237,20 +242,27 @@
         HashSet<int> TwoTX7rdOrder = [];
         HashSet<int> TwoTX9rdOrder = [];
         HashSet<int> ThreeTX3rdOrder = [];
+        bool Locked1Chan = false;
         foreach(RFDevice device in DevicesViewModel.Devices )
         {
+
             foreach (RFChannel chan in device.Channels)
             {
                 if (chan.IsLocked)
                 {
-                    device.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                    Locked1Chan = true;
+                    device.SetRandomFrequency(Locked1Chan, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                 }
             }
+            
         }
+        Debug.WriteLine("Getting out of calcul of locked freq");
         foreach (RFDevice device in DevicesViewModel.Devices)
         {
-            device.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+            Locked1Chan = false;
+            device.SetRandomFrequency(Locked1Chan, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
         }
+        Debug.WriteLine("Getting out of calcul of other freq");
         @*         var serie = new ChartSeries()
             {
                 Name = "Your Frequencies",

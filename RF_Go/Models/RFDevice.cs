@@ -23,11 +23,11 @@ namespace RF_Go.Models
         public string Model { get; set; }
         public string Frequency { get; set; }
         [Ignore] 
-        public List<float> Range { get; set; }
+        public List<int> Range { get; set; }
         public string RangeSerialized
         {
             get => JsonConvert.SerializeObject(Range);
-            set => Range = JsonConvert.DeserializeObject<List<float>>(value);
+            set => Range = JsonConvert.DeserializeObject<List<int>>(value);
         }
         [Ignore]
         public List<RFChannel> Channels { get; set; } = new List<RFChannel>();
@@ -56,13 +56,13 @@ namespace RF_Go.Models
             }
             return (true, string.Empty);
         }
-        public void SetRandomFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
+        public void SetRandomFrequency(bool Locked1Chan, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
         {
-
             int f1;
             for (int i = 0; i < NumberOfChannels; i++)
             {
-                if (Channels.Count != NumberOfChannels)
+                
+                if (Channels.Count != NumberOfChannels && !Locked1Chan)
                 {
                     Channels.Add(new RFChannel());
                     f1 = LoopForFreeFrequency(i, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
@@ -72,40 +72,43 @@ namespace RF_Go.Models
                 else if (Channels[i].Frequency != 0 && Channels[i].IsLocked)
                 {
                     f1 = Channels[i].Frequency;
+                    if (Locked1Chan) 
+                    { 
                     CalculAllIntermod(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
-                    Debug.WriteLine("Calcul intermod of locked freq");
+                    UsedFrequencies.Add(f1);
+                    Debug.WriteLine("Calcul intermod of locked freq.");
+                    }
                 }
-                else
+                else if (!Locked1Chan)
                 {
-                    Debug.WriteLine("should come here");
                     f1 = LoopForFreeFrequency(i, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                     Debug.WriteLine("Calcul intermod of unlocked freq");
                 }
-                Debug.WriteLine("is device locked ? " + Channels[i].IsLocked);
-                
-                if (Channels[i].Frequency == 0)
+                Debug.WriteLine("was device locked ? " + Channels[i].IsLocked + "count of usedFreq = " + UsedFrequencies.Count() + "count of 2tx3 = " + TwoTX3rdOrder.Count());
+
+                if (Channels[i].Frequency == 0 && !Locked1Chan)
                 {
-                    for (int j = (int)Range[0]; j < (int)Range[1]; j+=Step)
+                    Debug.WriteLine(" Entering last chance!");
+                    for (int j = Range[0]; j < Range[1]; j+=Step)
                     {
                         if (CheckFreeFrequency(j, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder))
                         {
                             Channels[i].Frequency = j;
                             Debug.WriteLine(j + " est assignée par la loop all.");
+                            CalculAllIntermod(j, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                             UsedFrequencies.Add(j);
                             break;
                         }
                     }
                 }
-
             }
-
         }
         public int GetRandomFrequency()
         {
             Random random = new Random();
-            int numberOfValue = (int)((Range[1]-Range[0]) / Range[3]);
+            int numberOfValue =(Range[1]-Range[0]) / Range[3];
             int randomIndex = random.Next(0, numberOfValue);
-            return (int)(Range[0] + (randomIndex * Range[3]));
+            return (Range[0] + (randomIndex * Range[3]));
         }
         public int LoopForFreeFrequency(int i,HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
         {
@@ -138,7 +141,7 @@ namespace RF_Go.Models
                         && !TwoTX7rdOrder.Any(f => f == f1)
                             && !TwoTX9rdOrder.Any(f => f == f1)
                                 && !ThreeTX3rdOrder.Any(f => Math.Abs(f - f1) <= 150)
-                                    && !UsedFrequencies.Any(f => Math.Abs(f-f1) <= 900));
+                                    && !UsedFrequencies.Any(f => Math.Abs(f-f1) <= 400));
         }
         public static void CalculAllIntermod(int f1, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
         {
