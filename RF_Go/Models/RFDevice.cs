@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿
+using Newtonsoft.Json;
 using SQLite;
 using System;
 using System.Diagnostics;
@@ -54,55 +55,75 @@ namespace RF_Go.Models
             }
             return (true, string.Empty);
         }
-        public void SetRandomFrequency()
+        public void SetRandomFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
         {
-            Channels = new List<RFChannel>();
-            List<int> UsedFrequencies = [];
-            List<int> TwoTX3rdOrder = [];
-            List<int> TwoTX5rdOrder = [];
-            List<int> TwoTX7rdOrder = [];
-            List<int> TwoTX9rdOrder = [];
-            List<int> ThreeTX3rdOrder = [];
+            int maxAttempt = 10000;
+            int f1 = 0;
+            //Channels = new List<RFChannel>();
+
 
             for (int i = 0; i < numberOfChannels; i++)
             {
-
-                Channels.Add(new RFChannel());
-                Channels[i].Frequency = GetRandomFrequency();
-                int f1 = Channels[i].Frequency;
-                Debug.WriteLine($"First f is : {f1}");
-
-                foreach (int f2 in UsedFrequencies)
+                int count = 0;
+                if (Channels.Count != numberOfChannels)
                 {
-                    int max = (int)MathF.Max(f1, f2);
-                    int min = (int)MathF.Min(f1, f2);
-                    int gap = max-min;
-                    TwoTX3rdOrder.Add(max + gap);
-                    TwoTX3rdOrder.Add(min - gap);
-                    TwoTX5rdOrder.Add(max + (gap*2));
-                    TwoTX5rdOrder.Add(min - (gap*2));
-                    TwoTX7rdOrder.Add(max + (gap*3));
-                    TwoTX7rdOrder.Add(min - (gap*3));
-                    TwoTX9rdOrder.Add(max + (gap*4));
-                    TwoTX9rdOrder.Add(min - (gap*4));
+                    Channels.Add(new RFChannel());
+                    f1 = GetRandomFrequency();
                 }
-                UsedFrequencies.Add(f1);  
-            }
-            foreach (int f in TwoTX3rdOrder)
-            {
-                Debug.WriteLine($"thirdOrder = {f}");
-            }
-            foreach (int f in TwoTX5rdOrder)
-            {
-                Debug.WriteLine($"fifthOrder = {f}");
-            }
-            foreach (int f in TwoTX7rdOrder)
-            {
-                Debug.WriteLine($"seventhOrder = {f}");
-            }
-            foreach (int f in TwoTX9rdOrder)
-            {
-                Debug.WriteLine($"ninthOrder = {f}");
+                else if (Channels[i].Frequency != 0 && Channels[i].IsLocked)
+                {
+                    f1 = Channels[i].Frequency;
+                }
+                else
+                {
+                    f1 = GetRandomFrequency();
+                }
+
+                while (count < maxAttempt)
+                {
+                    count++;
+                    if (!TwoTX3rdOrder.Any(f => Math.Abs(f-f1) <= 250)
+                            && !TwoTX5rdOrder.Any(f => f == f1)
+                                && !TwoTX7rdOrder.Any(f => f == f1)
+                                    && !TwoTX9rdOrder.Any(f => f == f1)
+                                        && !UsedFrequencies.Any(f => Math.Abs(f-f1) <= 350))
+                    {
+                        Channels[i].Frequency = f1;
+                        Debug.WriteLine("Number of attempts to find a frequencies = " + count);
+                        foreach (int f2 in UsedFrequencies)
+                        {
+                            int max = (int)MathF.Max(f1, f2);
+                            int min = (int)MathF.Min(f1, f2);
+                            int gap = max-min;
+                            TwoTX3rdOrder.Add(max + gap);
+                            TwoTX3rdOrder.Add(min - gap);
+                            TwoTX5rdOrder.Add(max + (gap*2));
+                            TwoTX5rdOrder.Add(min - (gap*2));
+                            TwoTX7rdOrder.Add(max + (gap*3));
+                            TwoTX7rdOrder.Add(min - (gap*3));
+                            TwoTX9rdOrder.Add(max + (gap*4));
+                            TwoTX9rdOrder.Add(min - (gap*4));
+                            foreach (int f3 in UsedFrequencies)
+                            {
+                                if (f1 != f2 && f2 != f3 && f1 != f3)
+                                {
+                                    ThreeTX3rdOrder.Add(f1 + Math.Abs(f3 - f2));
+                                    ThreeTX3rdOrder.Add(f1 - Math.Abs(f2 - f3));       
+                                    ThreeTX3rdOrder.Add(f2 + Math.Abs(f3 - f1));    
+                                    ThreeTX3rdOrder.Add(f2 - Math.Abs(f1 - f3));         
+                                    ThreeTX3rdOrder.Add(f3 + Math.Abs(f2 - f1));   
+                                    ThreeTX3rdOrder.Add(f3 - Math.Abs(f1 - f2));
+                                }
+                            }
+                        }
+                        UsedFrequencies.Add(f1);
+                        break;
+                    }
+                    else 
+                    {
+                        
+                    }
+                }
             }
 
         }

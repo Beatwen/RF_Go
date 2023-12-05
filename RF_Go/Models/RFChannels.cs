@@ -15,6 +15,22 @@ namespace RF_Go.Models
         public bool Selected { get; set; }
         public int Frequency { get; set; }
         public string ChannelName { get; set; }
+        private bool _isLocked;
+        public bool IsLocked 
+        {
+            get { return _isLocked; }
+            set
+            {   
+                if (Frequency == 0)
+                {
+                    _isLocked = false;
+                }
+                else
+                {
+                    _isLocked = value;
+                }
+            }
+        }
 
         public RFChannel Clone() => MemberwiseClone() as RFChannel;
 

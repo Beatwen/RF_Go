@@ -7,15 +7,17 @@
 @using RF_Go.Models
 @using RF_Go.ViewModels
 @using System.Diagnostics
+
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
 
-
 <h1>Devices Selection</h1>
 <MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="AddDevice">Add Devices</MudButton>
 <MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="RFCalcul">Calculate</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Secondary" class="btn btn-primary" @onclick="() => DevicesViewModel.DeleteAllDeviceAsync()">Delete All Device</MudButton>
 <div id="SelectDeviceMenu">
+
     @if (isAddingDevice)
     {
         <MudGrid Spacing="2" Justify="Justify.Center">
@@ -73,15 +75,14 @@
                     </MudSelect>
                 </MudItem>
 
-                <button class="btn btn-success" @onclick="() => SaveDeviceInDB(Device)">
-            @((Device.ID == 0) ? "Create device" : "Update device")</button>
+                <MudButton @onclick="() => SaveDeviceInDB(Device)">Save device</MudButton>
             }
         </MudGrid>
     }
 </div>
 
 <MudTable Hover="true" Dense="false" Bordered="false" Striped="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
-          RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc">
+          RowClass="cursor-pointer"  RowClassFunc="@SelectedRowClassFunc">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Devices</MudText>
         <MudSpacer />
@@ -95,6 +96,7 @@
         <MudTh>Frequency Range (MHz)</MudTh>
         <MudTh>Number Of Channels</MudTh>
         <MudTh>Set Frequencies</MudTh>
+        <MudTh>Lock Frequency</MudTh>
         <MudTh>RFZone</MudTh>
         <MudTh>Tags</MudTh>
         <MudTh>Inclusion Group</MudTh>
@@ -110,7 +112,7 @@
             <MudTd>
                 <MudTable @bind-Items="@context.Channels" Hover="true">
                     <RowTemplate Context="chan">
-                        <MudTd>@string.Format("{0:#,0}", chan.Frequency)</MudTd>
+                        <MudTd>@string.Format("{0:#,0}", chan.Frequency) <MudCheckBox @bind-Checked="@chan.IsLocked"></MudCheckBox></MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudTd>
@@ -133,7 +135,8 @@
 
 
 
-    @code {
+    @code 
+    {
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool _selectOnRowClick = true;
     private bool isAddingDevice = false;
@@ -147,6 +150,11 @@
     private List<string> clickedEvents = new();
     private string searchString1 = "";
     private RFDevice selectedItem1 = null;
+    public List<ChartSeries> Series { get; set; } = new();
+    public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
+
+
+
 
 
 
@@ -157,7 +165,6 @@
     }
     private void AddDevice()
     {
-
         isAddingDevice = true;
     }
     protected override async Task OnInitializedAsync()
@@ -179,6 +186,8 @@
     {
         device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
         device.step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
+        Debug.WriteLine((int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3]);
+        Debug.WriteLine("devicestep ="+ device.step);
         device.numberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
 
         for (int i = 0; i < selectedQuantity; i++)
@@ -225,9 +234,24 @@
     private void RFCalcul()
     {
         Debug.WriteLine("calcul called");
+        HashSet<int> UsedFrequencies = [];
+        HashSet<int> TwoTX3rdOrder = [];
+        HashSet<int> TwoTX5rdOrder = [];
+        HashSet<int> TwoTX7rdOrder = [];
+        HashSet<int> TwoTX9rdOrder = [];
+        HashSet<int> ThreeTX3rdOrder = [];
         foreach(RFDevice device in DevicesViewModel.Devices )
         {
-            device.SetRandomFrequency();
+            device.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
         }
+        var serie = new ChartSeries()
+            {
+                Name = "Your Frequencies",
+                Data = Enumerable.Range(100000, 900000)
+                .Select(index => UsedFrequencies.Contains(index) ? 100.0 : 0.0)
+                .ToArray()
+            };
+        Series.Add(serie);
     }
+    
 }

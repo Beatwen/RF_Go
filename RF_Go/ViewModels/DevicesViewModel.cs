@@ -81,7 +81,7 @@ namespace RF_Go.ViewModels
                 {
                     // Create Device
                     await _context.AddItemAsync<RFDevice>(OperatingDevice);
-                    evices.Add(OperatingDevice);
+                    Devices.Add(OperatingDevice);
                 }
                 else
                 {
@@ -121,6 +121,27 @@ namespace RF_Go.ViewModels
                 }
             }, "Deleting Device...");
         }
+        public async Task DeleteAllDeviceAsync()
+        {
+            await ExecuteAsync(async () =>
+            {
+                List<int> deviceIdsToDelete = Devices.Select(device => device.ID).ToList();
+
+                foreach (var deviceId in deviceIdsToDelete)
+                {
+                    if (await _context.DeleteItemByKeyAsync<RFDevice>(deviceId))
+                    {
+                        var device = Devices.FirstOrDefault(p => p.ID == deviceId);
+                        Devices.Remove(device);
+                    }
+                    else
+                    {
+                        await Shell.Current.DisplayAlert("Delete Error", "Device was not deleted", "Ok");
+                    }
+                }
+            }, "Deleting Devices...");
+        }
+
 
         private async Task ExecuteAsync(Func<Task> operation, string busyText = null)
         {
