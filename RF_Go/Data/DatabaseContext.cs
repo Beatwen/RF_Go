@@ -6,7 +6,7 @@ namespace RF_Go.Data
 {
     public class DatabaseContext : IAsyncDisposable
     {
-        private const string DbName = "Session.db3";
+        private const string DbName = "Session2.db3";
         private static string DbPath => Path.Combine(FileSystem.AppDataDirectory, DbName);
 
         private SQLiteAsyncConnection _connection;

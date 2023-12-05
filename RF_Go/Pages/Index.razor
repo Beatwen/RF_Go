@@ -185,10 +185,8 @@
     private async Task SaveDeviceInDB(RFDevice device)
     {
         device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
-        device.step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
-        Debug.WriteLine((int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3]);
-        Debug.WriteLine("devicestep ="+ device.step);
-        device.numberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
+        device.Step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
+        device.NumberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
 
         for (int i = 0; i < selectedQuantity; i++)
         {
@@ -201,16 +199,15 @@
 
     private string GetFrequencyDetails(RFDevice context)
     {
-        context.Range = deviceData.Brands[context.Brand][context.Model][context.Frequency];
-        float startRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][0];
+        float startRange = context.Range[0];
         float endRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][1];
         return $"{startRange:#,0} - {endRange:#,0}";
     }
     private int SetGetNumberOfChannels(RFDevice context)
     {
-        context.numberOfChannels = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][2];
-        context.step = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][3];
-        return context.numberOfChannels;
+        context.NumberOfChannels = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][2];
+        context.Step = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][3];
+        return context.NumberOfChannels;
     }
     private string SelectedRowClassFunc(RFDevice device, int rowNumber)
     {
@@ -242,16 +239,26 @@
         HashSet<int> ThreeTX3rdOrder = [];
         foreach(RFDevice device in DevicesViewModel.Devices )
         {
+            foreach (RFChannel chan in device.Channels)
+            {
+                if (chan.IsLocked)
+                {
+                    device.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                }
+            }
+        }
+        foreach (RFDevice device in DevicesViewModel.Devices)
+        {
             device.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
         }
-        var serie = new ChartSeries()
+        @*         var serie = new ChartSeries()
             {
                 Name = "Your Frequencies",
                 Data = Enumerable.Range(100000, 900000)
                 .Select(index => UsedFrequencies.Contains(index) ? 100.0 : 0.0)
                 .ToArray()
             };
-        Series.Add(serie);
+        Series.Add(serie); *@ 
     }
     
 }
