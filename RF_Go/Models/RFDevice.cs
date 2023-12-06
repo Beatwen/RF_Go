@@ -69,20 +69,31 @@ namespace RF_Go.Models
                     Debug.WriteLine("Channel Added to Device");
                     Debug.WriteLine("Calcul intermod of unlocked freq");
                 }
-                else if (Channels[i].Frequency != 0 && Channels[i].IsLocked)
+                else if (Channels[i].Frequency != 0 && Channels[i].IsLocked && !Channels[i].Checked)
                 {
                     f1 = Channels[i].Frequency;
-                    if (Locked1Chan) 
-                    { 
-                    CalculAllIntermod(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
-                    UsedFrequencies.Add(f1);
-                    Debug.WriteLine("Calcul intermod of locked freq.");
+                    if ( Locked1Chan && CheckFreeFrequency(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder)) 
+                    {
+                        CalculAllIntermod(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                        UsedFrequencies.Add(f1);
+                        Channels[i].Checked = true;
+
+                        Debug.WriteLine("Calcul intermod of locked freq.");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Frequency is not setup ! wrong freq");
+                        Channels[i].Checked = false;
                     }
                 }
-                else if (!Locked1Chan)
+                else if (!Locked1Chan && !Channels[i].Checked)
                 {
                     f1 = LoopForFreeFrequency(i, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                     Debug.WriteLine("Calcul intermod of unlocked freq");
+                }
+                else
+                {
+
                 }
                 Debug.WriteLine("was device locked ? " + Channels[i].IsLocked + "count of usedFreq = " + UsedFrequencies.Count() + "count of 2tx3 = " + TwoTX3rdOrder.Count());
 
@@ -124,11 +135,13 @@ namespace RF_Go.Models
                     Channels[i].Frequency = f1;
                     CalculAllIntermod(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                     UsedFrequencies.Add(f1);
+                    Channels[i].Checked = true;
                     return f1;
                 }
                 else
                 {
                     Channels[i].Frequency = 0;
+                    Channels[i].Checked = false;
                 }
             }
             

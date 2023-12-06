@@ -112,8 +112,10 @@
             <MudTd Style="min-width:250px">
                 <MudTable @bind-Items="@context.Channels" Hover="true">
                     <RowTemplate Context="chan">
+
                        @*  <MudTd>@string.Format("{0:#,0}", chan.Frequency) </MudTd> *@
-                        <MudTd>
+
+                        <MudTd Style="@CalculateStyle(chan)">
                             <MudNumericField @bind-Value="chan.Frequency" Min="@context.Range[0]" Max="@context.Range[1]" Step="@context.Step"/>
                             <MudCheckBox @bind-Checked="@chan.IsLocked"></MudCheckBox>
                         </MudTd>
@@ -163,6 +165,11 @@
 
 
 
+    private string CalculateStyle(RFChannel chan)
+    {
+        string color = chan.Checked ? "blue" : "red";
+        return "background-color:" + color;
+    }
     private void DeleteDevice(RFDevice context)
     {
         // Handle delete button click here
@@ -248,9 +255,12 @@
 
             foreach (RFChannel chan in device.Channels)
             {
+                chan.Checked = false;
                 if (chan.IsLocked)
                 {
                     Locked1Chan = true;
+                    Debug.WriteLine("We are checking : " + chan.Frequency);
+
                     device.SetRandomFrequency(Locked1Chan, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                 }
             }

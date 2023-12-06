@@ -14,6 +14,8 @@ namespace RF_Go.Models
         public int ID { get; set; }
         public bool Selected { get; set; }
         public int Frequency { get; set; }
+        public bool FrequencyIsSetup { get; set; }
+        public bool Checked { get; set; }
         public string ChannelName { get; set; }
         private bool _isLocked;
         public bool IsLocked 
