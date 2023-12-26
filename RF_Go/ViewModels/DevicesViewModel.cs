@@ -61,8 +61,6 @@ namespace RF_Go.ViewModels
         public async Task SaveDeviceAsync()
         {
             Debug.WriteLine("Save function called !");
-            Debug.WriteLine(_context == null);
-            Debug.WriteLine(OperatingDevice.ChannelName);
             OperatingDevice.ID = 0;
             if (OperatingDevice is null)
                 return;

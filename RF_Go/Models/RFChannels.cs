@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SQLite;
+using System.Diagnostics;
+using System.Threading.Channels;
 
 
 namespace RF_Go.Models
@@ -13,8 +15,24 @@ namespace RF_Go.Models
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
         public bool Selected { get; set; }
+        public int chanNumber { get; set; }
         public int Frequency { get; set; }
-        public bool FrequencyIsSetup { get; set; }
+        [Ignore]
+        public List<int> Range { get; set; }
+        public string RangeSerialized
+        {
+            get => JsonConvert.SerializeObject(Range);
+            set => Range = JsonConvert.DeserializeObject<List<int>>(value);
+        }
+        public int Step { get; set; }
+        public int SelfSpacing { get; set; }
+        public int ThirdOrderSpacing { get; set; }
+        public int FifthOrderSpacing { get; set; }
+        public int SeventhOrderSpacing { get; set; }
+        public int NinthOrderSpacing { get; set; }
+        public int ThirdOrderSpacing3Tx { get; set; }
+
+
         public bool Checked { get; set; }
         public string ChannelName { get; set; }
         private bool _isLocked;
@@ -33,8 +51,122 @@ namespace RF_Go.Models
                 }
             }
         }
+        public void SetRandomFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
+        {
+            int f1;
+                if (!Checked && !IsLocked)
+                {
+                    
+                    f1 = LoopForFreeFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                    Debug.WriteLine("Channel Added to Device");
+                    Debug.WriteLine("Calcul intermod of unlocked freq");
+                }
+                else if (Frequency != 0 && IsLocked && !Checked)
+                {
+                    f1 = Frequency;
+                    if (CheckFreeFrequency(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder))
+                    {
+                        CalculAllIntermod(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                        UsedFrequencies.Add(f1);
+                        Checked = true;
+                        Debug.WriteLine("Calcul intermod of locked freq.");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Frequency is not setup ! wrong freq");
+                        Checked = false;
+                    }
+                }
+                Debug.WriteLine("was device locked ? " + IsLocked + "count of usedFreq = " + UsedFrequencies.Count() + "count of 2tx3 = " + TwoTX3rdOrder.Count());
 
+                if (Frequency == 0)
+                {
+                    Debug.WriteLine(" Entering last chance!");
+                    for (int j = Range[0]; j < Range[1]; j+=Step)
+                    {
+                        if (CheckFreeFrequency(j, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder))
+                        {
+                            Frequency = j;
+                            Debug.WriteLine(j + " est assignée par la loop all.");
+                            CalculAllIntermod(j, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                            UsedFrequencies.Add(j);
+                            Checked = true;
+                            break;
+                        }
+                    }
+                }
+        }
+        public int GetRandomFrequency()
+        {
+            Random random = new Random();
+            int numberOfValue = (Range[1]-Range[0]) / Range[3];
+            int randomIndex = random.Next(0, numberOfValue);
+            return (Range[0] + (randomIndex * Range[3]));
+        }
+        public int LoopForFreeFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
+        {
+            int f1;
+            int count = 0;
+            int maxAttempt = 100;
+            while (count < maxAttempt)
+            {
+                f1 = GetRandomFrequency();
+                count++;
+                if (CheckFreeFrequency(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder))
+                {
+                    Frequency = f1;
+                    CalculAllIntermod(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                    UsedFrequencies.Add(f1);
+                    Checked = true;
+                    return f1;
+                }
+                else
+                {
+                    Frequency = 0;
+                    Checked = false;
+                }
+            }
+
+            return 0;
+        }
+        public bool CheckFreeFrequency(int f1, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
+        {
+            return (!TwoTX3rdOrder.Any(f => Math.Abs(f-f1) <= ThirdOrderSpacing)
+                    && !TwoTX5rdOrder.Any(f => f == f1)
+                        && !TwoTX7rdOrder.Any(f => f == f1)
+                            && !TwoTX9rdOrder.Any(f => f == f1)
+                                && !ThreeTX3rdOrder.Any(f => Math.Abs(f - f1) <= ThirdOrderSpacing3Tx)
+                                    && !UsedFrequencies.Any(f => Math.Abs(f-f1) <= SelfSpacing));
+        }
+        public static void CalculAllIntermod(int f1, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
+        {
+            foreach (int f2 in UsedFrequencies)
+            {
+                int max = (int)MathF.Max(f1, f2);
+                int min = (int)MathF.Min(f1, f2);
+                int gap = max-min;
+                TwoTX3rdOrder.Add(max + gap);
+                TwoTX3rdOrder.Add(min - gap);
+                TwoTX5rdOrder.Add(max + (gap*2));
+                TwoTX5rdOrder.Add(min - (gap*2));
+                TwoTX7rdOrder.Add(max + (gap*3));
+                TwoTX7rdOrder.Add(min - (gap*3));
+                TwoTX9rdOrder.Add(max + (gap*4));
+                TwoTX9rdOrder.Add(min - (gap*4));
+                foreach (int f3 in UsedFrequencies)
+                {
+                    if (f1 != f2 && f2 != f3 && f1 != f3)
+                    {
+                        ThreeTX3rdOrder.Add(f1 + Math.Abs(f3 - f2));
+                        ThreeTX3rdOrder.Add(f1 - Math.Abs(f2 - f3));
+                        ThreeTX3rdOrder.Add(f2 + Math.Abs(f3 - f1));
+                        ThreeTX3rdOrder.Add(f2 - Math.Abs(f1 - f3));
+                        ThreeTX3rdOrder.Add(f3 + Math.Abs(f2 - f1));
+                        ThreeTX3rdOrder.Add(f3 - Math.Abs(f1 - f2));
+                    }
+                }
+            }
+        }
         public RFChannel Clone() => MemberwiseClone() as RFChannel;
-
     }
 }

@@ -103,7 +103,7 @@
         <MudTd>Edit</MudTd>
     </HeaderContent>
     <RowTemplate >
-        <MudTd Style="">@context.ID</MudTd>
+        <MudTd>@context.ID</MudTd>
             <MudTd>@context.Brand</MudTd>
             <MudTd>@context.Model</MudTd>
             <MudTd>@context.Frequency</MudTd>
@@ -115,9 +115,10 @@
 
                        @*  <MudTd>@string.Format("{0:#,0}", chan.Frequency) </MudTd> *@
 
-                        <MudTd Style="@CalculateStyle(chan)">
-                            <MudNumericField @bind-Value="chan.Frequency" Min="@context.Range[0]" Max="@context.Range[1]" Step="@context.Step"/>
+                        <MudTd  Style="@CalculateStyle(chan)">
+                            <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step"/>
                             <MudCheckBox @bind-Checked="@chan.IsLocked"></MudCheckBox>
+
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -167,7 +168,7 @@
 
     private string CalculateStyle(RFChannel chan)
     {
-        string color = chan.Checked ? "blue" : "red";
+        string color = chan.Checked ? "aliceblue" : "red";
         return "background-color:" + color;
     }
     private void DeleteDevice(RFDevice context)
@@ -183,7 +184,7 @@
     {
         var context = new DatabaseContext();
         DevicesViewModel = new DevicesViewModel(context); 
-        var json = File.ReadAllText("C:\\Users\\c_bou\\Desktop\\Dev\\RF_Go\\RF_Go\\Shared\\Devices.json");
+        var json = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Shared", "Devices.json"));
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
         await base.OnInitializedAsync();
@@ -194,11 +195,13 @@
         public Dictionary<string, Dictionary<string, Dictionary<string, List<int>>>> Brands { get; set; }
     }
 
+
+
     private async Task SaveDeviceInDB(RFDevice device)
     {
-        device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
-        device.Step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
-        device.NumberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
+        SaveDataDevicesInfo(device);
+        SaveDataChannelsInfo(device);
+
 
         for (int i = 0; i < selectedQuantity; i++)
         {
@@ -207,7 +210,44 @@
 
         // Reload devices after saving
         await DevicesViewModel.LoadDevicesAsync();
+
     }
+    private void SaveDataDevicesInfo(RFDevice device)
+    {
+        Debug.WriteLine("SaveDataDevice is called");
+        device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
+        device.Step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
+        device.NumberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
+        Debug.WriteLine(device.NumberOfChannels);
+        device.Channels = new List<RFChannel>();
+        for (int i = 0; i < device.NumberOfChannels; i++)
+        {
+            device.Channels.Add(new RFChannel());
+            Debug.WriteLine("Channel created");
+        }
+    }
+    private void SaveDataChannelsInfo(RFDevice device)
+    {
+        Debug.WriteLine("SaveDataChannels is called. Number of chan in device = " + device.Channels.Count);
+        var freq = deviceData.Brands[device.Brand][device.Model][device.Frequency];
+        int count = 1;
+        foreach (RFChannel chan in device.Channels)
+        {
+            Debug.WriteLine("device range = " + device.Range);
+            chan.Range = device.Range;
+            Debug.WriteLine("chan range = " + chan.Range);
+            chan.Step = device.Step;
+            chan.chanNumber = count;
+            chan.SelfSpacing = freq[4];
+            chan.ThirdOrderSpacing = freq[5];
+            chan.FifthOrderSpacing = freq[6];
+            chan.SeventhOrderSpacing = freq[7];
+            chan.ThirdOrderSpacing3Tx = freq[8];
+            count++;
+        }
+    }
+
+
 
     private string GetFrequencyDetails(RFDevice context)
     {
@@ -249,7 +289,6 @@
         HashSet<int> TwoTX7rdOrder = [];
         HashSet<int> TwoTX9rdOrder = [];
         HashSet<int> ThreeTX3rdOrder = [];
-        bool Locked1Chan = false;
         foreach(RFDevice device in DevicesViewModel.Devices )
         {
 
@@ -258,19 +297,20 @@
                 chan.Checked = false;
                 if (chan.IsLocked)
                 {
-                    Locked1Chan = true;
                     Debug.WriteLine("We are checking : " + chan.Frequency);
 
-                    device.SetRandomFrequency(Locked1Chan, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                    chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                 }
             }
-            
         }
         Debug.WriteLine("Getting out of calcul of locked freq");
         foreach (RFDevice device in DevicesViewModel.Devices)
         {
-            Locked1Chan = false;
-            device.SetRandomFrequency(Locked1Chan, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+            foreach (RFChannel chan in device.Channels)
+            {
+                Console.WriteLine("there is a chan");
+                chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+            }
         }
         Debug.WriteLine("Getting out of calcul of other freq");
         @*         var serie = new ChartSeries()
@@ -280,7 +320,8 @@
                 .Select(index => UsedFrequencies.Contains(index) ? 100.0 : 0.0)
                 .ToArray()
             };
-        Series.Add(serie); *@ 
+        Series.Add(serie); *@
     }
-    
+
+
 }
