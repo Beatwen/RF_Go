@@ -38,8 +38,8 @@ namespace RF_Go.Models
         }
         public string IpAddress { get; set; }
         public string InclusionGroup { get; set; }
-        public string Tags { get; set; }
-        public string RFZone { get; set; }
+        public string Calendar { get; set; }
+        public string Stage { get; set; }
         public int NumberOfChannels { get; set; }
 
         public int Step { get; set; }

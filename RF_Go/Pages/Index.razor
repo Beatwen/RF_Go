@@ -92,12 +92,9 @@
         <MudTh>Brand</MudTh>
         <MudTh>Model</MudTh>
         <MudTh>Frequency</MudTh>
-        <MudTh>Frequency Range</MudTh>
-        <MudTh>Channels</MudTh>
         <MudTh>Set Frequencies</MudTh>
-        <MudTh>Lock Frequency</MudTh>
-        <MudTh>RFZone</MudTh>
-        <MudTh>Tags</MudTh>
+        <MudTh>Stage</MudTh>
+        <MudTh>Calendar</MudTh>
         <MudTh>Inclusion Group</MudTh>
         <MudTh>IP Address</MudTh>
         <MudTd>Edit</MudTd>
@@ -106,9 +103,8 @@
         <MudTd>@context.ID</MudTd>
             <MudTd>@context.Brand</MudTd>
             <MudTd>@context.Model</MudTd>
-            <MudTd>@context.Frequency</MudTd>
-            <MudTd>@GetFrequencyDetails(context)</MudTd>
-            <MudTd>@SetGetNumberOfChannels(context)</MudTd>
+            <MudTd>@context.Frequency - @GetFrequencyDetails(context)</MudTd>
+            @* <MudTd>@SetGetNumberOfChannels(context)</MudTd> *@
             <MudTd Style="min-width:250px">
                 <MudTable @bind-Items="@context.Channels" Hover="true">
                     <RowTemplate Context="chan">
@@ -117,14 +113,14 @@
 
                         <MudTd  Style="@CalculateStyle(chan)">
                             <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step"/>
-                            <MudCheckBox @bind-Checked="@chan.IsLocked"></MudCheckBox>
+                            <MudCheckBox Label ="Lock" @bind-Checked="@chan.IsLocked"></MudCheckBox>
 
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudTd>
-            <MudTd>@context.RFZone</MudTd>
-            <MudTd>@context.Tags</MudTd>
+            <MudTd>@context.Stage</MudTd>
+            <MudTd>@context.Calendar</MudTd>
             <MudTd>@context.InclusionGroup</MudTd>
             <MudTd>@context.IpAddress</MudTd>
             <MudTd>
@@ -136,14 +132,38 @@
             <MudTablePager />
         </PagerContent>
     </MudTable>
-<div> 
-    <MudButton Variant="Variant.Filled" Color="Color.Primary">Push to the frequency tab</MudButton>
-</div>
+    @foreach (var device in DevicesViewModel.Devices.GroupBy(d => d.Brand))
+    {
+    <div class="flex-container">
+        <div>
+            <MudCheckBox Label="2Tx3" @bind-Checked="EnableSpacingInChannels(device.Brand, device.Model, device.Frequency)"></MudCheckBox>
+            <MudSlider @bind-Value="FindSpacingValue(device.Brand, device.Model, device.Frequency, 5)" Min="20" Max="80" Color="Color.Info">Value: @value2.ToString()</MudSlider>
+        </div>
+        <div>
+                <MudCheckBox Label="2Tx5" @bind-Checked="TwoTxFifthOrderEnable"></MudCheckBox>
+                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
+        </div>
+        <div>
+                <MudCheckBox Label="2Tx7" @bind-Checked="TwoTxSeventhOrderEnable"></MudCheckBox>
+                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
+        </div>
+        <div>
+                <MudCheckBox Label="2Tx9" @bind-Checked="TwoTxNinthOrderEnable"></MudCheckBox>
+                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
+        </div>
+        <div>
+                <MudCheckBox Label="3Tx3" @bind-Checked="ThreeTxThirdOrderEnable"></MudCheckBox>
+                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
+        </div>
+    </div>
+    }
+
+
 
 
 
     @code 
-    {
+{
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool _selectOnRowClick = true;
     private bool isAddingDevice = false;
@@ -159,13 +179,20 @@
     private RFDevice selectedItem1 = null;
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
-    private string value1, value2;
+    // private bool TwoTxThirdOrderEnable = true;
+    // private bool TwoTxFifthOrderEnable = true;
+    // private bool TwoTxSeventhOrderEnable;
+    // private bool TwoTxNinthOrderEnable;
+    // private bool ThreeTxThirdOrderEnable = true;
 
-
-
-
-
-
+    private bool EnableSpacingInChannels(string brand, string model, string frequency, int spacing)
+    {
+        return true;
+    }
+    private int FindSpacingValue(string brand, string model, string frequency, int spacing)
+    {
+        return deviceData.Brands[brand][model][frequency][spacing];
+    }
     private string CalculateStyle(RFChannel chan)
     {
         string color = chan.Checked ? "aliceblue" : "red";
@@ -189,14 +216,10 @@
         await DevicesViewModel.LoadDevicesAsync();
         await base.OnInitializedAsync();
     }
-
     private class DeviceData
     {
         public Dictionary<string, Dictionary<string, Dictionary<string, List<int>>>> Brands { get; set; }
     }
-
-
-
     private async Task SaveDeviceInDB(RFDevice device)
     {
         SaveDataDevicesInfo(device);
@@ -228,14 +251,11 @@
     }
     private void SaveDataChannelsInfo(RFDevice device)
     {
-        Debug.WriteLine("SaveDataChannels is called. Number of chan in device = " + device.Channels.Count);
         var freq = deviceData.Brands[device.Brand][device.Model][device.Frequency];
         int count = 1;
         foreach (RFChannel chan in device.Channels)
         {
-            Debug.WriteLine("device range = " + device.Range);
             chan.Range = device.Range;
-            Debug.WriteLine("chan range = " + chan.Range);
             chan.Step = device.Step;
             chan.chanNumber = count;
             chan.SelfSpacing = freq[4];
@@ -246,20 +266,11 @@
             count++;
         }
     }
-
-
-
     private string GetFrequencyDetails(RFDevice context)
     {
         int startRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][0];
         int endRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][1];
         return $"{startRange:#,0} - {endRange:#,0}";
-    }
-    private int SetGetNumberOfChannels(RFDevice context)
-    {
-        context.NumberOfChannels = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][2];
-        context.Step = (int)deviceData.Brands[context.Brand][context.Model][context.Frequency][3];
-        return context.NumberOfChannels;
     }
     private string SelectedRowClassFunc(RFDevice device, int rowNumber)
     {
@@ -282,7 +293,6 @@
     }
     private void RFCalcul()
     {
-        Debug.WriteLine("calcul called");
         HashSet<int> UsedFrequencies = [];
         HashSet<int> TwoTX3rdOrder = [];
         HashSet<int> TwoTX5rdOrder = [];
@@ -294,6 +304,11 @@
 
             foreach (RFChannel chan in device.Channels)
             {
+                chan.ThirdOrderSpacingEnable = TwoTxThirdOrderEnable;
+                chan.FifthOrderSpacingEnable = TwoTxFifthOrderEnable;
+                chan.SeventhOrderSpacingEnable = TwoTxSeventhOrderEnable;
+                chan.NinthOrderSpacingEnable = TwoTxNinthOrderEnable;
+                chan.ThirdOrderSpacing3TxEnable = ThreeTxThirdOrderEnable;
                 chan.Checked = false;
                 if (chan.IsLocked)
                 {

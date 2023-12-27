@@ -27,10 +27,15 @@ namespace RF_Go.Models
         public int Step { get; set; }
         public int SelfSpacing { get; set; }
         public int ThirdOrderSpacing { get; set; }
+        public bool ThirdOrderSpacingEnable = true;
         public int FifthOrderSpacing { get; set; }
+        public bool FifthOrderSpacingEnable = true;
         public int SeventhOrderSpacing { get; set; }
+        public bool SeventhOrderSpacingEnable;
         public int NinthOrderSpacing { get; set; }
+        public bool NinthOrderSpacingEnable;
         public int ThirdOrderSpacing3Tx { get; set; }
+        public bool ThirdOrderSpacing3TxEnable = true;
 
 
         public bool Checked { get; set; }
@@ -131,12 +136,23 @@ namespace RF_Go.Models
         }
         public bool CheckFreeFrequency(int f1, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
         {
-            return (!TwoTX3rdOrder.Any(f => Math.Abs(f-f1) <= ThirdOrderSpacing)
-                    && !TwoTX5rdOrder.Any(f => f == f1)
-                        && !TwoTX7rdOrder.Any(f => f == f1)
-                            && !TwoTX9rdOrder.Any(f => f == f1)
-                                && !ThreeTX3rdOrder.Any(f => Math.Abs(f - f1) <= ThirdOrderSpacing3Tx)
+            return ((SpacingEnable(f1, TwoTX3rdOrder, ThirdOrderSpacingEnable, ThirdOrderSpacing))
+                    && (SpacingEnable(f1, TwoTX5rdOrder, FifthOrderSpacingEnable, FifthOrderSpacing))
+                        && (SpacingEnable(f1, TwoTX7rdOrder, SeventhOrderSpacingEnable, SeventhOrderSpacing))
+                            && (SpacingEnable(f1, TwoTX9rdOrder, NinthOrderSpacingEnable, NinthOrderSpacing))
+                                && (SpacingEnable(f1, ThreeTX3rdOrder, ThirdOrderSpacing3TxEnable, ThirdOrderSpacing3Tx))
                                     && !UsedFrequencies.Any(f => Math.Abs(f-f1) <= SelfSpacing));
+        }
+        public bool SpacingEnable(int f1, HashSet<int>freqs, bool OrderSpacingEnable, int OrderSpacing)
+        {
+            if(OrderSpacingEnable) 
+            {
+                return !freqs.Any(f => Math.Abs(f-f1) <= OrderSpacing);
+            }
+            else
+            {
+                return true;
+            }
         }
         public static void CalculAllIntermod(int f1, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder)
         {
