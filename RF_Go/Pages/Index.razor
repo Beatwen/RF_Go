@@ -132,38 +132,21 @@
             <MudTablePager />
         </PagerContent>
     </MudTable>
-    @foreach (var device in DevicesViewModel.Devices.GroupBy(d => d.Brand))
-    {
+    @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
+{
     <div class="flex-container">
         <div>
-            <MudCheckBox Label="2Tx3" @bind-Checked="EnableSpacingInChannels(device.Brand, device.Model, device.Frequency)"></MudCheckBox>
-            <MudSlider @bind-Value="FindSpacingValue(device.Brand, device.Model, device.Frequency, 5)" Min="20" Max="80" Color="Color.Info">Value: @value2.ToString()</MudSlider>
-        </div>
-        <div>
-                <MudCheckBox Label="2Tx5" @bind-Checked="TwoTxFifthOrderEnable"></MudCheckBox>
-                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
-        </div>
-        <div>
-                <MudCheckBox Label="2Tx7" @bind-Checked="TwoTxSeventhOrderEnable"></MudCheckBox>
-                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
-        </div>
-        <div>
-                <MudCheckBox Label="2Tx9" @bind-Checked="TwoTxNinthOrderEnable"></MudCheckBox>
-                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
-        </div>
-        <div>
-                <MudCheckBox Label="3Tx3" @bind-Checked="ThreeTxThirdOrderEnable"></MudCheckBox>
-                <MudSlider @bind-Value="value2" Min="-1" Max="1" Step="0.05" Color="Color.Error">Value: @value2.ToString("F2")</MudSlider>
+            <p>@deviceGroup.Key.Brand</p>
+            <p>@deviceGroup.Key.Model</p>
+            <p>@deviceGroup.Key.Frequency</p>
+            <MudCheckBox Label="2Tx3" CheckedChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 3, IsChecked)"></MudCheckBox>
         </div>
     </div>
     }
-
-
-
-
-
+@* <MudSlider @bind-Value="FindSpacingValue(device.Brand, device.Model, device.Frequency, 5)" Min="20" Max="80" Color="Color.Info">Value: @value2.ToString()</MudSlider> *@
     @code 
 {
+    private bool IsChecked;
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool _selectOnRowClick = true;
     private bool isAddingDevice = false;
@@ -184,10 +167,25 @@
     // private bool TwoTxSeventhOrderEnable;
     // private bool TwoTxNinthOrderEnable;
     // private bool ThreeTxThirdOrderEnable = true;
-
-    private bool EnableSpacingInChannels(string brand, string model, string frequency, int spacing)
+    private void EnableSpacingInChannels(string brand, string model, string frequency, int spacing, bool IsChecked)
     {
-        return true;
+        foreach (var device in DevicesViewModel.Devices.Where(d =>
+                                                                d.Brand == brand &&
+                                                                    d.Model == model &&
+                                                                        d.Frequency == frequency))
+        {
+            foreach (var chan in device.Channels)
+            {
+                switch (spacing)
+                {
+                    case 3: chan.ThirdOrderSpacingEnable = IsChecked; break;
+                    case 5: chan.FifthOrderSpacingEnable = IsChecked; break;
+                    case 7: chan.SeventhOrderSpacingEnable = IsChecked; break;
+                    case 9: chan.NinthOrderSpacingEnable = IsChecked; break;
+                    case 33: chan.ThirdOrderSpacing3TxEnable = IsChecked; break;
+                }
+            }
+        }
     }
     private int FindSpacingValue(string brand, string model, string frequency, int spacing)
     {
@@ -304,11 +302,11 @@
 
             foreach (RFChannel chan in device.Channels)
             {
-                chan.ThirdOrderSpacingEnable = TwoTxThirdOrderEnable;
-                chan.FifthOrderSpacingEnable = TwoTxFifthOrderEnable;
-                chan.SeventhOrderSpacingEnable = TwoTxSeventhOrderEnable;
-                chan.NinthOrderSpacingEnable = TwoTxNinthOrderEnable;
-                chan.ThirdOrderSpacing3TxEnable = ThreeTxThirdOrderEnable;
+                // chan.ThirdOrderSpacingEnable = TwoTxThirdOrderEnable;
+                // chan.FifthOrderSpacingEnable = TwoTxFifthOrderEnable;
+                // chan.SeventhOrderSpacingEnable = TwoTxSeventhOrderEnable;
+                // chan.NinthOrderSpacingEnable = TwoTxNinthOrderEnable;
+                // chan.ThirdOrderSpacing3TxEnable = ThreeTxThirdOrderEnable;
                 chan.Checked = false;
                 if (chan.IsLocked)
                 {
