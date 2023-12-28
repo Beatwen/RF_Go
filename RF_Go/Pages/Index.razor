@@ -1,4 +1,5 @@
-﻿@page "/"
+﻿@inherits ComponentBase
+@page "/"
 @using MudBlazor
 @using Newtonsoft.Json
 @using System.IO
@@ -6,335 +7,45 @@
 @using RF_Go.Data
 @using RF_Go.Models
 @using RF_Go.ViewModels
+@using RF_Go.Components
 @using System.Diagnostics
 
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
 
-<h1>Devices Selection</h1>
-<MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="AddDevice">Add Devices</MudButton>
-<MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="RFCalcul">Calculate</MudButton>
-<MudButton Variant="Variant.Filled" Color="Color.Secondary" class="btn btn-primary" @onclick="() => DevicesViewModel.DeleteAllDeviceAsync()">Delete All Device</MudButton>
-<div id="SelectDeviceMenu">
+    <MudTabs Elevation="4" Rounded="true" AlwaysShowScrollButtons="true" Color="@Color.Info" Class="mt-4">
+        <MudTabPanel Text="Devices" ID='"devices_tab"'>
+            <MudText>
 
-    @if (isAddingDevice)
-    {
-        <MudGrid Spacing="2" Justify="Justify.Center">
-            <MudItem>
-                <MudSelect T="string" HelperText="Choose device brand" Placeholder="Please Select" 
-                    AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" 
-                        @bind-Value="Device.Brand">
-                    @foreach (var brand in deviceData.Brands.Keys)
-                    {
-                        <MudSelectItem T="string" value="@brand">@brand</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
+                <AddDevices DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
+                <MainTab @ref="mainTabRef" DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
+                <SlidersSpacers />
+            </MudText>
+        </MudTabPanel>
+        <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
+        <MudTabPanel Text="Remote" ID='"remote_tab"' />
+    </MudTabs>
 
-            @if (!string.IsNullOrEmpty(Device.Brand))
-            {
-                <MudItem>
-                    <MudSelect T="string" HelperText="Choose device model" Placeholder="Please Select"
-                               AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" 
-                        @bind-Value="Device.Model">
-                        <option value="" disabled selected hidden>Choose a model...</option>
-                        @foreach (var model in deviceData.Brands[Device.Brand].Keys)
-                        {
-                            <MudSelectItem T="string" value="@model">@model</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-            }
-
-            @if (!string.IsNullOrEmpty(Device.Model) && deviceData.Brands.ContainsKey(Device.Brand) && deviceData.Brands[Device.Brand].ContainsKey(Device.Model))
-            {
-                <MudItem>
-                    <MudSelect T="string" HelperText="Choose device model" Placeholder="Please Select"
-                               AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" 
-                        @bind-Value="Device.Frequency">            
-                        <option value="" disabled selected hidden>Choose a range of frequency...</option>
-                        @foreach (var frequency in deviceData.Brands[Device.Brand][Device.Model].Keys)
-                        {
-                            <MudSelectItem T="string" value="@frequency">@frequency ( @deviceData.Brands[Device.Brand][Device.Model][frequency][0] - @deviceData.Brands[Device.Brand][Device.Model][frequency][1] )</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                
-            }
-            @if (!string.IsNullOrEmpty(Device.Frequency))
-            {
-                <MudItem>
-                    <MudSelect HelperText="Choose device frequency" Placeholder="Please Select" AdornmentColor="Color.Primary"
-                               @bind-Value="selectedQuantity">
-                        @foreach (var option in frequencyOptions)
-                        {
-                            <MudSelectItem T="int" value="@option">@option</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-                <MudButton @onclick="() => SaveDeviceInDB(Device)">Save device</MudButton>
-            }
-        </MudGrid>
-    }
-</div>
-
-<MudTable Hover="true" Dense="true"  Bordered="false" Striped="true" HorizontalScrollbar="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
-          RowClass="cursor-pointer"  RowClassFunc="@SelectedRowClassFunc">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Devices</MudText>
-        <MudSpacer />
-        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh>ID</MudTh>
-        <MudTh>Brand</MudTh>
-        <MudTh>Model</MudTh>
-        <MudTh>Frequency</MudTh>
-        <MudTh>Set Frequencies</MudTh>
-        <MudTh>Stage</MudTh>
-        <MudTh>Calendar</MudTh>
-        <MudTh>Inclusion Group</MudTh>
-        <MudTh>IP Address</MudTh>
-        <MudTd>Edit</MudTd>
-    </HeaderContent>
-    <RowTemplate >
-        <MudTd>@context.ID</MudTd>
-            <MudTd>@context.Brand</MudTd>
-            <MudTd>@context.Model</MudTd>
-            <MudTd>@context.Frequency - @GetFrequencyDetails(context)</MudTd>
-            @* <MudTd>@SetGetNumberOfChannels(context)</MudTd> *@
-            <MudTd Style="min-width:250px">
-                <MudTable @bind-Items="@context.Channels" Hover="true">
-                    <RowTemplate Context="chan">
-
-                       @*  <MudTd>@string.Format("{0:#,0}", chan.Frequency) </MudTd> *@
-
-                        <MudTd  Style="@CalculateStyle(chan)">
-                            <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step"/>
-                            <MudCheckBox Label ="Lock" @bind-Checked="@chan.IsLocked"></MudCheckBox>
-
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudTd>
-            <MudTd>@context.Stage</MudTd>
-            <MudTd>@context.Calendar</MudTd>
-            <MudTd>@context.InclusionGroup</MudTd>
-            <MudTd>@context.IpAddress</MudTd>
-            <MudTd>
-                <MudButton Color=Color.Primary class="edit-button" >Edit</MudButton>
-                <MudButton Color=Color.Secondary class ="delete-button" @onclick="() => DevicesViewModel.DeleteDeviceAsync(context.ID)">Del</MudButton>
-            </MudTd>
-    </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
-    @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
+@code 
 {
-    <div class="flex-container">
-        <div>
-            <p>@deviceGroup.Key.Brand</p>
-            <p>@deviceGroup.Key.Model</p>
-            <p>@deviceGroup.Key.Frequency</p>
-            <MudCheckBox Label="2Tx3" CheckedChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 3, IsChecked)"></MudCheckBox>
-        </div>
-    </div>
-    }
-@* <MudSlider @bind-Value="FindSpacingValue(device.Brand, device.Model, device.Frequency, 5)" Min="20" Max="80" Color="Color.Info">Value: @value2.ToString()</MudSlider> *@
-    @code 
-{
-    private bool IsChecked;
+
     private RFDevice Device => DevicesViewModel.OperatingDevice;
-    private bool _selectOnRowClick = true;
-    private bool isAddingDevice = false;
-    private int selectedQuantity = 1;
-    private DeviceData deviceData;
-    private int id;
-    private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
-    private MudTable<RFDevice> mudTable;
-    private int selectedRowNumber = -1;
-    private bool selectAll { get; set; }
-    private List<string> clickedEvents = new();
-    private string searchString1 = "";
-    private RFDevice selectedItem1 = null;
-    public List<ChartSeries> Series { get; set; } = new();
-    public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
-    // private bool TwoTxThirdOrderEnable = true;
-    // private bool TwoTxFifthOrderEnable = true;
-    // private bool TwoTxSeventhOrderEnable;
-    // private bool TwoTxNinthOrderEnable;
-    // private bool ThreeTxThirdOrderEnable = true;
-    private void EnableSpacingInChannels(string brand, string model, string frequency, int spacing, bool IsChecked)
+    public DeviceData deviceData;
+    private MainTab mainTabRef;
+
+    private void HandleCalculateClicked()
     {
-        foreach (var device in DevicesViewModel.Devices.Where(d =>
-                                                                d.Brand == brand &&
-                                                                    d.Model == model &&
-                                                                        d.Frequency == frequency))
-        {
-            foreach (var chan in device.Channels)
-            {
-                switch (spacing)
-                {
-                    case 3: chan.ThirdOrderSpacingEnable = IsChecked; break;
-                    case 5: chan.FifthOrderSpacingEnable = IsChecked; break;
-                    case 7: chan.SeventhOrderSpacingEnable = IsChecked; break;
-                    case 9: chan.NinthOrderSpacingEnable = IsChecked; break;
-                    case 33: chan.ThirdOrderSpacing3TxEnable = IsChecked; break;
-                }
-            }
-        }
-    }
-    private int FindSpacingValue(string brand, string model, string frequency, int spacing)
-    {
-        return deviceData.Brands[brand][model][frequency][spacing];
-    }
-    private string CalculateStyle(RFChannel chan)
-    {
-        string color = chan.Checked ? "aliceblue" : "red";
-        return "background-color:" + color;
-    }
-    private void DeleteDevice(RFDevice context)
-    {
-        // Handle delete button click here
-        DevicesViewModel.SetOperatingDevice(context);
-    }
-    private void AddDevice()
-    {
-        isAddingDevice = true;
+        // Handle the event here, possibly refresh MainTab
+        mainTabRef.Refresh(); // Example: call a method to refresh MainTab
     }
     protected override async Task OnInitializedAsync()
     {
         var context = new DatabaseContext();
-        DevicesViewModel = new DevicesViewModel(context); 
+        DevicesViewModel = new DevicesViewModel(context);
         var json = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Shared", "Devices.json"));
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
         await base.OnInitializedAsync();
     }
-    private class DeviceData
-    {
-        public Dictionary<string, Dictionary<string, Dictionary<string, List<int>>>> Brands { get; set; }
-    }
-    private async Task SaveDeviceInDB(RFDevice device)
-    {
-        SaveDataDevicesInfo(device);
-        SaveDataChannelsInfo(device);
-
-
-        for (int i = 0; i < selectedQuantity; i++)
-        {
-            await DevicesViewModel.SaveDeviceAsync();
-        }
-
-        // Reload devices after saving
-        await DevicesViewModel.LoadDevicesAsync();
-
-    }
-    private void SaveDataDevicesInfo(RFDevice device)
-    {
-        Debug.WriteLine("SaveDataDevice is called");
-        device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
-        device.Step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
-        device.NumberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
-        Debug.WriteLine(device.NumberOfChannels);
-        device.Channels = new List<RFChannel>();
-        for (int i = 0; i < device.NumberOfChannels; i++)
-        {
-            device.Channels.Add(new RFChannel());
-            Debug.WriteLine("Channel created");
-        }
-    }
-    private void SaveDataChannelsInfo(RFDevice device)
-    {
-        var freq = deviceData.Brands[device.Brand][device.Model][device.Frequency];
-        int count = 1;
-        foreach (RFChannel chan in device.Channels)
-        {
-            chan.Range = device.Range;
-            chan.Step = device.Step;
-            chan.chanNumber = count;
-            chan.SelfSpacing = freq[4];
-            chan.ThirdOrderSpacing = freq[5];
-            chan.FifthOrderSpacing = freq[6];
-            chan.SeventhOrderSpacing = freq[7];
-            chan.ThirdOrderSpacing3Tx = freq[8];
-            count++;
-        }
-    }
-    private string GetFrequencyDetails(RFDevice context)
-    {
-        int startRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][0];
-        int endRange = deviceData.Brands[context.Brand][context.Model][context.Frequency][1];
-        return $"{startRange:#,0} - {endRange:#,0}";
-    }
-    private string SelectedRowClassFunc(RFDevice device, int rowNumber)
-    {
-        if (selectedRowNumber == rowNumber)
-        {
-            selectedRowNumber = -1;
-            clickedEvents.Add("Selected Row: None");
-            return string.Empty;
-        }
-        else if (mudTable.SelectedItem != null && mudTable.SelectedItem.Equals(device))
-        {
-            selectedRowNumber = rowNumber;
-            clickedEvents.Add($"Selected Row: {rowNumber}");
-            return "selected";
-        }
-        else
-        {
-            return string.Empty;
-        }
-    }
-    private void RFCalcul()
-    {
-        HashSet<int> UsedFrequencies = [];
-        HashSet<int> TwoTX3rdOrder = [];
-        HashSet<int> TwoTX5rdOrder = [];
-        HashSet<int> TwoTX7rdOrder = [];
-        HashSet<int> TwoTX9rdOrder = [];
-        HashSet<int> ThreeTX3rdOrder = [];
-        foreach(RFDevice device in DevicesViewModel.Devices )
-        {
-
-            foreach (RFChannel chan in device.Channels)
-            {
-                // chan.ThirdOrderSpacingEnable = TwoTxThirdOrderEnable;
-                // chan.FifthOrderSpacingEnable = TwoTxFifthOrderEnable;
-                // chan.SeventhOrderSpacingEnable = TwoTxSeventhOrderEnable;
-                // chan.NinthOrderSpacingEnable = TwoTxNinthOrderEnable;
-                // chan.ThirdOrderSpacing3TxEnable = ThreeTxThirdOrderEnable;
-                chan.Checked = false;
-                if (chan.IsLocked)
-                {
-                    Debug.WriteLine("We are checking : " + chan.Frequency);
-
-                    chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
-                }
-            }
-        }
-        Debug.WriteLine("Getting out of calcul of locked freq");
-        foreach (RFDevice device in DevicesViewModel.Devices)
-        {
-            foreach (RFChannel chan in device.Channels)
-            {
-                Console.WriteLine("there is a chan");
-                chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
-            }
-        }
-        Debug.WriteLine("Getting out of calcul of other freq");
-        @*         var serie = new ChartSeries()
-            {
-                Name = "Your Frequencies",
-                Data = Enumerable.Range(100000, 900000)
-                .Select(index => UsedFrequencies.Contains(index) ? 100.0 : 0.0)
-                .ToArray()
-            };
-        Series.Add(serie); *@
-    }
-
-
 }

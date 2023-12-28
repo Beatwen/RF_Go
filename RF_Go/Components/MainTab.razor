@@ -1,0 +1,116 @@
+﻿@using MudBlazor
+@using Newtonsoft.Json
+@using System.IO
+@using System
+@using RF_Go.Data
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using System.Diagnostics
+
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+    <MudTable class="mainTable" Hover="true" Dense="true" Bordered="false" Striped="true" HorizontalScrollbar="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
+              RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Devices</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Brand</MudTh>
+            <MudTh>Model</MudTh>
+            <MudTh>Frequency</MudTh>
+            <MudTh>Set Frequencies</MudTh>
+            <MudTh>Stage</MudTh>
+            <MudTh>Calendar</MudTh>
+            <MudTh>Inclusion Group</MudTh>
+            <MudTh>IP Address</MudTh>
+            <MudTd>Edit</MudTd>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ID</MudTd>
+                <MudTd>@context.Brand</MudTd>
+                <MudTd>@context.Model</MudTd>
+                <MudTd>@context.Frequency - @GetFrequencyDetails(context)</MudTd>
+                @* <MudTd>@SetGetNumberOfChannels(context)</MudTd> *@
+                <MudTd Style="min-width:250px">
+                    <MudTable @bind-Items="@context.Channels" Hover="true">
+                        <RowTemplate Context="chan">
+
+                            @*  <MudTd>@string.Format("{0:#,0}", chan.Frequency) </MudTd> *@
+
+                            <MudTd Style="@CalculateStyle(chan)">
+                                <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step" />
+                                <MudCheckBox Label="Lock" @bind-Checked="@chan.IsLocked"></MudCheckBox>
+
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTd>
+                <MudTd>@context.Stage</MudTd>
+                <MudTd>@context.Calendar</MudTd>
+                <MudTd>@context.InclusionGroup</MudTd>
+                <MudTd>@context.IpAddress</MudTd>
+                <MudTd>
+                    <MudButton Color=Color.Primary class="edit-button">Edit</MudButton>
+                    <MudButton Color=Color.Secondary class="delete-button" @onclick="() => DevicesViewModel.DeleteDeviceAsync(context.ID)">Del</MudButton>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    @code 
+    {
+    [Parameter]
+    public DevicesViewModel DevicesViewModel { get; set; }
+    [Parameter]
+    public DeviceData DeviceData { get; set; }
+    private RFDevice Device => DevicesViewModel.OperatingDevice;
+    private string searchString1 = "";
+    private MudTable<RFDevice> mudTable;
+    private int selectedRowNumber = -1;
+    private bool selectAll { get; set; }
+    private List<string> clickedEvents = new();
+    private string CalculateStyle(RFChannel chan)
+    {
+        string color = chan.Checked ? "lightgreen" : "red";
+        return "background-color:" + color;
+    }
+    private string SelectedRowClassFunc(RFDevice device, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            clickedEvents.Add("Selected Row: None");
+            return string.Empty;
+        }
+        else if (mudTable.SelectedItem != null && mudTable.SelectedItem.Equals(device))
+        {
+            selectedRowNumber = rowNumber;
+            clickedEvents.Add($"Selected Row: {rowNumber}");
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+    private string GetFrequencyDetails(RFDevice context)
+    {
+        int startRange = DeviceData.Brands[context.Brand][context.Model][context.Frequency][0];
+        int endRange = DeviceData.Brands[context.Brand][context.Model][context.Frequency][1];
+        return $"{startRange:#,0} - {endRange:#,0}";
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await DevicesViewModel.LoadDevicesAsync();
+        await base.OnInitializedAsync();
+    }
+    public void Refresh()
+    {
+        StateHasChanged();
+    }
+    }
