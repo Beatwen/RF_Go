@@ -7,8 +7,7 @@
 @using RF_Go.ViewModels
 @using RF_Go.Components
 @using System.Diagnostics
-@inject DevicesViewModel DevicesViewModel
-
+<h1>Sliders</h1>
 <div class="SlidersSpacers">
     @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
     {
@@ -44,6 +43,8 @@
     }
 </div>
 @code{
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    [Parameter] public DeviceData DeviceData { get; set; }
     private void EnableSpacingInChannels(string brand, string model, string frequency, int spacing, bool IsChecked)
     {
         foreach (var device in DevicesViewModel.Devices.Where(d =>

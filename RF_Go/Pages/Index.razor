@@ -14,13 +14,11 @@
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
 
-    <MudTabs Elevation="4" Rounded="true" AlwaysShowScrollButtons="true" Color="@Color.Info" Class="mt-4">
+<MudTabs KeepPanelsAlive="true" Elevation="4" Rounded="true" AlwaysShowScrollButtons="true" Color="@Color.Info" Class="mt-4">
         <MudTabPanel Text="Devices" ID='"devices_tab"'>
             <MudText>
-
-                <AddDevices DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
-                <MainTab @ref="mainTabRef" DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
-                <SlidersSpacers />
+                <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
+            <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
             </MudText>
         </MudTabPanel>
         <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
@@ -32,13 +30,6 @@
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     public DeviceData deviceData;
-    private MainTab mainTabRef;
-
-    private void HandleCalculateClicked()
-    {
-        // Handle the event here, possibly refresh MainTab
-        mainTabRef.Refresh(); // Example: call a method to refresh MainTab
-    }
     protected override async Task OnInitializedAsync()
     {
         var context = new DatabaseContext();
@@ -47,5 +38,13 @@
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
         await base.OnInitializedAsync();
+        var timer = new Timer(async _ =>
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
     }
+
 }
