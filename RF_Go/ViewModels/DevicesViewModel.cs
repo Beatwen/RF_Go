@@ -12,7 +12,6 @@ namespace RF_Go.ViewModels
         private readonly DatabaseContext _context = context ?? throw new ArgumentNullException(nameof(context));
         [ObservableProperty]
         private ObservableCollection<RFDevice> _devices = new();
-
         [ObservableProperty]
         public RFDevice _operatingDevice = new();
 
