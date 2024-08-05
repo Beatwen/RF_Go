@@ -15,26 +15,26 @@
 
             <MudText Style="padding-top:13px;"><b>@deviceGroup.Key.Brand - @deviceGroup.Key.Model - @deviceGroup.Key.Frequency</b></MudText>
             <div>
-                <MudCheckBox Label="2Tx3" CheckedChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 3, IsChecked)"></MudCheckBox>
+                <MudCheckBox Label="2Tx3" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 3, IsChecked)"></MudCheckBox>
                 <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,3);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
                     Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 3)
                 </MudSlider>
             </div>
             <div>
-                <MudCheckBox Label="2Tx5" CheckedChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 5, IsChecked)"></MudCheckBox>
+                <MudCheckBox Label="2Tx5" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 5, IsChecked)"></MudCheckBox>
                 <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,5);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
                     Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 5)
                 </MudSlider>
             </div>
             <div>
-                <MudCheckBox Label="2Tx7" CheckedChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 7, IsChecked)"></MudCheckBox>
+                <MudCheckBox Label="2Tx7" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 7, IsChecked)"></MudCheckBox>
                 <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,7);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
                     Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 7)
                 </MudSlider>
             </div>
-            <MudCheckBox Label="2Tx9" CheckedChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 9, IsChecked)"></MudCheckBox>
+            <MudCheckBox Label="2Tx9" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 9, IsChecked)"></MudCheckBox>
             <div>
-                <MudCheckBox Label="3Tx3" CheckedChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 33, IsChecked)"></MudCheckBox>
+                <MudCheckBox Label="3Tx3" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 33, IsChecked)"></MudCheckBox>
                 <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,33);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
                     Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 33)
                 </MudSlider>

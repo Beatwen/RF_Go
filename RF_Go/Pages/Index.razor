@@ -14,16 +14,16 @@
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
 
-<MudTabs KeepPanelsAlive="true" Elevation="4" Rounded="true" AlwaysShowScrollButtons="true" Color="@Color.Info" Class="mt-4">
+<MudTabs KeepPanelsAlive="true" Elevation="4" Centered="true" Rounded="false" AlwaysShowScrollButtons="true" Color="@Color.Info" Class="flex justify-content-around">
         <MudTabPanel Text="Devices" ID='"devices_tab"'>
             <MudText>
-                <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
-            <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
+                    <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
+                    <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
             </MudText>
         </MudTabPanel>
         <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
         <MudTabPanel Text="Remote" ID='"remote_tab"' />
-    </MudTabs>
+</MudTabs>
 
 @code 
 {
@@ -43,11 +43,6 @@
     private RFDevice selectedItem1 = null;
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
-    // private bool TwoTxThirdOrderEnable = true;
-    // private bool TwoTxFifthOrderEnable = true;
-    // private bool TwoTxSeventhOrderEnable;
-    // private bool TwoTxNinthOrderEnable;
-    // private bool ThreeTxThirdOrderEnable = true;
 
     private bool EnableSpacingInChannels(string brand, string model, string frequency, int spacing)
     {
@@ -64,7 +59,6 @@
     }
     private void DeleteDevice(RFDevice context)
     {
-        // Handle delete button click here
         DevicesViewModel.SetOperatingDevice(context);
     }
     private void AddDevice()
@@ -79,13 +73,13 @@
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
         await base.OnInitializedAsync();
-        var timer = new Timer(async _ =>
-    {
-        await InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        //var timer = new Timer(async _ =>
+        //{
+        //    await InvokeAsync(() =>
+        //    {
+         //       StateHasChanged();
+           // });
+        //}, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
     }
 
 }

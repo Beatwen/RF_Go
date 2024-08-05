@@ -9,74 +9,74 @@
 
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+
 <h1>Devices Selection</h1>
-<MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="AddDevice">Add Devices</MudButton>
 <MudButton Variant="Variant.Filled" Color="Color.Primary" class="btn btn-primary" @onclick="RFCalcul">Calculate</MudButton>
 <MudButton Variant="Variant.Filled" Color="Color.Secondary" class="btn btn-primary" @onclick="() => DevicesViewModel.DeleteAllDeviceAsync()">Delete All Device</MudButton>
 <div id="SelectDeviceMenu">
-
-    @if (true)
-    {
         <MudGrid Spacing="2" Justify="Justify.Center">
-            <MudItem>
-                <MudSelect T="string" HelperText="Choose device brand" Placeholder="Please Select"
-                           AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary"
-                           @bind-Value="Device.Brand">
-                    @foreach (var brand in DeviceData.Brands.Keys)
-                    {
-                        <MudSelectItem T="string" value="@brand">@brand</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-            @if (!string.IsNullOrEmpty(Device.Brand))
-            {
+                <MudItem>
+                    <MudSelect T="string" HelperText="Choose device brand" Placeholder="Please Select"
+                       AdornmentIcon="@Icons.Material.Filled.LaptopMac" AdornmentColor="Color.Primary" Value="@Device.Brand" ValueChanged="@((string e) => OnBrandChanged(e))">
+                        @foreach (var brand in DeviceData.Brands.Keys)
+                        {
+                            <MudSelectItem T="string" value="@brand">@brand</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
                 <MudItem>
                     <MudSelect T="string" HelperText="Choose device model" Placeholder="Please Select"
-                               AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary"
-                               @bind-Value="Device.Model">
+                               AdornmentIcon="@Icons.Material.Filled.WifiChannel" AdornmentColor="Color.Primary" Value="@Device.Model" ValueChanged="@((string e) => OnModelChanged(e))">
                         <option value="" disabled selected hidden>Choose a model...</option>
-                        @foreach (var model in DeviceData.Brands[Device.Brand].Keys)
+                        @if (Device.Brand is null)
                         {
-                            <MudSelectItem T="string" value="@model">@model</MudSelectItem>
+                            <MudSelectItem T="string">Choose a brand first</MudSelectItem>
+                        }
+                        else
+                        {
+                                @foreach (var model in DeviceData.Brands[Device.Brand].Keys)
+                                {
+                                    <MudSelectItem T="string" value="@model">@model</MudSelectItem>
+                                }
                         }
                     </MudSelect>
                 </MudItem>
-            }
-
-            @if (!string.IsNullOrEmpty(Device.Model) && DeviceData.Brands.ContainsKey(Device.Brand) && DeviceData.Brands[Device.Brand].ContainsKey(Device.Model))
-            {
                 <MudItem>
-                    <MudSelect T="string" HelperText="Choose device model" Placeholder="Please Select"
-                               AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary"
-                               @bind-Value="Device.Frequency">
-                        <option value="" disabled selected hidden>Choose a range of frequency...</option>
-                        @foreach (var frequency in DeviceData.Brands[Device.Brand][Device.Model].Keys)
+                    <MudSelect T="string" HelperText="Choose device frequency" Placeholder="Please Select"
+                               AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" @bind-Value="Device.Frequency" >
+                        @if (Device.Model == "" || Device.Model is null)
                         {
-                            <MudSelectItem T="string" value="@frequency">@frequency ( @DeviceData.Brands[Device.Brand][Device.Model][frequency][0] - @DeviceData.Brands[Device.Brand][Device.Model][frequency][1] )</MudSelectItem>
+                            <MudSelectItem T="string">Choose a model first</MudSelectItem>
+                        }
+                        else
+                        {
+                            @foreach (var frequency in DeviceData.Brands[Device.Brand][Device.Model].Keys)
+                            {
+                                <MudSelectItem T="string" value="@frequency">@frequency ( @DeviceData.Brands[Device.Brand][Device.Model][frequency][0] - @DeviceData.Brands[Device.Brand][Device.Model][frequency][1] )</MudSelectItem>
+                            }
                         }
                     </MudSelect>
                 </MudItem>
-
-            }
-            @if (!string.IsNullOrEmpty(Device.Frequency))
-            {
                 <MudItem>
                     <MudSelect HelperText="Choose device frequency" Placeholder="Please Select" AdornmentColor="Color.Primary"
-                               @bind-Value="selectedQuantity">
-                        @foreach (var option in frequencyOptions)
-                        {
-                            <MudSelectItem T="int" value="@option">@option</MudSelectItem>
-                        }
+                               @bind-Value="@selectedQuantity">
+                            @foreach (var option in frequencyOptions)
+                            {
+                                <MudSelectItem T="int" value="@option">@option</MudSelectItem>
+                            }
                     </MudSelect>
                 </MudItem>
 
                 <MudButton @onclick="() => SaveDeviceInDB(Device)">Save device</MudButton>
-            }
         </MudGrid>
-    }
 </div>
 
+                @if (DevicesViewModel.Devices.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Filled">No devices found</MudAlert>
+                }
+                else
+                {
     <MudTable class="mainTable" Hover="true" Dense="true" Bordered="false" Striped="true" HorizontalScrollbar="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
               RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc">
         <ToolBarContent>
@@ -129,6 +129,8 @@
                 <MudTablePager />
             </PagerContent>
         </MudTable>
+        }
+
     @code 
     {
         [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
@@ -262,5 +264,20 @@
                     chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                 }
             }
+        }
+        private void OnBrandChanged(string e)
+        {
+            Debug.WriteLine("Brand changed");
+            Device.Brand = e;
+            Device.Model = string.Empty; 
+            Device.Frequency = string.Empty; 
+            StateHasChanged(); 
+        }
+
+        private void OnModelChanged(string e)
+        {
+            Device.Model = e;
+            Device.Frequency = string.Empty;
+            StateHasChanged();
         }
     }
