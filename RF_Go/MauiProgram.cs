@@ -31,6 +31,7 @@ namespace RF_Go
 #endif
             builder.Services.AddScoped<DatabaseContext>();
             builder.Services.AddScoped<DevicesViewModel>();
+            builder.Services.AddTransient<GroupsViewModel>();
             builder.Services.AddScoped<MainPage>();
 
 

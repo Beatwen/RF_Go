@@ -55,7 +55,6 @@ namespace RF_Go.ViewModels
             OperatingDevice = Device ?? new();
         }
 
-
         [RelayCommand]
         public async Task SaveDeviceAsync()
         {
@@ -101,7 +100,6 @@ namespace RF_Go.ViewModels
                 //SetOperatingDeviceCommand.Execute(new());
             }, busyText);
         }
-
         [RelayCommand]
         public async Task DeleteDeviceAsync(int id)
         {

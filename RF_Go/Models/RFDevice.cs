@@ -17,7 +17,6 @@ namespace RF_Go.Models
     {
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
-
         public bool Selected { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
@@ -37,10 +36,17 @@ namespace RF_Go.Models
             set => Channels = JsonConvert.DeserializeObject<List<RFChannel>>(value);
         }
         public string IpAddress { get; set; }
-        public string InclusionGroup { get; set; }
         public string Calendar { get; set; }
         public string Stage { get; set; }
         public int NumberOfChannels { get; set; }
+        private int _groupID;
+        public int GroupID
+        {
+            get => _groupID;
+            set => _groupID = value;
+        }
+        [Ignore]
+        public RFGroup Group { get; set; }
 
         public int Step { get; set; }
 
@@ -54,5 +60,7 @@ namespace RF_Go.Models
             }
             return (true, string.Empty);
         }
+
+
     }   
 }

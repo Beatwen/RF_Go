@@ -13,12 +13,13 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
+@inject GroupsViewModel GroupsViewModel
 
 <MudTabs KeepPanelsAlive="true" Elevation="4" Centered="true" Rounded="false" AlwaysShowScrollButtons="true" Color="@Color.Info" Class="flex justify-content-around">
         <MudTabPanel Text="Devices" ID='"devices_tab"'>
             <MudText>
-                    <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
-                    <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" />
+                    <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+                    <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
             </MudText>
         </MudTabPanel>
         <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
