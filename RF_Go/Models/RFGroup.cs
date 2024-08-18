@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SQLite;
 
 namespace RF_Go.Models
@@ -11,8 +13,29 @@ namespace RF_Go.Models
     {
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
-
         private string _name = "Unnamed Group";
+        private readonly List<TimePeriod> _timePeriods = [];
+        public IReadOnlyList<TimePeriod> TimePeriods => _timePeriods;
+/*        public string TimePeriodsSerialized
+        {
+            get => JsonConvert.SerializeObject(TimePeriods);
+            set => TimePeriods = JsonConvert.DeserializeObject<List<TimePeriod>>(value);
+        }*/
+        public void AddTimePeriod(TimePeriod period)
+        {
+            if (period != null)
+            {
+                _timePeriods.Add(period);
+            }
+        }
+        public void DelteTimePeriod(TimePeriod period)
+        {
+            if (_timePeriods.Contains(period) && period != null)
+            {
+                _timePeriods.Remove(period);
+            }
+        }
+
         public string Name
         {
             get => _name;
@@ -43,6 +66,7 @@ namespace RF_Go.Models
                 _devices.Remove(device);
                 device.GroupID = this.ID;
             }
-        }   
+        }
+        public RFGroup Clone() => MemberwiseClone() as RFGroup;
     }
 }

@@ -23,7 +23,6 @@ namespace RF_Go.ViewModels
 
         public async Task LoadDevicesAsync()
         {
-            Debug.WriteLine("calling loaddevice");
             try
             {
                 var devices = await _context.GetAllAsync<RFDevice>();
@@ -136,8 +135,6 @@ namespace RF_Go.ViewModels
                 }
             }, "Deleting Devices...");
         }
-
-
         private async Task ExecuteAsync(Func<Task> operation, string busyText = null)
         {
             IsBusy = true;

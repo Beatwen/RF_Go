@@ -199,11 +199,9 @@
 
             await DevicesViewModel.LoadDevicesAsync();
             StateHasChanged();
-
         }
         private void DeleteDevice(RFDevice context)
         {
-            // Handle delete button click here
             DevicesViewModel.SetOperatingDevice(context);
         }
 

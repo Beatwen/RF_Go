@@ -4,69 +4,183 @@ using RF_Go.Data;
 using RF_Go.Models;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Formats.Asn1;
+
 
 namespace RF_Go.ViewModels
-{
-    public partial class GroupsViewModel(DatabaseContext context) : ObservableObject
     {
-        private readonly DatabaseContext _context = context ?? throw new ArgumentNullException(nameof(context));
-        [ObservableProperty]
-        private ObservableCollection<RFGroup> _groups = new();
-        public async Task LoadGroupsAsync()
+        public partial class GroupsViewModel(DatabaseContext context) : ObservableObject
         {
-            Debug.WriteLine("Calling LoadGroups");
+            private readonly DatabaseContext _context = context ?? throw new ArgumentNullException(nameof(context));
+            [ObservableProperty]
+            private ObservableCollection<RFGroup> _groups = new();
+
+            [ObservableProperty]
+            private RFGroup _operatingGroup = new();
+            [ObservableProperty]
+            private bool _isBusy;
+
+            [ObservableProperty]
+            private string _busyText;
+            public async Task AddGroupAsync(RFGroup group)
+        {
+                try
+            {
+                    if (group == null)
+                        return;
+
+                    await _context.AddItemAsync(group);
+                    Groups.Add(group);
+                }
+                catch (Exception ex)
+            {
+                    Debug.WriteLine($"Error adding group: {ex.Message}");
+                    throw;
+                }
+            }
+            public async Task DeleteGroupAsync(RFGroup group)
+            {
+                    try
+                    {
+                        if (group == null)
+                            return;
+
+                        await _context.DeleteItemAsync(group);
+                        Groups.Remove(group);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error deleting group: {ex.Message}");
+                        throw;
+                    }
+            }
+        public async Task UpdateGroupAsync(RFGroup group)
+        {
+            
             try
             {
-                var groups = await _context.GetAllAsync<RFGroup>();
-                if (groups != null && groups.Any())
+                if (group == null)
+                    return;
+                Debug.Print("Updating group");
+                await _context.UpdateItemAsync(group);
+
+                // Find the group by ID instead of using IndexOf
+                for (int i = 0; i < Groups.Count; i++)
                 {
-                    Groups.Clear(); // Clear existing groups
-                    foreach (var group in groups)
+                    if (Groups[i].ID == group.ID)
                     {
-                        Groups.Add(group);
+                        Groups[i] = group.Clone();
+                        return; // Exit the method after updating the group
                     }
-                    Debug.WriteLine($"Number of groups loaded: {Groups.Count}");
                 }
-                else
-                {
-                    Debug.WriteLine("No groups found in the database.");
-                }
+
+                // Optionally, handle the case where no group matches the ID
+                Debug.WriteLine("No matching group found to update.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading groups: {ex.Message}");
-                throw; // Rethrow the exception to propagate it
+                Debug.WriteLine($"Error updating group: {ex.Message}");
+                throw;
             }
         }
-
-        public string GetGroupName(int groupId)
-        {
-            var group = Groups.FirstOrDefault(g => g.ID == groupId);
-            return group?.Name ?? "Unknown Group";
-        }
-        public async Task UpdateDeviceGroupAsync(RFDevice device, int newGroupId)
-        {
-            var oldGroup = await _context.GetGroupById(device.GroupID);
-            var newGroup = await _context.GetGroupById(newGroupId);
-
-            if (oldGroup != null)
+        public async Task LoadGroupsAsync()
             {
-                oldGroup.RemoveDevice(device);
+                try
+                {
+                    var groups = await _context.GetAllAsync<RFGroup>();
+                    if (groups != null && groups.Any())
+                    {
+                        Groups.Clear();
+                        foreach (var group in groups)
+                        {
+                            Groups.Add(group);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error loading groups: {ex.Message}");
+                    throw;
+                }
             }
+            [RelayCommand]
+            public void SetOperatingGroup(RFGroup group)
+            {
+                OperatingGroup = group ?? new();
+            }
+            [RelayCommand]
+            public async Task SaveGroupAsync(string name)
+            {
+                if (OperatingGroup == null)
+                    return;
 
-            if (newGroup != null)
-            {
-                newGroup.AddDevice(device);
-                device.GroupID = newGroupId;
-                device.Group = newGroup;
-                await _context.UpdateItemAsync(device);
+                var busyText = OperatingGroup.ID == 0 ? "Creating Group..." : "Updating Group...";
+                await ExecuteAsync(async () =>
+                {
+                    if (OperatingGroup.ID == 0)
+                    {
+                        await _context.AddItemAsync<RFGroup>(OperatingGroup);
+                        Groups.Add(OperatingGroup);
+                    }
+                    else
+                    {
+                        if (await _context.UpdateItemAsync<RFGroup>(OperatingGroup))
+                        {
+                            var index = Groups.IndexOf(OperatingGroup);
+                            Groups[index] = OperatingGroup.Clone(); 
+                        }
+                    }
+                }, busyText);
             }
-            else
+            public string GetGroupName(int groupId)
             {
-                device.GroupID = 0;
-                device.Group = null;
-                await _context.UpdateItemAsync(device);
+                var group = Groups.FirstOrDefault(g => g.ID == groupId);
+                return group?.Name ?? "Unknown Group";
             }
-        }
+            public async Task UpdateDeviceGroupAsync(RFDevice device, int newGroupId)
+            {
+                var oldGroup = await _context.GetGroupById(device.GroupID);
+                var newGroup = await _context.GetGroupById(newGroupId);
+
+                if (oldGroup != null)
+                {
+                    oldGroup.RemoveDevice(device);
+                }
+
+                if (newGroup != null)
+                {
+                    newGroup.AddDevice(device);
+                    device.GroupID = newGroupId;
+                    device.Group = newGroup;
+                    await _context.UpdateItemAsync(device);
+                }
+                else
+                {
+                    device.GroupID = 0;
+                    device.Group = null;
+                    await _context.UpdateItemAsync(device);
+                }
+            }
+            public async Task ExecuteAsync(Func<Task> action, string busyText = "")
+            {
+                try
+                {
+                    IsBusy = true; // Set the busy indicator before starting the operation
+                    BusyText = busyText; // Optionally set a text that indicates what operation is being performed
+
+                    await action(); // Execute the passed asynchronous method
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"An error occurred during the execution: {ex.Message}");
+                    // Optionally, you could show an error message to the user here
+                    // For example: await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred.", "OK");
+                }
+                finally
+                {
+                    IsBusy = false; // Reset the busy indicator after the operation completes
+                    BusyText = ""; // Clear the busy text
+                }
+            }
     }
 }

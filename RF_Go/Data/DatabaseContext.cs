@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using RF_Go.Models;
+using System.Diagnostics;
 
 namespace RF_Go.Data
 {
@@ -95,11 +96,25 @@ Après :
         {
             return await Execute<TTable, bool>(async () => await Database.InsertAsync(item) > 0);
         }
-
         public async Task<bool> UpdateItemAsync<TTable>(TTable item) where TTable : class, new()
         {
-            return await Execute<TTable, bool>(async () => await Database.UpdateAsync(item) > 0);
+            try
+            {
+                var result = await Execute<TTable, bool>(async () =>
+                {
+                    var updateResult = await Database.UpdateAsync(item);
+                    Debug.WriteLine($"Attempting to update: {typeof(TTable).Name}, Rows affected: {updateResult}");
+                    return updateResult > 0;
+                });
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in UpdateItemAsync for {typeof(TTable).Name}: {ex.Message}");
+                throw;  // Re-throwing to ensure the error is not swallowed silently
+            }
         }
+
 
         public async Task<bool> DeleteItemAsync<TTable>(TTable item) where TTable : class, new()
         {
