@@ -1,65 +1,118 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MudBlazor;
 using SQLite;
 
-namespace RF_Go.Models
+public class TimePeriod
 {
-    public class TimePeriod
-    {
-        [PrimaryKey, AutoIncrement]
-        public int ID { get; set; }
-        
-        private string _name = "Unnamed Timeperiod";
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new ArgumentException("Name is required.");
-                }
-                _name = value;
-            }
-        }
-        private DateTime _startTime;
-        private DateTime _endTime;
-        public DateTime StartTime
-        {
-            get => _startTime;
-            set
-            {
-                if (_endTime != default(DateTime) && value >= _endTime)
-                {
-                    throw new ArgumentException("Start time must be less than end time.");
-                }
-                _startTime = value;
-            }
-        }
+    [PrimaryKey, AutoIncrement]
+    public int ID { get; set; }
 
-        public DateTime EndTime
+    private string _name = "Unnamed Timeperiod";
+    public string Name
+    {
+        get => _name;
+        set
         {
-            get => _endTime;
-            set
+            if (string.IsNullOrWhiteSpace(value))
             {
-                if (_startTime != default(DateTime) && value <= _startTime)
-                {
-                    throw new ArgumentException("End time must be greater than start time.");
-                }
-                _endTime = value;
+                throw new ArgumentException("Name is required.");
+            }
+            _name = value;
+        }
+    }
+
+    private DateTime _startTime;
+    public DateTime StartTime
+    {
+        get => _startTime;
+        set
+        {
+            if (_endTime != default(DateTime) && value >= _endTime)
+            {
+                throw new ArgumentException("Start time must be less than end time.");
+            }
+            _startTime = value;
+            UpdateRange();
+        }
+    }
+
+    private DateTime _endTime;
+    public DateTime EndTime
+    {
+        get => _endTime;
+        set
+        {
+            if (_startTime != default(DateTime) && value <= _startTime)
+            {
+                throw new ArgumentException("End time must be greater than start time.");
+            }
+            _endTime = value;
+            UpdateRange();
+        }
+    }
+
+    // Properties for binding to MudTimePicker
+    public TimeSpan? StartTimeSpan
+    {
+        get => _startTime.TimeOfDay;
+        set
+        {
+            if (value.HasValue)
+            {
+                _startTime = _startTime.Date + value.Value;
+                UpdateRange();
             }
         }
-        public TimePeriod(DateTime start, DateTime end)
+    }
+
+    public TimeSpan? EndTimeSpan
+    {
+        get => _endTime.TimeOfDay;
+        set
         {
-            StartTime = start;
-            EndTime = end; 
+            if (value.HasValue)
+            {
+                _endTime = _endTime.Date + value.Value;
+                UpdateRange();
+            }
         }
-        public override string ToString()
+    }
+
+    private DateRange _range;
+    public DateRange Range
+    {
+        get => _range;
+        set
         {
-            return $"{StartTime} to {EndTime}";
+            if (value.Start == null || value.End == null)
+            {
+                throw new ArgumentException("Both start and end must be set.");
+            }
+
+            if (value.Start >= value.End)
+            {
+                throw new ArgumentException("Range start must be less than range end.");
+            }
+
+            _startTime = value.Start.Value;
+            _endTime = value.End.Value;
+            _range = new DateRange(_startTime, _endTime);
         }
+    }
+
+    public TimePeriod(DateTime start, DateTime end)
+    {
+        _startTime = start;
+        _endTime = end;
+        _range = new DateRange(_startTime, _endTime);
+    }
+
+    private void UpdateRange()
+    {
+        _range = new DateRange(_startTime, _endTime);
+    }
+
+    public override string ToString()
+    {
+        return $"{StartTime} to {EndTime}";
     }
 }

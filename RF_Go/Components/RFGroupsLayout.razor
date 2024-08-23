@@ -1,4 +1,5 @@
-﻿@using MudBlazor
+﻿@page "/groups-schedule"
+@using MudBlazor
 @using Newtonsoft.Json
 @using System.IO
 @using System
@@ -10,13 +11,12 @@
 
 <h1>Groups Schedule</h1>
 
-
 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SaveNewGroup())">Add Group</MudButton>
 <MudTextField Label="New Group Name" @bind-Value="newGroupName"></MudTextField>
-@foreach( var group in GroupsViewModel.Groups)
+
+@foreach (var group in GroupsViewModel.Groups)
 {
     <MudCard>
-        
         <MudCardContent>
             @if (temporaryGroupID == group.ID)
             {
@@ -26,33 +26,40 @@
                               Adornment="Adornment.End"
                               AdornmentIcon="@Icons.Material.Filled.Check"
                               AdornmentColor="Color.Primary"
-                              OnAdornmentClick="() => UpdateGroup(group)"
-                              OnKeyDown="@((args) => HandleKeyDown(args, group))" />
+                              OnAdornmentClick="@(() => UpdateGroup(group))"
+                              OnKeyDown="@((args) => HandleKeyDown(args, () => UpdateGroup(group)))" />
+
                 @foreach (var time in group.TimePeriods)
                 {
-                    <MudTextField Label="Start Time" @bind-Value="time.StartTime" Immediate="true" 
-                                  Adornment="Adornment.End" 
-                                  AdornmentIcon="@Icons.Material.Filled.Check"
-                                  AdornmentColor="Color.Primary"
-                                  OnAdornmentClick="() => UpdateStartTime(group, time)"
-                                  OnKeyDown="@((args) => HandleKeyDown(args, group, time))">
->
-                    </MudTextField>
-                    <MudTextField Label="End Time" @bind-Value="time.EndTime" Immediate="true"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.Check"
-                                  AdornmentColor="Color.Primary"
-                                  OnAdornmentClick="() => UpdateEndTime(group, time)"
-                                  OnKeyDown="@((args) => HandleKeyDown(args, group, time))">></MudTextField>
+                    <MudStack>
+                        <MudDateRangePicker @bind-DateRange="time.Range"
+                                            MinDate="_minDate"
+                                            Margin="Margin.Dense"
+                                            HelperText="Select the date on which the RF devices in this group will be used." />
+
+                        <!-- Start Time Picker -->
+                        <MudTimePicker Label="Start Time"
+                                       AmPm="true"
+                                       @bind-Time="time.StartTimeSpan" />
+
+                        <!-- End Time Picker -->
+                        <MudTimePicker Label="End Time"
+                                       AmPm="true"
+                                       @bind-Time="time.EndTimeSpan" />
+                    </MudStack>
                 }
             }
             else
             {
                 <MudText>@group.Name</MudText>
                 @foreach (var time in group.TimePeriods)
-                {
-                    <MudText>@time.StartTime - @time.EndTime</MudText>
-                }
+                    {
+                        <MudText>
+                            @time.Range.Start?.ToShortDateString() - @time.Range.End?.ToShortDateString() |
+                            @time.StartTime.ToShortTimeString() - @time.EndTime.ToShortTimeString()
+                        </MudText>
+                    }
+
             }
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => AddTimePeriod(group)">Add Time Period</MudButton>
@@ -64,51 +71,64 @@
 
 @code {
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
-    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     private int temporaryGroupID = -1;
     private string temporaryGroupName;
     private string newGroupName;
-    private void OnGroupNameChanged(ChangeEventArgs e)
-    {
-        Debug.Print(e.Value.ToString());
-        temporaryGroupName = e.Value.ToString();
-    }
+    private DateRange _dateRange { get; set; }
+    private DateTime _minDate = DateTime.Now.Date;
 
     private async Task SaveNewGroup()
     {
         RFGroup newGroup = new();
-        newGroup.Name = newGroupName;
-        await GroupsViewModel.AddGroupAsync(newGroup);
+        if (!string.IsNullOrWhiteSpace(newGroupName))
+        {
+            newGroup.Name = newGroupName;
+            await GroupsViewModel.AddGroupAsync(newGroup);
+        }
+        else
+        {
+            return;
+        }
+
+        
     }
+
     private void EditGroup(RFGroup group)
     {
         temporaryGroupName = group.Name;
         temporaryGroupID = group.ID;
     }
+
     private void AddTimePeriod(RFGroup group)
-        {
-            TimePeriod timePeriod = new(DateTime.Now, DateTime.Now.AddHours(1));
-            group.AddTimePeriod(timePeriod);
-        }
-    private async Task HandleKeyDown(KeyboardEventArgs args, RFGroup group)
+    {
+        TimePeriod timePeriod = new(DateTime.Now, DateTime.Now.AddHours(1));
+        group.AddTimePeriod(timePeriod);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args, Func<Task> updateAction)
     {
         if (args.Key == "Enter")
         {
+            await updateAction();
             StateHasChanged();
-            await UpdateGroup(group);
         }
     }
+
     private async Task UpdateGroup(RFGroup group)
     {
         group.Name = temporaryGroupName;
+        temporaryGroupID = -1;
+        await GroupsViewModel.UpdateGroupAsync(group);
+
+    }
+
+    private async Task UpdateTimePeriod(RFGroup group, TimePeriod time)
+    {
         await GroupsViewModel.UpdateGroupAsync(group);
         temporaryGroupID = -1;
-    }
-    private void none()
-    {
-        return;
-    }
+        StateHasChanged();
 
-
+    }
 }

@@ -14,13 +14,25 @@ namespace RF_Go.Models
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
         private string _name = "Unnamed Group";
+
         private readonly List<TimePeriod> _timePeriods = [];
+
+        [Ignore]
         public IReadOnlyList<TimePeriod> TimePeriods => _timePeriods;
-/*        public string TimePeriodsSerialized
+        public string TimePeriodsSerialized
         {
-            get => JsonConvert.SerializeObject(TimePeriods);
-            set => TimePeriods = JsonConvert.DeserializeObject<List<TimePeriod>>(value);
-        }*/
+            get => JsonConvert.SerializeObject(_timePeriods);
+            set
+            {
+                var periods = JsonConvert.DeserializeObject<List<TimePeriod>>(value);
+                if (periods != null)
+                {
+                    _timePeriods.Clear();
+                    _timePeriods.AddRange(periods);
+                }
+            }
+        }
+
         public void AddTimePeriod(TimePeriod period)
         {
             if (period != null)

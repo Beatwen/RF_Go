@@ -68,6 +68,7 @@ namespace RF_Go.Models
                 }
                 else if (Frequency != 0 && IsLocked && !Checked)
                 {
+
                     f1 = Frequency;
                     if (CheckFreeFrequency(f1, UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder))
                     {
