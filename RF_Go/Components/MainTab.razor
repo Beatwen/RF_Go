@@ -143,12 +143,14 @@
         [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
         [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
         [Parameter] public DeviceData DeviceData { get; set; }
+
         private RFDevice Device => DevicesViewModel.OperatingDevice;
         private string searchString1 = "";
         private MudTable<RFDevice> mudTable;
         private int selectedRowNumber = -1;
         private bool selectAll { get; set; }
         private List<string> clickedEvents = new();
+        private List<RFGroup> _groups;
         private string CalculateStyle(RFChannel chan)
         {
             string color = chan.Checked ? "lightgreen" : "red";
@@ -242,36 +244,90 @@
         }
         private void RFCalcul()
         {
-
-            HashSet<int> UsedFrequencies = [];
-            HashSet<int> TwoTX3rdOrder = [];
-            HashSet<int> TwoTX5rdOrder = [];
-            HashSet<int> TwoTX7rdOrder = [];
-            HashSet<int> TwoTX9rdOrder = [];
-            HashSet<int> ThreeTX3rdOrder = [];
-            foreach (RFDevice device in DevicesViewModel.Devices)
+            var overlappingGroups = FindOverlappingGroups();
+            foreach(var group in overlappingGroups)
             {
-
-                foreach (RFChannel chan in device.Channels)
+                HashSet<int> UsedFrequencies = [];
+                HashSet<int> TwoTX3rdOrder = [];
+                HashSet<int> TwoTX5rdOrder = [];
+                HashSet<int> TwoTX7rdOrder = [];
+                HashSet<int> TwoTX9rdOrder = [];
+                HashSet<int> ThreeTX3rdOrder = [];
+                foreach (RFDevice device in DevicesViewModel.Devices)
                 {
-                    chan.Checked = false;
-                    if (chan.IsLocked)
-                    {
-                        Debug.WriteLine("We are checking : " + chan.Frequency);
 
+                    foreach (RFChannel chan in device.Channels)
+                    {
+                        chan.Checked = false;
+                        if (chan.IsLocked)
+                        {
+                            Debug.WriteLine("We are checking : " + chan.Frequency);
+
+                            chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                        }
+                    }
+                }
+                Debug.WriteLine("Getting out of calcul of locked freq");
+                foreach (RFDevice device in DevicesViewModel.Devices)
+                {
+                    foreach (RFChannel chan in device.Channels)
+                    {
                         chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                     }
                 }
             }
-            Debug.WriteLine("Getting out of calcul of locked freq");
-            foreach (RFDevice device in DevicesViewModel.Devices)
+        }
+    private List<List<RFGroup>> FindOverlappingGroups()
+    {
+        var processedGroups = new HashSet<RFGroup>();
+        var overlappingGroups = new List<List<RFGroup>>();
+
+        foreach (var group in _groups)
+        {
+            if (processedGroups.Contains(group))
+                continue;
+
+            var overlappingSet = new List<RFGroup> { group };
+            processedGroups.Add(group);
+
+            foreach (var otherGroup in _groups)
             {
-                foreach (RFChannel chan in device.Channels)
+                if (group == otherGroup || processedGroups.Contains(otherGroup))
+                    continue;
+
+                if (DoGroupsOverlap(group, otherGroup))
                 {
-                    chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                    overlappingSet.Add(otherGroup);
+                    processedGroups.Add(otherGroup);
+                }
+            }
+
+            overlappingGroups.Add(overlappingSet);
+        }
+
+        return overlappingGroups;
+    }
+
+    private bool DoGroupsOverlap(RFGroup group1, RFGroup group2)
+    {
+        foreach (var period1 in group1.TimePeriods)
+        {
+            foreach (var period2 in group2.TimePeriods)
+            {
+                if (DoPeriodsOverlap(period1, period2))
+                {
+                    return true;
                 }
             }
         }
+        return false;
+    }
+
+    private bool DoPeriodsOverlap(TimePeriod period1, TimePeriod period2)
+    {
+        return period1.StartTime < period2.EndTime && period1.EndTime > period2.StartTime;
+    }
+
         private void OnBrandChanged(string e)
         {
             Debug.WriteLine("Brand changed");
