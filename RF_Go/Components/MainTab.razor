@@ -150,7 +150,6 @@
         private int selectedRowNumber = -1;
         private bool selectAll { get; set; }
         private List<string> clickedEvents = new();
-        private List<RFGroup> _groups;
         private string CalculateStyle(RFChannel chan)
         {
             string color = chan.Checked ? "lightgreen" : "red";
@@ -245,30 +244,35 @@
         private void RFCalcul()
         {
             var overlappingGroups = FindOverlappingGroups();
-            foreach(var group in overlappingGroups)
+            foreach (var groupSet in overlappingGroups)
             {
-                HashSet<int> UsedFrequencies = [];
-                HashSet<int> TwoTX3rdOrder = [];
-                HashSet<int> TwoTX5rdOrder = [];
-                HashSet<int> TwoTX7rdOrder = [];
-                HashSet<int> TwoTX9rdOrder = [];
-                HashSet<int> ThreeTX3rdOrder = [];
-                foreach (RFDevice device in DevicesViewModel.Devices)
-                {
+                HashSet<int> UsedFrequencies = new HashSet<int>();
+                HashSet<int> TwoTX3rdOrder = new HashSet<int>();
+                HashSet<int> TwoTX5rdOrder = new HashSet<int>();
+                HashSet<int> TwoTX7rdOrder = new HashSet<int>();
+                HashSet<int> TwoTX9rdOrder = new HashSet<int>();
+                HashSet<int> ThreeTX3rdOrder = new HashSet<int>();
 
+                var devicesInGroup = GetDevicesForGroupSet(groupSet);
+
+                // First pass: lock frequencies
+                foreach (RFDevice device in devicesInGroup)
+                {
                     foreach (RFChannel chan in device.Channels)
                     {
                         chan.Checked = false;
                         if (chan.IsLocked)
                         {
-                            Debug.WriteLine("We are checking : " + chan.Frequency);
-
+                            Debug.WriteLine("We are checking: " + chan.Frequency);
                             chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
                         }
                     }
                 }
+
                 Debug.WriteLine("Getting out of calcul of locked freq");
-                foreach (RFDevice device in DevicesViewModel.Devices)
+
+                // Second pass: assign frequencies to unlocked channels
+                foreach (RFDevice device in devicesInGroup)
                 {
                     foreach (RFChannel chan in device.Channels)
                     {
@@ -277,12 +281,17 @@
                 }
             }
         }
+    private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
+    {
+        var groupIds = groupSet.Select(g => g.ID).ToList();
+        return DevicesViewModel.Devices.Where(device => groupIds.Contains(device.GroupID)).ToList();
+    }
     private List<List<RFGroup>> FindOverlappingGroups()
     {
         var processedGroups = new HashSet<RFGroup>();
         var overlappingGroups = new List<List<RFGroup>>();
 
-        foreach (var group in _groups)
+        foreach (var group in GroupsViewModel.Groups)
         {
             if (processedGroups.Contains(group))
                 continue;
@@ -290,7 +299,7 @@
             var overlappingSet = new List<RFGroup> { group };
             processedGroups.Add(group);
 
-            foreach (var otherGroup in _groups)
+            foreach (var otherGroup in GroupsViewModel.Groups)
             {
                 if (group == otherGroup || processedGroups.Contains(otherGroup))
                     continue;
@@ -301,7 +310,6 @@
                     processedGroups.Add(otherGroup);
                 }
             }
-
             overlappingGroups.Add(overlappingSet);
         }
 
@@ -325,6 +333,7 @@
 
     private bool DoPeriodsOverlap(TimePeriod period1, TimePeriod period2)
     {
+        var answer = period1.StartTime < period2.EndTime && period1.EndTime > period2.StartTime;
         return period1.StartTime < period2.EndTime && period1.EndTime > period2.StartTime;
     }
 

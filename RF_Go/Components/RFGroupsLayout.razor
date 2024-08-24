@@ -58,6 +58,7 @@
                             @time.Range.Start?.ToShortDateString() - @time.Range.End?.ToShortDateString() |
                             @time.StartTime.ToShortTimeString() - @time.EndTime.ToShortTimeString()
                         </MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="() => DeleteGroup(time, group)">Delete Time Periods</MudButton>
                     }
 
             }
@@ -100,13 +101,12 @@
         temporaryGroupName = group.Name;
         temporaryGroupID = group.ID;
     }
-
-    private void AddTimePeriod(RFGroup group)
+    async private Task AddTimePeriod(RFGroup group)
     {
         TimePeriod timePeriod = new(DateTime.Now, DateTime.Now.AddHours(1));
         group.AddTimePeriod(timePeriod);
+        await GroupsViewModel.UpdateGroupAsync(group);
     }
-
     private async Task HandleKeyDown(KeyboardEventArgs args, Func<Task> updateAction)
     {
         if (args.Key == "Enter")
@@ -115,7 +115,6 @@
             StateHasChanged();
         }
     }
-
     private async Task UpdateGroup(RFGroup group)
     {
         group.Name = temporaryGroupName;
@@ -123,12 +122,16 @@
         await GroupsViewModel.UpdateGroupAsync(group);
 
     }
-
     private async Task UpdateTimePeriod(RFGroup group, TimePeriod time)
     {
         await GroupsViewModel.UpdateGroupAsync(group);
         temporaryGroupID = -1;
         StateHasChanged();
 
+    }
+    private async Task DeleteGroup(TimePeriod time, RFGroup group)
+    {
+        group.DeleteTimePeriod(time);
+        await GroupsViewModel.UpdateGroupAsync(group);
     }
 }

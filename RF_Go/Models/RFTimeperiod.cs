@@ -90,7 +90,7 @@ public class TimePeriod
 
             if (value.Start >= value.End)
             {
-                throw new ArgumentException("Range start must be less than range end.");
+                value.End = value.Start.Value.AddMinutes(60);
             }
 
             _startTime = value.Start.Value;

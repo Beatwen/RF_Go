@@ -40,7 +40,7 @@ namespace RF_Go.Models
                 _timePeriods.Add(period);
             }
         }
-        public void DelteTimePeriod(TimePeriod period)
+        public void DeleteTimePeriod(TimePeriod period)
         {
             if (_timePeriods.Contains(period) && period != null)
             {

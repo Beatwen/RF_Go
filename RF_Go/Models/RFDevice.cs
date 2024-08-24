@@ -39,7 +39,7 @@ namespace RF_Go.Models
         public string Calendar { get; set; }
         public string Stage { get; set; }
         public int NumberOfChannels { get; set; }
-        private int _groupID;
+        private int _groupID = 1;
         public int GroupID
         {
             get => _groupID;
