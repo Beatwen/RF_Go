@@ -24,7 +24,11 @@
             </MudText>
         </MudTabPanel>
         <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
-        <MudTabPanel Text="Remote" ID='"remote_tab"' />
+        <MudTabPanel Text="Remote" ID='"remote_tab"'>
+            <MudText>
+                 <RemoteTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+            </MudText>
+        </MudTabPanel>
 </MudTabs>
 
 @code 

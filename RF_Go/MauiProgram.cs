@@ -5,6 +5,7 @@ using MudBlazor.Services;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using RF_Go.Services;
 
 
 namespace RF_Go
@@ -33,6 +34,8 @@ namespace RF_Go
             builder.Services.AddScoped<DevicesViewModel>();
             builder.Services.AddTransient<GroupsViewModel>();
             builder.Services.AddScoped<MainPage>();
+            builder.Services.AddSingleton<DiscoveryService>();
+            builder.Services.AddSingleton<SennheiserCommunicationService>();
 
 
             return builder.Build();
