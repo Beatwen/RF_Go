@@ -25,6 +25,7 @@ namespace RF_Go.Services
         {
             _multicastService.Start();
             _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
+
         }
 
         // Handle general service discovery by name (without full details)

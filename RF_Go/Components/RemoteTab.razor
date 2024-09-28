@@ -8,12 +8,27 @@
 @using System.Diagnostics
 @using RF_Go.Services
 @inject DiscoveryService discoveryService
-@inject SennheiserCommunicationService communicationService
+@inject ShureDiscoveryService shureDiscoveryService
+@inject SennheiserDiscoveryService sennheiserDiscoveryService
 
 
 <h3>Remote Tab</h3>
 <h3>Appareils découverts sur le réseau</h3>
-
+<h4>Shure Discovered Devices</h4>
+<ul>
+    @foreach (var device in ShureDiscoveredDevices)
+    {
+        <li>@device</li>
+    }
+</ul>
+<h4>Sennheiser Discovered Devices</h4>
+<ul>
+    @foreach (var device in SennheiserDiscoveredDevices)
+    {
+        <li>@device</li>
+    }
+</ul>
+<h4>Other Discovered Devices</h4>
 <ul>
     @foreach (var device in DiscoveredDevices)
     {
@@ -21,68 +36,64 @@
     }
 </ul>
 
-
-<h3>Sennheiser G4 Device Discovery</h3>
-
-<button @onclick="StartDiscovery">Start Discovery</button>
-<button @onclick="StopDiscovery">Stop Discovery</button>
-
-<h4>Discovered Devices</h4>
-<ul>
-    @foreach (var device in discoveredDevices)
-    {
-        <li>@device</li>
-    }
-</ul>
-
 @code {
-    private List<string> discoveredDevices = new List<string>();
-
-    private async Task StartDiscovery()
-    {
-        await communicationService.StartCommunicationAsync();
-    }
-
-    private void StopDiscovery()
-    {
-        communicationService.StopCommunication();
-    }
-
-    // This method will be triggered when a new device is discovered
-    private void OnDeviceDiscovered(string deviceInfo)
-    {
-        InvokeAsync(() =>
-        {
-            discoveredDevices.Add(deviceInfo);
-            StateHasChanged();  // Refresh UI
-        });
-    }
-
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
+    private List<string> ShureDiscoveredDevices = new List<string>();
+    private List<string> SennheiserDiscoveredDevices = new List<string>();
     private List<string> DiscoveredDevices = new List<string>();
+
 
     protected override async Task OnInitializedAsync()
     {
-        // Démarrer le service de découverte et s'abonner à l'événement DeviceDiscovered
-        //discoveryService.DeviceDiscovered += OnDeviceDiscovered;
-        //discoveryService.StartDiscovery();
+        shureDiscoveryService.DeviceDiscovered += OnShureDeviceDiscovered;
+        Task.Run(() => shureDiscoveryService.StartListeningAsync());
+        discoveryService.DeviceDiscovered += OnDeviceDiscovered;
+        discoveryService.StartDiscovery();
+        sennheiserDiscoveryService.DeviceDiscovered += OnSennheiserDeviceDiscovered;
+        sennheiserDiscoveryService.StartDiscovery();
     }
-
+    private void OnShureDeviceDiscovered(object sender, string deviceInfo)
+    {
+        InvokeAsync(() =>
+        {
+            ShureDiscoveredDevices.Add(deviceInfo);
+            StateHasChanged();
+        });
+    }
     private void OnDeviceDiscovered(object sender, string deviceInfo)
     {
         InvokeAsync(() =>
         {
-            // Ajouter l'appareil à la liste et rafraîchir l'UI
-            DiscoveredDevices.Add(deviceInfo);
-            StateHasChanged(); // Met à jour l'interface Blazor
+            if (!DiscoveredDevices.Contains(deviceInfo))
+            {
+                // Ajouter l'appareil à la liste et rafraîchir l'UI
+                DiscoveredDevices.Add(deviceInfo);
+                Debug.Print("new discovered device");
+                Debug.Print(deviceInfo);
+                StateHasChanged(); // Met à jour l'interface Blazor
+            }
+        });
+    }
+    private void OnSennheiserDeviceDiscovered(object sender, string deviceInfo)
+    {
+        InvokeAsync(() =>
+        {
+            // Vérification des doublons avant d'ajouter
+            if (!SennheiserDiscoveredDevices.Contains(deviceInfo))
+            {
+                SennheiserDiscoveredDevices.Add(deviceInfo);
+                StateHasChanged();
+            }
         });
     }
 
     public void Dispose()
     {
-        // Arrêter la découverte lorsque la page est déchargée
         discoveryService.StopDiscovery();
+        shureDiscoveryService.StopListening();
+        shureDiscoveryService.DeviceDiscovered -= OnShureDeviceDiscovered;
+        sennheiserDiscoveryService.StopDiscovery();
     }
 }

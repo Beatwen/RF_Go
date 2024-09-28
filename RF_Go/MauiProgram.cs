@@ -35,9 +35,8 @@ namespace RF_Go
             builder.Services.AddTransient<GroupsViewModel>();
             builder.Services.AddScoped<MainPage>();
             builder.Services.AddSingleton<DiscoveryService>();
-            builder.Services.AddSingleton<SennheiserCommunicationService>();
-
-
+            builder.Services.AddSingleton<ShureDiscoveryService>();
+            builder.Services.AddSingleton<SennheiserDiscoveryService>();
             return builder.Build();
         }
 
