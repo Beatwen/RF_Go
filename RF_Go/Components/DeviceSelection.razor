@@ -1,0 +1,158 @@
+﻿@using MudBlazor
+@using Newtonsoft.Json
+@using System.IO
+@using System
+@using RF_Go.Data
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using System.Diagnostics
+
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<MudText Typo="Typo.h6" Class="pl-6">Devices Selection</MudText>
+
+<div id="SelectDeviceMenu">
+        <MudGrid Spacing="2" Justify="Justify.Center" Class="pl-6 pr-6">
+                <MudItem xs="12">
+                    <MudSelect T="string" HelperText="Choose device brand" Placeholder="Please Select"
+                       AdornmentIcon="@Icons.Material.Filled.LaptopMac" AdornmentColor="Color.Primary" Value="@Device.Brand" ValueChanged="@((string e) => OnBrandChanged(e))">
+                        @foreach (var brand in DeviceData.Brands.Keys)
+                        {
+                            <MudSelectItem T="string" value="@brand">@brand</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="string" HelperText="Choose device model" Placeholder="Please Select"
+                               AdornmentIcon="@Icons.Material.Filled.WifiChannel" AdornmentColor="Color.Primary" Value="@Device.Model" ValueChanged="@((string e) => OnModelChanged(e))">
+                        <option value="" disabled selected hidden>Choose a model...</option>
+                        @if (Device.Brand is null)
+                        {
+                            <MudSelectItem T="string">Choose a brand first</MudSelectItem>
+                        }
+                        else
+                        {
+                                @foreach (var model in DeviceData.Brands[Device.Brand].Keys)
+                                {
+                                    <MudSelectItem T="string" value="@model">@model</MudSelectItem>
+                                }
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="string" HelperText="Choose device frequency" Placeholder="Please Select"
+                               AdornmentIcon="@Icons.Material.Filled.Fastfood" AdornmentColor="Color.Primary" @bind-Value="Device.Frequency" >
+                        @if (Device.Model == "" || Device.Model is null)
+                        {
+                            <MudSelectItem T="string">Choose a model first</MudSelectItem>
+                        }
+                        else
+                        {
+                            @foreach (var frequency in DeviceData.Brands[Device.Brand][Device.Model].Keys)
+                            {
+                                <MudSelectItem T="string" value="@frequency">@frequency ( @DeviceData.Brands[Device.Brand][Device.Model][frequency][0] - @DeviceData.Brands[Device.Brand][Device.Model][frequency][1] )</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect HelperText="Choose device frequency" Placeholder="Please Select" AdornmentColor="Color.Primary"
+                               @bind-Value="@selectedQuantity">
+                            @foreach (var option in frequencyOptions)
+                            {
+                                <MudSelectItem T="int" value="@option">@option</MudSelectItem>
+                            }
+                    </MudSelect>
+                </MudItem>
+                <MudButton @onclick="() => SaveDeviceInDB(Device)">Save device</MudButton>
+        </MudGrid>
+</div>
+    @code 
+{
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
+    [Parameter] public DeviceData DeviceData { get; set; }
+    [Parameter] public EventCallback OnDeviceSaved { get; set; }
+
+    private RFDevice Device => DevicesViewModel.OperatingDevice;
+    private string searchString1 = "";
+    private MudTable<RFDevice> mudTable;
+    private int selectedRowNumber = -1;
+    private bool selectAll { get; set; }
+    private List<string> clickedEvents = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DevicesViewModel.LoadDevicesAsync();
+        await GroupsViewModel.LoadGroupsAsync();
+        await base.OnInitializedAsync();
+    }        private bool isAddingDevice = false;
+    private int selectedQuantity = 1;
+    private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
+    private async Task SaveDeviceInDB(RFDevice device)
+    {
+        SaveDataDevicesInfo(device);
+        SaveDataChannelsInfo(device);
+
+
+        for (int i = 0; i < selectedQuantity; i++)
+        {
+            await DevicesViewModel.SaveDeviceAsync();
+        }
+
+        await DevicesViewModel.LoadDevicesAsync();
+        await OnDeviceSaved.InvokeAsync();
+
+    }
+    private void SaveDataDevicesInfo(RFDevice device)
+    {
+        Debug.WriteLine("SaveDataDevice is called");
+        device.Range = DeviceData.Brands[device.Brand][device.Model][device.Frequency];
+        device.Step = (int)DeviceData.Brands[device.Brand][device.Model][device.Frequency][3];
+        device.NumberOfChannels = (int)DeviceData.Brands[device.Brand][device.Model][device.Frequency][2];
+        Debug.WriteLine(device.NumberOfChannels);
+        device.Channels = new List<RFChannel>();
+        for (int i = 0; i < device.NumberOfChannels; i++)
+        {
+            device.Channels.Add(new RFChannel());
+            Debug.WriteLine("Channel created");
+        }
+    }
+    private void SaveDataChannelsInfo(RFDevice device)
+    {
+        var freq = DeviceData.Brands[device.Brand][device.Model][device.Frequency];
+        int count = 1;
+        foreach (RFChannel chan in device.Channels)
+        {
+            chan.Range = device.Range;
+            chan.Step = device.Step;
+            chan.chanNumber = count;
+            chan.SelfSpacing = freq[4];
+            chan.ThirdOrderSpacing = freq[5];
+            chan.FifthOrderSpacing = freq[6];
+            chan.SeventhOrderSpacing = freq[7];
+            chan.ThirdOrderSpacing3Tx = freq[8];
+            count++;
+        }
+    }
+    private void AddDevice()
+    {
+        isAddingDevice = true;
+    }
+    private void OnBrandChanged(string e)
+    {
+        Debug.WriteLine("Brand changed");
+        Device.Brand = e;
+        Device.Model = string.Empty;
+        Device.Frequency = string.Empty;
+        StateHasChanged();
+    }
+    private void OnModelChanged(string e)
+    {
+        Device.Model = e;
+        Device.Frequency = string.Empty;
+        StateHasChanged();
+    }
+
+}

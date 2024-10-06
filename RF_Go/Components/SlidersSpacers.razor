@@ -11,34 +11,21 @@
 <div class="SlidersSpacers">
     @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
     {
-        <div class="flex-container">
+        <div class="d-flex flex-column">
+            @foreach (var spacing in spacings)
+            {
+                <div class="d-flex align-center">
+                    <MudCheckBox Class="mt-1 mb-0 pa-0" Dense="true" Size="Size.Small" Label="@($"2Tx{spacing}")"
+                                 ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing, IsChecked)">
+                    </MudCheckBox>
 
-            <MudText Style="padding-top:13px;"><b>@deviceGroup.Key.Brand - @deviceGroup.Key.Model - @deviceGroup.Key.Frequency</b></MudText>
-            <div>
-                <MudCheckBox Label="2Tx3" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 3, IsChecked)"></MudCheckBox>
-                <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,3);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
-                    Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 3)
-                </MudSlider>
-            </div>
-            <div>
-                <MudCheckBox Label="2Tx5" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 5, IsChecked)"></MudCheckBox>
-                <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,5);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
-                    Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 5)
-                </MudSlider>
-            </div>
-            <div>
-                <MudCheckBox Label="2Tx7" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 7, IsChecked)"></MudCheckBox>
-                <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,7);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
-                    Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 7)
-                </MudSlider>
-            </div>
-            <MudCheckBox Label="2Tx9" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 9, IsChecked)"></MudCheckBox>
-            <div>
-                <MudCheckBox Label="3Tx3" ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 33, IsChecked)"></MudCheckBox>
-                <MudSlider ValueChanged="(int value) => { SetSpacingValueToChannels(deviceGroup.Key.Brand,deviceGroup.Key.Model,deviceGroup.Key.Frequency,value,33);}" Min=" 0" Max="500" Step="5" Color="Color.Success">
-                    Value: @FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, 33)
-                </MudSlider>
-            </div>
+                    <MudSlider Size="Size.Small" Value="@FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing)"
+                               Class="mt-1 mb-0 pa-0 pl-2 pr-2" ValueLabel="true"
+                               ValueChanged="(int value) => SetSpacingValueToChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, value, spacing)"
+                               Min="0" Max="500" Step="5" Color="Color.Success">
+                    </MudSlider>
+                </div>
+            }
         </div>
     }
 </div>
@@ -46,6 +33,7 @@
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
+    private List<int> spacings = new List<int> { 3, 5, 7, 9, 33 };
     private void EnableSpacingInChannels(string brand, string model, string frequency, int spacing, bool IsChecked)
     {
         foreach (var device in DevicesViewModel.Devices.Where(d =>
@@ -99,10 +87,5 @@
                 }
             }
         }
-    }
-    protected override async Task OnInitializedAsync()
-    {
-        // Additional initialization logic, if needed
-        await base.OnInitializedAsync();
     }
 }

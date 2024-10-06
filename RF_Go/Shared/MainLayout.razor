@@ -1,21 +1,29 @@
 ﻿@inherits LayoutComponentBase
-<MudThemeProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
-<div class="page">
 
-@*     <div class="sidebar">
-        @* <NavMenu /> 
-    </div> *@
-    
+<MudThemeProvider Theme="_customDarkTheme"/>
+    <MudDialogProvider />
+    <MudSnackbarProvider />
 
-    <main>
-@*         <div class="top-row px-4">
-        </div> *@
+    <div class="page">
+        <main>
+            <article class="content">
+                @Body
+            </article>
+        </main>
+    </div>
 
-        <article class="content">
-            @Body
-        </article>
-    </main>
-</div>
-
+@code {
+    private MudTheme _customDarkTheme = new MudTheme()
+        {
+            Palette = new PaletteDark()
+            {
+                Background = "#1a1a27",  // Your custom dark background
+                Surface = "#2a2a3a",     // Adjust the surface to match the theme
+                Primary = "#BB86FC",     // Customize primary color if needed
+                Secondary = "#03DAC6",
+                AppbarBackground = "#1a1a27",  // Match the app bar background with your custom color
+                TextPrimary = "#FFFFFF", // Ensure text is white for contrast
+                DrawerBackground = "#1a1a27"  // Also adjust drawer background if you're using a drawer
+            }
+        };
+}
