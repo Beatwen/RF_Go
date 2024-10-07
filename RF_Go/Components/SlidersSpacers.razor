@@ -7,20 +7,21 @@
 @using RF_Go.ViewModels
 @using RF_Go.Components
 @using System.Diagnostics
-<h1>Sliders</h1>
+<MudText Typo="Typo.h5" Class="pl-6">Spacing</MudText>
 <div class="SlidersSpacers">
     @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
     {
         <div class="d-flex flex-column">
+            <MudText Typo="Typo.h6" Class="pl-6">@deviceGroup.Key.Brand - @deviceGroup.Key.Model</MudText>
             @foreach (var spacing in spacings)
             {
-                <div class="d-flex align-center">
-                    <MudCheckBox Class="mt-1 mb-0 pa-0" Dense="true" Size="Size.Small" Label="@($"2Tx{spacing}")"
+                <div class="d-flex align-center pl-4 pr-4">
+                    <MudCheckBox Class="mt-1" Dense="true" Size="Size.Small" Label="@($"2Tx{spacing}")"
                                  ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing, IsChecked)">
                     </MudCheckBox>
 
                     <MudSlider Size="Size.Small" Value="@FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing)"
-                               Class="mt-1 mb-0 pa-0 pl-2 pr-2" ValueLabel="true"
+                               Class="mt-1 pr-4 pl-4 w-25" ValueLabel="true"
                                ValueChanged="(int value) => SetSpacingValueToChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, value, spacing)"
                                Min="0" Max="500" Step="5" Color="Color.Success">
                     </MudSlider>

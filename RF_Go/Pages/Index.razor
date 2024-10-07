@@ -16,36 +16,35 @@
 @inject GroupsViewModel GroupsViewModel
 
 <MudTabs KeepPanelsAlive="true" Elevation="4" Centered="true" Rounded="false" AlwaysShowScrollButtons="true" Class="flex justify-content-around">
-        <MudTabPanel Text="Devices" ID='"devices_tab"'>
-            <MudText>
+    <MudTabPanel Text="Devices" ID='"devices_tab"'>
+        <MudGrid Spacing="2" Class="w-100 display-6 pr-6">
+            <MudItem xs="12" md="3">
+                <MudPaper Class="mt-4">
+                    <DeviceSelection DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudPaper Class="mt-4">
+                    <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudPaper Class="mt-4">
+                    <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+        <RFGroupsLayout DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+    </MudTabPanel>
 
-                <MudGrid Spacing="1">
-                    <MudItem xs="12" md="3">
-                            <MudPaper Class="mt-4">
-                                <DeviceSelection DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
-                           </MudPaper>
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudPaper Class="mt-4">
-                        <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="12" md="3">
-                        <MudPaper Class="mt-4">
-                        <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
-                        </MudPaper>
-                    </MudItem>
-                </MudGrid>
-                    <RFGroupsLayout DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />"
-            </MudText>
-        </MudTabPanel>
-        <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
-        <MudTabPanel Text="Remote" ID='"remote_tab"'>
-            <MudText>
-                 <RemoteTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
-            </MudText>
-        </MudTabPanel>
+    <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
+    <MudTabPanel Text="Remote" ID='"remote_tab"'>
+        <MudText>
+            <RemoteTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+        </MudText>
+    </MudTabPanel>
 </MudTabs>
+
 
 @code 
 {
