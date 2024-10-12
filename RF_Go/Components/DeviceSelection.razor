@@ -81,6 +81,8 @@
     private int selectedRowNumber = -1;
     private bool selectAll { get; set; }
     private List<string> clickedEvents = new();
+    private int selectedQuantity = 1;
+    private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,23 +90,35 @@
         await GroupsViewModel.LoadGroupsAsync();
         await base.OnInitializedAsync();
     }        private bool isAddingDevice = false;
-    private int selectedQuantity = 1;
-    private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
+
     private async Task SaveDeviceInDB(RFDevice device)
     {
+        // Initialisation des données une seule fois avant de commencer la boucle
         SaveDataDevicesInfo(device);
         SaveDataChannelsInfo(device);
 
-
         for (int i = 0; i < selectedQuantity; i++)
         {
-            await DevicesViewModel.SaveDeviceAsync();
+            // Utiliser MemberwiseClone pour cloner l'objet device
+            var clonedDevice = device.Clone();
+            DevicesViewModel.OperatingDevice = clonedDevice;
+            try
+            {
+                Debug.Print($"Saving device {i + 1}...");
+                await DevicesViewModel.SaveDeviceAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error saving device {i + 1}: {ex.Message}");
+                break; // Stop the loop if there's an error
+            }
         }
 
+        // Recharger les dispositifs après avoir sauvegardé
         await DevicesViewModel.LoadDevicesAsync();
         await OnDeviceSaved.InvokeAsync();
-
     }
+
     private void SaveDataDevicesInfo(RFDevice device)
     {
         Debug.WriteLine("SaveDataDevice is called");
@@ -116,7 +130,6 @@
         for (int i = 0; i < device.NumberOfChannels; i++)
         {
             device.Channels.Add(new RFChannel());
-            Debug.WriteLine("Channel created");
         }
     }
     private void SaveDataChannelsInfo(RFDevice device)

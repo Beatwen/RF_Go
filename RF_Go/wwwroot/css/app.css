@@ -3,7 +3,9 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
-
+.mud-input-control {
+    margin-top: 0 !important;
+}
 h1:focus {
     outline: none;
 }

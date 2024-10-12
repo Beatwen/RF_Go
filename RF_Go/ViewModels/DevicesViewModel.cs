@@ -58,7 +58,6 @@ namespace RF_Go.ViewModels
         public async Task SaveDeviceAsync()
         {
             Debug.WriteLine("Save function called !");
-            OperatingDevice.ID = 0;
             if (OperatingDevice is null)
                 return;
 
@@ -96,7 +95,7 @@ namespace RF_Go.ViewModels
                         return;
                     }
                 }
-                //SetOperatingDeviceCommand.Execute(new());
+                SetOperatingDeviceCommand.Execute(new());
             }, busyText);
         }
         [RelayCommand]

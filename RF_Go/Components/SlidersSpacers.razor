@@ -7,6 +7,8 @@
 @using RF_Go.ViewModels
 @using RF_Go.Components
 @using System.Diagnostics
+
+
 <MudText Typo="Typo.h5" Class="pl-6">Spacing</MudText>
 <div class="SlidersSpacers">
     @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
@@ -16,13 +18,12 @@
             @foreach (var spacing in spacings)
             {
                 <div class="d-flex align-center pl-4 pr-4">
-                    <MudCheckBox Class="mt-1" Dense="true" Size="Size.Small" Label="@($"2Tx{spacing}")"
-                                 ValueChanged="(bool IsChecked) => EnableSpacingInChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing, IsChecked)">
+                    <MudCheckBox Class="mt-1" Dense="true" Size="Size.Small" Label="@($"2Tx{spacing}")" Value="GetSpacingState(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing)"
+                                 ValueChanged="(bool IsChecked) => SetSpacingState(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing, IsChecked)">
                     </MudCheckBox>
-
-                    <MudSlider Size="Size.Small" Value="@FindSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing)"
+                    <MudSlider Size="Size.Small" Value="@GetSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, spacing)"
                                Class="mt-1 pr-4 pl-4 w-25" ValueLabel="true"
-                               ValueChanged="(int value) => SetSpacingValueToChannels(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, value, spacing)"
+                               ValueChanged="(int value) => SetSpacingValue(deviceGroup.Key.Brand, deviceGroup.Key.Model, deviceGroup.Key.Frequency, value, spacing)"
                                Min="0" Max="500" Step="5" Color="Color.Success">
                     </MudSlider>
                 </div>
@@ -35,12 +36,29 @@
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
     private List<int> spacings = new List<int> { 3, 5, 7, 9, 33 };
-    private void EnableSpacingInChannels(string brand, string model, string frequency, int spacing, bool IsChecked)
+    private bool GetSpacingState(string brand, string model, string frequency, int spacing)
     {
-        foreach (var device in DevicesViewModel.Devices.Where(d =>
-                                                                d.Brand == brand &&
-                                                                    d.Model == model &&
-                                                                        d.Frequency == frequency))
+        RFDevice D = DevicesViewModel.Devices.FirstOrDefault(d => d.Brand == brand && d.Model == model && d.Frequency == frequency);
+
+        switch (spacing)
+        {
+            case 3: return D.Channels[0].ThirdOrderSpacingEnable;
+            case 5: return D.Channels[0].FifthOrderSpacingEnable;
+            case 7: return D.Channels[0].SeventhOrderSpacingEnable;
+            case 9: return D.Channels[0].NinthOrderSpacingEnable;
+            case 33: return D.Channels[0].ThirdOrderSpacing3TxEnable;
+        }
+        return false;
+    }
+    private async Task SetSpacingState(string brand, string model, string frequency, int spacing, bool IsChecked)
+    {
+        var devicesToModify = DevicesViewModel.Devices
+                                .Where(d => d.Brand == brand &&
+                                            d.Model == model &&
+                                            d.Frequency == frequency)
+                                .ToList();
+
+        foreach (var device in devicesToModify)
         {
             foreach (var chan in device.Channels)
             {
@@ -53,9 +71,11 @@
                     case 33: chan.ThirdOrderSpacing3TxEnable = IsChecked; break;
                 }
             }
+            DevicesViewModel.SetOperatingDevice(device);
+            await DevicesViewModel.SaveDeviceAsync();
         }
     }
-    private int FindSpacingValue(string brand, string model, string frequency, int spacing)
+    private int GetSpacingValue(string brand, string model, string frequency, int spacing)
     {
         RFDevice D = DevicesViewModel.Devices.FirstOrDefault(d => d.Brand == brand && d.Model == model && d.Frequency == frequency);
 
@@ -67,9 +87,11 @@
             case 9: return D.Channels[0].NinthOrderSpacing;
             case 33: return D.Channels[0].ThirdOrderSpacing3Tx;
         }
-        return D.Channels[0].ThirdOrderSpacing;
+        return 0;
     }
-    private void SetSpacingValueToChannels(string brand, string model, string frequency, int value, int spacing)
+    private CancellationTokenSource debounceTokenSource;
+
+    private void SetSpacingValue(string brand, string model, string frequency, int value, int spacing)
     {
         foreach (RFDevice device in DevicesViewModel.Devices.Where(d =>
                                                                     d.Brand == brand &&
@@ -88,5 +110,34 @@
                 }
             }
         }
+        DebounceSave(brand, model, frequency, spacing);
     }
+
+    private void DebounceSave(string brand, string model, string frequency, int spacing)
+    {
+        debounceTokenSource?.Cancel();
+        debounceTokenSource = new CancellationTokenSource();
+        // Delay the save operation by 300 milliseconds (or your desired debounce delay)
+        _ = Task.Delay(300, debounceTokenSource.Token).ContinueWith(async task =>
+        {
+            if (!task.IsCanceled)
+            {
+                await SaveSpacingValueToChannels(brand, model, frequency, spacing);
+            }
+        }, TaskScheduler.Default);
+    }
+
+    private async Task SaveSpacingValueToChannels(string brand, string model, string frequency, int spacing)
+    {
+        foreach (var device in DevicesViewModel.Devices.Where(d =>
+                                                                d.Brand == brand &&
+                                                                    d.Model == model &&
+                                                                        d.Frequency == frequency))
+        {
+            Debug.Print("go oa o ao g!");
+            DevicesViewModel.SetOperatingDevice(device);
+            await DevicesViewModel.SaveDeviceAsync();
+        }
+    }
+
 }

@@ -36,7 +36,7 @@ namespace RF_Go.Models
             get => JsonConvert.SerializeObject(Channels);
             set => Channels = JsonConvert.DeserializeObject<List<RFChannel>>(value);
         }
-        public string IpAddress { get; set; }
+        public string IpAddress { get; set; } = "0.0.0.0";
         public string Calendar { get; set; }
         public string Stage { get; set; }
         public int NumberOfChannels { get; set; }
