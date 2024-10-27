@@ -3,7 +3,7 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
-.mud-input-control {
+.mud-input-control .mud-select-input {
     margin-top: 0 !important;
 }
 h1:focus {

@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MudBlazor;
 using RF_Go.Data;
 using RF_Go.Models;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+
 
 namespace RF_Go.ViewModels
 {
@@ -28,7 +30,7 @@ namespace RF_Go.ViewModels
                 var devices = await _context.GetAllAsync<RFDevice>();
                 if (devices != null && devices.Any())
                 {
-                    Devices.Clear(); // Clear existing devices
+                    Devices.Clear(); 
                     foreach (var device in devices)
                     {
                         Devices.Add(device);
@@ -46,14 +48,12 @@ namespace RF_Go.ViewModels
                 throw; // Rethrow the exception to propagate it
             }
         }
-
         [RelayCommand]
         public void SetOperatingDevice(RFDevice Device)
         {
             System.Diagnostics.Debug.WriteLine("edit device!");
             OperatingDevice = Device ?? new();
         }
-
         [RelayCommand]
         public async Task SaveDeviceAsync()
         {
@@ -91,7 +91,7 @@ namespace RF_Go.ViewModels
                     }
                     else
                     {
-                        await Shell.Current.DisplayAlert("Error", "Device updation error", "Ok");
+                        //await Shell.Current.DisplayAlert("Error", "Device updation error", "Ok");
                         return;
                     }
                 }

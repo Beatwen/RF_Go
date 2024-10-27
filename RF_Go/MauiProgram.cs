@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using RF_Go.Services;
+using RF_Go.Models;
 
 
 namespace RF_Go
@@ -31,8 +32,11 @@ namespace RF_Go
             builder.Logging.AddDebug();
 #endif
             builder.Services.AddScoped<DatabaseContext>();
-            builder.Services.AddScoped<DevicesViewModel>();
+
+            builder.Services.AddTransient<DevicesViewModel>();
             builder.Services.AddTransient<GroupsViewModel>();
+            builder.Services.AddTransient<ExclusionChannelViewModel>();
+            
             builder.Services.AddScoped<MainPage>();
             builder.Services.AddSingleton<DiscoveryService>();
             builder.Services.AddSingleton<ShureDiscoveryService>();

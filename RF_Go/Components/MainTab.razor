@@ -6,6 +6,7 @@
 @using RF_Go.Models
 @using RF_Go.ViewModels
 @using System.Diagnostics
+@inject MudBlazor.ISnackbar Snackbar
 
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -18,11 +19,14 @@
         {
     <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
         <div class="flex-none d-flex">
-            <MudText Typo="Typo.h6" Class="">Devices</MudText>
+            <MudText Typo="Typo.h5" Class="">Devices</MudText>
         </div>
         <div class="">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
                 Calculate
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
+                Send Data to Device
             </MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="mx-2" @onclick="DeleteAll">
                 Delete All Devices
@@ -45,38 +49,44 @@
         </HeaderContent>
         <RowTemplate>
                 <MudTd>
-                    <div class="d-flex flex-column">
-                    <MudTextField Typo="Typo.body2" Style="padding:0;font-size: 14px;" Label="@GetBrandAndModel(context)" @bind-Value="@context.Name"
-                             @onblur="() => SaveDeviceAsync(context)" HelperText="@GetFrequency(context)"/>
-                    <MudTextField Typo="Typo.body2" Style="margin:0;font-size: 14px;" @bind-Value="@context.IpAddress" Placeholder="IP Address" @onblur="() => SaveDeviceAsync(context)" Class="custom-textfield" />
-                    </div>
-                </MudTd>
-                @* <MudTd>@SetGetNumberOfChannels(context)</MudTd> *@
-                <MudTd Style="min-width:250px">
+@*                  <div class="d-flex flex-column">
+                     <MudTextField Typo="Typo.caption" Style="padding:0;" Label="@GetBrandAndModel(context)" @bind-Value="@context.Name"
+                                   @onblur="() => SaveDeviceAsync(context)" HelperText="@GetFrequency(context)" />
+                     <MudTextField Typo="Typo.caption" Style="margin:0;" @bind-Value="@context.IpAddress" HelperText="Ip Address" Placeholder="IP Address" @onblur="() => SaveDeviceAsync(context)" Class="custom-textfield" />
+                 </div> *@
                     <MudTable @bind-Items="@context.Channels" Hover="true">
                         <RowTemplate Context="chan">
-
+                            <MudTd Class="d-flex align-center mt-0">
+                            <MudTextField Typo="Typo.caption" Label="@GetBrandAndModel(context)" @bind-Value="@chan.ChannelName" Class="mt-0" Margin="Margin.Dense" Variant="Variant.Outlined"
+                                              @onblur="() => SaveDeviceAsync(context)" />
+                        </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTd>
+                <MudTd>
+                <MudTable @bind-Items="@context.Channels" Hover="true" Style="width:190px;">
+                        <RowTemplate Context="chan" >
                             @*  <MudTd>@string.Format("{0:#,0}", chan.Frequency) </MudTd> *@
 
                             <MudTd Class="d-flex align-center mt-0">
-                                <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step" Style="@CalculateStyle(chan)" Class="mt-0" Label="Frequency" Variant="Variant.Outlined" />
-                                    <MudCheckBox @bind-Value="chan.IsLocked" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Favorite" UncheckedIcon="@Icons.Material.Filled.FavoriteBorder"></MudCheckBox>
+                                <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step" Style="@CalculateStyle(chan)" Class="mt-0" Label="Frequency" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudCheckBox @bind-Value="chan.IsLocked" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Favorite" UncheckedIcon="@Icons.Material.Filled.FavoriteBorder" Class="pl-1"></MudCheckBox>
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
                 </MudTd>
                 <MudTd>
-                    <MudSelect T="int" Value="context.GroupID" ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(context, newGroupId)">
-                        @foreach (var group in GroupsViewModel.Groups)
-                        {
-                            <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <div class="d-flex">
-                        <MudButton Color=Color.Primary class="edit-button">Edit</MudButton>
-                        <MudButton Color=Color.Secondary class="delete-button" @onclick="() => DevicesViewModel.DeleteDeviceAsync(context.ID)">Del</MudButton>
-                    </div>
-                </MudTd>
+                    <div class="d-flex justify-content-between">
+                        <MudSelect T="int" Value="context.GroupID" ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(context, newGroupId)">
+                            @foreach (var group in GroupsViewModel.Groups)
+                            {
+                                <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="() => DeleteDevice(context)" aria-label="delete" />
+                </div>
+                <MudTextField Typo="Typo.caption" Style="margin:0;" @bind-Value="@context.IpAddress" Placeholder="IP Address" @onblur="() => SaveDeviceAsync(context)" Class="custom-textfield" />
+            </MudTd>
             </RowTemplate>
             <PagerContent>
                 <MudTablePager />
@@ -143,9 +153,10 @@
     }        private bool isAddingDevice = false;
     private int selectedQuantity = 1;
     private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
-    private void DeleteDevice(RFDevice device)
+    private async Task DeleteDevice(RFDevice device)
     {
-        DevicesViewModel.SetOperatingDevice(device);
+        await DevicesViewModel.DeleteDeviceAsync(device.ID);
+        Snackbar.Add("Device deleted", Severity.Success);
     }
     private async Task RFCalcul()
     {

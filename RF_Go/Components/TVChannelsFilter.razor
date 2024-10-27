@@ -1,0 +1,105 @@
+﻿@using RF_Go.Models
+@using RF_Go.ViewModels
+@using System.Diagnostics
+@inject MudBlazor.ISnackbar Snackbar
+
+<h3>TV Channel Exclusion Groups</h3>
+
+<div class="filters">
+    <!-- Sélecteur pour le pays -->
+    <MudSelect T="string" Label="Settings" Value="ExclusionChannelViewModel.SelectedCountry" Variant="Variant.Filled" ValueChanged="@(async (string country) => await ApplyCountryFilters(country))">
+        <MudSelectItem Value="EightMhz">8Mhz</MudSelectItem>
+        <MudSelectItem Value="SevenMhz">7Mhz</MudSelectItem>
+        <MudSelectItem Value="SixMhz">6Mhz</MudSelectItem>
+    </MudSelect>
+
+    <!-- Barre de recherche -->
+    <MudTextField Label="Search by Channel or Frequency" @bind-Value="ExclusionChannelViewModel.SearchQuery"
+                  Variant="Variant.Filled" Immediate="true" DebounceInterval="300" OnKeyUp="@(async _ => await ApplyFilters())" />
+</div>
+
+<!-- Table des groupes d'exclusion -->
+<MudTable Items="@ExclusionChannelViewModel.ExclusionChannels" Hover="true" Dense="true" Bordered="true">
+    <HeaderContent>
+        <MudTh>Country</MudTh>
+        <MudTh>Ch.</MudTh>
+        <MudTh>Start Frequency</MudTh>
+        <MudTh>End Frequency</MudTh>
+        <MudTh>Exclude</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Country</MudTd>
+        <MudTd>@context.ChannelNumber</MudTd>
+        <MudTd>@context.StartFrequency</MudTd>
+        <MudTd>@context.EndFrequency</MudTd>
+        <MudTd>@context.Exclude</MudTd>
+        <MudTd>
+            <MudButton Color="Color.Primary" OnClick="@(() => EditExclusionChannel(context))">Edit</MudButton>
+            <MudButton Color="Color.Error" OnClick="@(() => DeleteExclusionChannel(context))">Delete</MudButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<!-- Formulaire pour éditer les groupes d'exclusion -->
+<MudForm>
+    <MudTextField Label="Country" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.Country" />
+    <MudTextField Label="Channel" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.ChannelNumber" />
+    <MudTextField Label="Start Frequency" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.StartFrequency" />
+    <MudTextField Label="End Frequency" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.EndFrequency" />
+    <MudCheckBox @bind-Checked="ExclusionChannelViewModel.SelectedExclusionChannel.Exclude" Label="Exclude" />
+    <MudButton Color="Color.Primary" OnClick="@(async () => await SaveExclusionChannelAsync())">Save</MudButton>
+</MudForm>
+
+@code {
+    [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
+    string EightMhz = "Generic-8Mhz";
+    string SevenMhz = "Generic-7Mhz";
+    string SixMhz = "Generic-6MHz";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Charger les groupes d'exclusion au démarrage
+        await ExclusionChannelViewModel.LoadExclusionChannelsAsync();
+    }
+
+    private void EditExclusionChannel(ExclusionChannel group)
+    {
+        ExclusionChannelViewModel.SelectedExclusionChannel = group;
+    }
+
+    private async Task DeleteExclusionChannel(ExclusionChannel group)
+    {
+        ExclusionChannelViewModel.SelectedExclusionChannel = group;
+        await ExclusionChannelViewModel.DeleteExclusionChannelAsync();
+        Snackbar.Add("Exclusion group deleted successfully.", Severity.Success);
+    }
+
+    private async Task SaveExclusionChannelAsync()
+    {
+        await ExclusionChannelViewModel.SaveExclusionChannelAsync();
+        Snackbar.Add("Exclusion group saved successfully.", Severity.Success);
+    }
+
+    private async Task ApplyCountryFilters(string country)
+    {
+        ExclusionChannelViewModel.SelectedCountry = country;
+        Debug.Print("Apply filters");
+        await ExclusionChannelViewModel.ApplyFilters();
+        foreach (var d in ExclusionChannelViewModel.ExclusionChannels)
+        {
+            Debug.Print(d.ChannelNumber.ToString());
+        }
+        Debug.Print("Country : " + ExclusionChannelViewModel.SelectedCountry);
+    }
+    private async Task ApplyFilters()
+    {
+        Debug.Print("Apply filters");
+        await ExclusionChannelViewModel.ApplyFilters();
+        foreach (var d in ExclusionChannelViewModel.ExclusionChannels)
+        {
+            Debug.Print(d.ChannelNumber.ToString());
+        }
+        Debug.Print("Country : " + ExclusionChannelViewModel.SelectedCountry);
+    }
+}

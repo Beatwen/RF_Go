@@ -54,55 +54,55 @@ namespace RF_Go.ViewModels
                         throw;
                     }
             }
-        public async Task UpdateGroupAsync(RFGroup group)
-        {
+            public async Task UpdateGroupAsync(RFGroup group)
+            {
             
-            try
-            {
-                if (group == null)
-                    return;
-                Debug.Print("Updating group");
-                await _context.UpdateItemAsync(group);
-
-                // Find the group by ID instead of using IndexOf
-                for (int i = 0; i < Groups.Count; i++)
-                {
-                    if (Groups[i].ID == group.ID)
-                    {
-                        Groups[i] = group.Clone();
-                        return; // Exit the method after updating the group
-                    }
-                }
-
-                // Optionally, handle the case where no group matches the ID
-                Debug.WriteLine("No matching group found to update.");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error updating group: {ex.Message}");
-                throw;
-            }
-        }
-        public async Task LoadGroupsAsync()
-            {
                 try
                 {
-                    var groups = await _context.GetAllAsync<RFGroup>();
-                    if (groups != null && groups.Any())
+                    if (group == null)
+                        return;
+                    Debug.Print("Updating group");
+                    await _context.UpdateItemAsync(group);
+
+                    // Find the group by ID instead of using IndexOf
+                    for (int i = 0; i < Groups.Count; i++)
                     {
-                        Groups.Clear();
-                        foreach (var group in groups)
+                        if (Groups[i].ID == group.ID)
                         {
-                            Groups.Add(group);
+                            Groups[i] = group.Clone();
+                            return; // Exit the method after updating the group
                         }
                     }
+
+                    // Optionally, handle the case where no group matches the ID
+                    Debug.WriteLine("No matching group found to update.");
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error loading groups: {ex.Message}");
+                    Debug.WriteLine($"Error updating group: {ex.Message}");
                     throw;
                 }
             }
+            public async Task LoadGroupsAsync()
+                {
+                    try
+                    {
+                        var groups = await _context.GetAllAsync<RFGroup>();
+                        if (groups != null && groups.Any())
+                        {
+                            Groups.Clear();
+                            foreach (var group in groups)
+                            {
+                                Groups.Add(group);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error loading groups: {ex.Message}");
+                        throw;
+                    }
+                }
             [RelayCommand]
             public void SetOperatingGroup(RFGroup group)
             {
@@ -135,7 +135,7 @@ namespace RF_Go.ViewModels
             public string GetGroupName(int groupId)
             {
                 var group = Groups.FirstOrDefault(g => g.ID == groupId);
-                return group?.Name ?? "Unknown Group";
+                return group?.Name ?? "Unnamed Group";
             }
             public async Task UpdateDeviceGroupAsync(RFDevice device, int newGroupId)
             {
@@ -165,21 +165,20 @@ namespace RF_Go.ViewModels
             {
                 try
                 {
-                    IsBusy = true; // Set the busy indicator before starting the operation
-                    BusyText = busyText; // Optionally set a text that indicates what operation is being performed
+                    IsBusy = true;
+                    BusyText = busyText;
 
-                    await action(); // Execute the passed asynchronous method
+                    await action();
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"An error occurred during the execution: {ex.Message}");
-                    // Optionally, you could show an error message to the user here
-                    // For example: await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred.", "OK");
+                    await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred.", "OK");
                 }
                 finally
                 {
-                    IsBusy = false; // Reset the busy indicator after the operation completes
-                    BusyText = ""; // Clear the busy text
+                    IsBusy = false;
+                    BusyText = "";
                 }
             }
     }

@@ -14,6 +14,8 @@
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
 @inject GroupsViewModel GroupsViewModel
+@inject ExclusionChannelViewModel ExclusionChannelViewModel
+
 
 <MudTabs KeepPanelsAlive="true" Elevation="4" Centered="true" Rounded="false" AlwaysShowScrollButtons="true" Class="flex justify-content-around">
     <MudTabPanel Text="Devices" ID='"devices_tab"'>
@@ -21,6 +23,9 @@
             <MudItem xs="12" md="2">
                 <MudPaper Class="mt-4">
                     <DeviceSelection DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
+                </MudPaper>
+                <MudPaper Class="mt-4">
+                      <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" /> 
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="8">
@@ -36,7 +41,6 @@
         </MudGrid>
         <RFGroupsLayout DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
     </MudTabPanel>
-
     <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
     <MudTabPanel Text="Remote" ID='"remote_tab"'>
         <MudText>

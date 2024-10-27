@@ -33,16 +33,17 @@ namespace RF_Go.Data
 
         private async Task CreateTablesAsync()
         {
+            // Insérer les groupes initiaux
             await CreateTableIfNotExists<RFGroup>();
             await CreateTableIfNotExists<RFDevice>();
-
-            // Insérer les groupes initiaux
+            await CreateTableIfNotExists<ExclusionChannel>();
             await InsertInitialGroups();
+            await InsertInitialRFExclusionChannel();
+            
         }
 
         private async Task InsertInitialGroups()
         {
-
             var existingGroups = await Database.Table<RFGroup>().CountAsync();
             if (existingGroups == 0)
             {
@@ -51,6 +52,43 @@ namespace RF_Go.Data
                 await Database.InsertAsync(initialGroups);
             }
         }
+
+        private async Task InsertInitialRFExclusionChannel()
+        {
+            var existingExclusions = await Database.Table<ExclusionChannel>().CountAsync();
+            if (existingExclusions == 0)
+            {
+                // Création des configurations de base pour chaque largeur de bande
+                await InsertGenericChannels(470.0, 6, "Generic-6MHz");
+                await InsertGenericChannels(470.0, 7, "Generic-7MHz");
+                await InsertGenericChannels(470.0, 8, "Generic-8MHz");
+            }
+        }
+
+        private async Task InsertGenericChannels(double startFrequency, int channelWidth, string type)
+        {
+            double endFrequency = 862.0;
+            int channelNumber = 21;
+
+            while (startFrequency < endFrequency)
+            {
+                var exclusionChannel = new ExclusionChannel
+                {
+                    Country = type, 
+                    ChannelNumber = channelNumber,
+                    StartFrequency = $"{startFrequency} MHz",
+                    EndFrequency = $"{startFrequency + channelWidth} MHz",
+                    Type = type,
+                    Exclude = false,
+                    ChannelWidth = channelWidth
+                };
+
+                await Database.InsertAsync(exclusionChannel);
+                startFrequency += channelWidth;
+                channelNumber++;
+            }
+        }
+
 
         private AsyncTableQuery<TTable> GetTable<TTable>() where TTable : class, new()
         {
