@@ -11,7 +11,7 @@ namespace RF_Go.Data
 {
     public class DatabaseContext : IAsyncDisposable
     {
-        private const string DbName = "RF_Go.db3";
+        private const string DbName = "RF_Go3.db3";
         private static string DbPath => Path.Combine(FileSystem.AppDataDirectory, DbName);
 
         private SQLiteAsyncConnection _connection;
@@ -76,8 +76,8 @@ namespace RF_Go.Data
                 {
                     Country = type, 
                     ChannelNumber = channelNumber,
-                    StartFrequency = $"{startFrequency} MHz",
-                    EndFrequency = $"{startFrequency + channelWidth} MHz",
+                    StartFrequency = $"{startFrequency}",
+                    EndFrequency = $"{startFrequency + channelWidth}",
                     Type = type,
                     Exclude = false,
                     ChannelWidth = channelWidth

@@ -25,12 +25,12 @@
                     <DeviceSelection DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
                 </MudPaper>
                 <MudPaper Class="mt-4">
-                      <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" /> 
+                     <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" /> 
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="8">
                 <MudPaper Class="mt-4">
-                    <MainTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
+                    <MainTab DeviceData="deviceData" ExclusionChannelViewModel="ExclusionChannelViewModel" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="2">

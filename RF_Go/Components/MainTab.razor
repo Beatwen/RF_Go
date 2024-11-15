@@ -99,6 +99,7 @@
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
+    [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
     [Parameter] public EventCallback OnDeviceSaved { get; set; }
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
@@ -158,12 +159,22 @@
         await DevicesViewModel.DeleteDeviceAsync(device.ID);
         Snackbar.Add("Device deleted", Severity.Success);
     }
+    private List<(int StartFrequency, int EndFrequency)> GetExcludedRanges()
+    {
+        return ExclusionChannelViewModel.ExclusionChannels
+            .Where(channel => channel.Exclude)
+            .Select(channel => (int.Parse(channel.StartFrequency), int.Parse(channel.EndFrequency)))
+            .ToList();
+    }
     private async Task RFCalcul()
     {
         var overlappingGroups = FindOverlappingGroups();
+        var excludedRanges = GetExcludedRanges();
+
         foreach (var groupSet in overlappingGroups)
         {
-            HashSet<int> UsedFrequencies = new HashSet<int>();
+            HashSet
+    <int> UsedFrequencies = new HashSet<int>();
             HashSet<int> TwoTX3rdOrder = new HashSet<int>();
             HashSet<int> TwoTX5rdOrder = new HashSet<int>();
             HashSet<int> TwoTX7rdOrder = new HashSet<int>();
@@ -182,7 +193,7 @@
                     {
                         Debug.WriteLine("found one locked chan ! ");
                         Debug.WriteLine("We are checking: " + chan.Frequency);
-                        chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                        chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder, excludedRanges);
                     }
                 }
             }
@@ -192,7 +203,7 @@
             {
                 foreach (RFChannel chan in device.Channels)
                 {
-                    chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder);
+                    chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder, excludedRanges);
                 }
             }
             await OnDeviceSaved.InvokeAsync();

@@ -20,8 +20,7 @@ namespace RF_Go.ViewModels
         private ObservableCollection<ExclusionChannel> _exclusionChannels = new();
 
         [ObservableProperty]
-        private string _selectedCountry;
-
+        private string _selectedCountry = "Generic-8MHz";
         [ObservableProperty]
         private string _searchQuery;
 
@@ -70,7 +69,6 @@ namespace RF_Go.ViewModels
         [RelayCommand]
         public async Task ApplyFilters()
         {
-            // Relance le chargement des données avec les filtres appliqués
             await LoadExclusionChannelsAsync();
         }
 
