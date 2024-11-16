@@ -68,6 +68,9 @@ a, .btn-link {
 .status-bar-safe-area {
     display: none;
 }
+.mud-table-cell {
+    padding : 0px;
+}
 
 @supports (-webkit-touch-callout: none) {
     .status-bar-safe-area {

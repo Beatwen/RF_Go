@@ -6,22 +6,24 @@
 <h3>TV Channel Exclusion Groups</h3>
 
 <div class="filters">
-    <!-- Sélecteur pour le pays -->
+
     <MudSelect T="string" Label="TV Channel" Value="ExclusionChannelViewModel.SelectedCountry" Variant="Variant.Filled" ValueChanged="@(async (string country) => await ApplyCountryFilters(country))">
         <MudSelectItem Value="EightMhz">8Mhz</MudSelectItem>
         <MudSelectItem Value="SevenMhz">7Mhz</MudSelectItem>
         <MudSelectItem Value="SixMhz">6Mhz</MudSelectItem>
     </MudSelect>
 
-    <!-- Barre de recherche -->
+
     <MudTextField Label="Channel or frequency" @bind-Value="ExclusionChannelViewModel.SearchQuery"
                   Variant="Variant.Filled" Clearable="true" Immediate="true" DebounceInterval="300" OnKeyUp="@(async _ => await ApplyFilters())" />
 </div>
-
-<!-- Table des groupes d'exclusion -->
 <MudTable Items="@ExclusionChannelViewModel.ExclusionChannels" FixedHeader="true" Height="400px" Hover="true" Dense="true" Bordered="true">
+  
     <HeaderContent>
-        <MudTh>TV Channel</MudTh>
+        <MudTh>
+            <div>TV Channel</div>
+            <MudCheckBox ValueChanged="(bool isChecked) => SelectAll(isChecked)"></MudCheckBox>
+        </MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>
@@ -34,7 +36,8 @@
                         <MudCheckBox Value="context.Exclude"
                                      ValueChanged="@(async (bool isChecked) => await ToggleExclusion(context, isChecked))"
                              Class="align-self-center pl-2" Color="Color.Tertiary" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteExclusionChannel(context)"
+                        <Mud
+                        Button Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteExclusionChannel(context)"
                                        Class="align-self-center" />
             
             </div>
@@ -112,5 +115,17 @@
         await ExclusionChannelViewModel.SaveExclusionChannelAsync();
         Snackbar.Add($"Channel {channel.ChannelNumber} exclusion status updated.", Severity.Success);
     }
+    private async Task SelectAll(bool isChecked)
+    {
+        for (int i = 0; i < ExclusionChannelViewModel.ExclusionChannels.Count; i++)
+        {
+            var chan = ExclusionChannelViewModel.ExclusionChannels[i];
+            chan.Exclude = isChecked;
+            ExclusionChannelViewModel.SelectedExclusionChannel = chan;
+            await ExclusionChannelViewModel.SaveExclusionChannelAsync();
+            StateHasChanged();
+        }
+    }
+
 
 }
