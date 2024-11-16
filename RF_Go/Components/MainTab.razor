@@ -43,10 +43,11 @@
             <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
-            <MudTh>Device</MudTh>
-            <MudTh>Set Frequencies</MudTh>
-            <MudTh>Inclusion Group</MudTh>
+            <MudTh Style="min-width: 200px;">Device</MudTh>
+            <MudTh Style="min-width: 150px;">Set Frequencies</MudTh>
+            <MudTh Style="min-width: 150px;">Inclusion Group</MudTh>
         </HeaderContent>
+
         <RowTemplate>
                 <MudTd>
 @*                  <div class="d-flex flex-column">
@@ -59,7 +60,7 @@
                             <MudTd Class="d-flex align-center mt-0">
                             <MudTextField Typo="Typo.caption" Label="@GetBrandAndModel(context)" @bind-Value="@chan.ChannelName" Class="mt-0" Margin="Margin.Dense" Variant="Variant.Outlined"
                                               @onblur="() => SaveDeviceAsync(context)" />
-                        </MudTd>
+                            </MudTd>
                         </RowTemplate>
                     </MudTable>
                 </MudTd>
@@ -69,7 +70,7 @@
                             @*  <MudTd>@string.Format("{0:#,0}", chan.Frequency) </MudTd> *@
 
                             <MudTd Class="d-flex align-center mt-0">
-                                <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step" Style="@CalculateStyle(chan)" Class="mt-0" Label="Frequency" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step" Style="@CalculateStyle(chan)" Class="mt-0" Label="@GetRange(chan)" Variant="Variant.Outlined" Margin="Margin.Dense" />
                                 <MudCheckBox @bind-Value="chan.IsLocked" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Favorite" UncheckedIcon="@Icons.Material.Filled.FavoriteBorder" Class="pl-1"></MudCheckBox>
                             </MudTd>
                         </RowTemplate>
@@ -273,4 +274,10 @@
         // forcing the refresh of the UI 
         await OnDeviceSaved.InvokeAsync();
     }
+    private string GetRange(RFChannel chan)
+    {
+        string startRange = (chan.Range[0] / 1000).ToString();
+        string endRange = (chan.Range[1] / 1000).ToString();
+        return $"{startRange} - {endRange} Mhz";
     }
+}

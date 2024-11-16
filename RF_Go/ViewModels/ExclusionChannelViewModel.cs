@@ -57,8 +57,6 @@ namespace RF_Go.ViewModels
                     channel.StartFrequency.Contains(SearchQuery) ||
                     channel.EndFrequency.Contains(SearchQuery));
             }
-            Debug.Print("Filtering" + filteredChannels.First().ChannelNumber);
-            // Met à jour la collection ObservableCollection
             ExclusionChannels.Clear();
             foreach (var channel in filteredChannels)
             {
@@ -82,6 +80,20 @@ namespace RF_Go.ViewModels
             else
             {
                 await _context.UpdateItemAsync<ExclusionChannel>(SelectedExclusionChannel);
+            }
+
+            await LoadExclusionChannelsAsync();
+        }
+        [RelayCommand]
+        public async Task SaveByIDExclusionChannelAsync(ExclusionChannel chan)
+        {
+            if (chan.ID == 0)
+            {
+                await _context.AddItemAsync<ExclusionChannel>(chan);
+            }
+            else
+            {
+                await _context.UpdateItemAsync<ExclusionChannel>(chan);
             }
 
             await LoadExclusionChannelsAsync();

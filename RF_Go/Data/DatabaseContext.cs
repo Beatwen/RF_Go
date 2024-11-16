@@ -141,7 +141,7 @@ Après :
                 var result = await Execute<TTable, bool>(async () =>
                 {
                     var updateResult = await Database.UpdateAsync(item);
-                    Debug.WriteLine($"Attempting to update: {typeof(TTable).Name}, Rows affected: {updateResult}");
+                    
                     return updateResult > 0;
                 });
                 return result;

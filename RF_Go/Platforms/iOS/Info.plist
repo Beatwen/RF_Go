@@ -1,32 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
-    <key>UIDeviceFamily</key>
-    <array>
-        <integer>1</integer>
-        <integer>2</integer>
-    </array>
-    <key>UIRequiredDeviceCapabilities</key>
-    <array>
-        <string>arm64</string>
-    </array>
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>XSAppIconAssets</key>
-    <string>Assets.xcassets/appicon.appiconset</string>
-</dict>
+	<dict>
+		<!-- Indique que cette application est spécifique à iOS -->
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+
+		<!-- Nom de l'application -->
+		<key>CFBundleName</key>
+		<string>RF_Go</string>
+
+		<!-- Identifiant unique de l'application (doit correspondre à l'identifiant dans le fichier .csproj) -->
+		<key>CFBundleIdentifier</key>
+		<string>com.companyname.rf_go</string>
+
+		<!-- Version de build de l'application -->
+		<key>CFBundleVersion</key>
+		<string>1</string>
+
+		<!-- Version affichée de l'application -->
+		<key>CFBundleShortVersionString</key>
+		<string>1.0</string>
+
+		<!-- Nom du storyboard d'écran de lancement -->
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+
+		<!-- Familles de périphériques supportées (1 = iPhone/iPod, 2 = iPad) -->
+		<key>UIDeviceFamily</key>
+		<array>
+			<integer>1</integer>
+			<integer>2</integer>
+		</array>
+
+		<!-- Capacités requises de l'appareil pour exécuter cette application -->
+		<key>UIRequiredDeviceCapabilities</key>
+		<array>
+			<string>arm64</string>
+		</array>
+
+		<!-- Orientations supportées pour l’iPhone -->
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+
+		<!-- Orientations supportées pour l’iPad -->
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+
+		<!-- Emplacement des icônes de l'application -->
+		<key>XSAppIconAssets</key>
+		<string>Assets.xcassets/appicon.appiconset</string>
+	</dict>
 </plist>
+

@@ -4,6 +4,7 @@
 @using Newtonsoft.Json
 @using System.IO
 @using System
+@using System.Text
 @using RF_Go.Data
 @using RF_Go.Models
 @using RF_Go.ViewModels
@@ -16,44 +17,50 @@
 @inject GroupsViewModel GroupsViewModel
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
 
-
-<MudTabs KeepPanelsAlive="true" Elevation="4" Centered="true" Rounded="false" AlwaysShowScrollButtons="true" Class="flex justify-content-around">
-    <MudTabPanel Text="Devices" ID='"devices_tab"'>
-        <MudGrid Spacing="1" Class="w-100 display-6 pl-6 pr-6">
-            <MudItem xs="12" md="2">
-                <MudPaper Class="mt-4">
-                    <DeviceSelection DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
-                </MudPaper>
-                <MudPaper Class="mt-4">
-                     <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" /> 
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" md="8">
-                <MudPaper Class="mt-4">
-                    <MainTab DeviceData="deviceData" ExclusionChannelViewModel="ExclusionChannelViewModel" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" md="2">
-                <MudPaper Class="mt-4">
-                    <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-        <RFGroupsLayout DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
-    </MudTabPanel>
-    <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
-    <MudTabPanel Text="Remote" ID='"remote_tab"'>
-        <MudText>
-            <RemoteTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
-        </MudText>
-    </MudTabPanel>
-</MudTabs>
-
+@if (isLoadingJSON)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudTabs KeepPanelsAlive="true" Elevation="4" Centered="true" Rounded="false" AlwaysShowScrollButtons="true" Class="flex justify-content-around">
+        <MudTabPanel Text="Devices" ID='"devices_tab"'>
+            <MudGrid Spacing="1" Class="w-100 display-6 pl-6 pr-6">
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="mt-4">
+                        <DeviceSelection DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
+                    </MudPaper>
+                    <MudPaper Class="mt-4">
+                         <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" /> 
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="mt-4">
+                        <MainTab DeviceData="deviceData" ExclusionChannelViewModel="ExclusionChannelViewModel" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" OnDeviceSaved="RefreshComponents" />
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="mt-4">
+                        <SlidersSpacers DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+            <RFGroupsLayout DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+        </MudTabPanel>
+        <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
+        <MudTabPanel Text="Remote" ID='"remote_tab"'>
+            <MudText>
+                <RemoteTab DeviceData="deviceData" DevicesViewModel="DevicesViewModel" GroupsViewModel="GroupsViewModel" />
+            </MudText>
+        </MudTabPanel>
+    </MudTabs>
+}
 
 @code 
 {
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
+    private bool isLoadingJSON = true;
     private bool _selectOnRowClick = true;
     private bool isAddingDevice = false;
     private int selectedQuantity = 1;
@@ -98,12 +105,19 @@
     }
     protected override async Task OnInitializedAsync()
     {
+        var json = JsonData.Devices;
+
         var context = new DatabaseContext();
         DevicesViewModel = new DevicesViewModel(context);
-        var json = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Shared", "Devices.json"));
+        Debug.Print(json);
+
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
         await base.OnInitializedAsync();
+        isLoadingJSON = false;
+        StateHasChanged();
     }
+
+
 
 }
