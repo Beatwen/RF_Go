@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using RF_Go.Services;
 using RF_Go.Models;
+using System.Reflection;
 
 
 namespace RF_Go
@@ -28,8 +29,14 @@ namespace RF_Go
             builder.Services.AddBlazorWebViewDeveloperTools();
 
 #if DEBUG
-
             builder.Logging.AddDebug();
+
+    #if IOS || MACCATALYST
+            var handlerType = typeof(BlazorWebViewHandler);
+            var field = handlerType.GetField("AppOriginUri", BindingFlags.Static | BindingFlags.NonPublic) ?? throw new Exception("AppOriginUri field not found");
+            field.SetValue(null, new Uri("app://localhost/"));
+    #endif
+
 #endif
             builder.Services.AddScoped<DatabaseContext>();
 
@@ -43,6 +50,5 @@ namespace RF_Go
             builder.Services.AddSingleton<SennheiserDiscoveryService>();
             return builder.Build();
         }
-
     }
 }
