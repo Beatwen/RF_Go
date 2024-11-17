@@ -12,7 +12,7 @@
 @inject SennheiserDiscoveryService sennheiserDiscoveryService
 
 <h3>Discovered Devices</h3>
-<MudTable Items="@DiscoveredDevices" Bordered="true" Hover="true" Striped="true" Dense="true">
+<MudTable Items="@DiscoveredDevices" Bordered="true" Hover="true" Striped="true" Dense="true" Class="100vh">
     <HeaderContent>
         <MudTh>Brand</MudTh>
         <MudTh>Type</MudTh>
@@ -39,6 +39,9 @@
 </MudTable>
 
 @code {
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
+    [Parameter] public DeviceData DeviceData { get; set; }
     private List<DeviceDiscoveredEventArgs> DiscoveredDevices = new();
 
     protected override void OnInitialized()
