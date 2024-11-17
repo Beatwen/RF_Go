@@ -11,89 +11,71 @@
 @inject ShureDiscoveryService shureDiscoveryService
 @inject SennheiserDiscoveryService sennheiserDiscoveryService
 
-
-<h3>Remote Tab</h3>
-<h3>Appareils découverts sur le réseau</h3>
-<h4>Shure Discovered Devices</h4>
-<ul>
-    @foreach (var device in ShureDiscoveredDevices)
-    {
-        <li>@device</li>
-    }
-</ul>
-<h4>Sennheiser Discovered Devices</h4>
-<ul>
-    @foreach (var device in SennheiserDiscoveredDevices)
-    {
-        <li>@device</li>
-    }
-</ul>
-<h4>Other Discovered Devices</h4>
-<ul>
-    @foreach (var device in DiscoveredDevices)
-    {
-        <li>@device</li>
-    }
-</ul>
+<h3>Discovered Devices</h3>
+<MudTable Items="@DiscoveredDevices" Bordered="true" Hover="true" Striped="true" Dense="true">
+    <HeaderContent>
+        <MudTh>Brand</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>IP Addresses</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Type</MudTd>
+        <MudTd>@GetBrand(context.Type)</MudTd>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>
+            @foreach (var ip in context.IPAddresses)
+            {
+                <MudChip Color="Color.Info">@ip</MudChip>
+            }
+        </MudTd>
+        <MudTd>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => SyncDevice(context)">
+                Sync
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
 @code {
-    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
-    [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
-    [Parameter] public DeviceData DeviceData { get; set; }
-    private List<string> ShureDiscoveredDevices = new List<string>();
-    private List<string> SennheiserDiscoveredDevices = new List<string>();
-    private List<string> DiscoveredDevices = new List<string>();
+    private List<DeviceDiscoveredEventArgs> DiscoveredDevices = new();
 
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        shureDiscoveryService.DeviceDiscovered += OnShureDeviceDiscovered;
-        Task.Run(() => shureDiscoveryService.StartListeningAsync());
         discoveryService.DeviceDiscovered += OnDeviceDiscovered;
         discoveryService.StartDiscovery();
-        sennheiserDiscoveryService.DeviceDiscovered += OnSennheiserDeviceDiscovered;
-        sennheiserDiscoveryService.StartDiscovery();
     }
-    private void OnShureDeviceDiscovered(object sender, string deviceInfo)
+
+    private void OnDeviceDiscovered(object sender, DeviceDiscoveredEventArgs e)
     {
-        InvokeAsync(() =>
+        if (!DiscoveredDevices.Any(d => d.Name == e.Name))
         {
-            ShureDiscoveredDevices.Add(deviceInfo);
-            StateHasChanged();
-        });
-    }
-    private void OnDeviceDiscovered(object sender, string deviceInfo)
-    {
-        InvokeAsync(() =>
-        {
-            if (!DiscoveredDevices.Contains(deviceInfo))
+            InvokeAsync(() =>
             {
-                // Ajouter l'appareil à la liste et rafraîchir l'UI
-                DiscoveredDevices.Add(deviceInfo);
-                Debug.Print("new discovered device");
-                Debug.Print(deviceInfo);
-                StateHasChanged(); // Met à jour l'interface Blazor
-            }
-        });
-    }
-    private void OnSennheiserDeviceDiscovered(object sender, string deviceInfo)
-    {
-        InvokeAsync(() =>
-        {
-            // Vérification des doublons avant d'ajouter
-            if (!SennheiserDiscoveredDevices.Contains(deviceInfo))
-            {
-                SennheiserDiscoveredDevices.Add(deviceInfo);
+                DiscoveredDevices.Add(e);
                 StateHasChanged();
-            }
-        });
+            });
+        }
+    }
+
+    private string GetBrand(string type)
+    {
+        if (type.Contains("ssc"))
+            return "Sennheiser";
+        if (type.Contains("ewd"))
+            return "EW-D";
+        return "Unknown";
+    }
+
+    private void SyncDevice(DeviceDiscoveredEventArgs device)
+    {
+        // Call service to sync device details
     }
 
     public void Dispose()
     {
         discoveryService.StopDiscovery();
-        shureDiscoveryService.StopListening();
-        shureDiscoveryService.DeviceDiscovered -= OnShureDeviceDiscovered;
-        sennheiserDiscoveryService.StopDiscovery();
+        discoveryService.DeviceDiscovered -= OnDeviceDiscovered;
     }
 }

@@ -9,14 +9,14 @@ namespace RF_Go.Services
     {
         private readonly MulticastService _multicastService;
         private readonly ServiceDiscovery _serviceDiscovery;
-        public event EventHandler<string> DeviceDiscovered;
+
+        public event EventHandler<DeviceDiscoveredEventArgs> DeviceDiscovered;
 
         public DiscoveryService()
         {
             _multicastService = new MulticastService();
             _serviceDiscovery = new ServiceDiscovery(_multicastService);
 
-            // Subscribe to events for discovering services and instances
             _serviceDiscovery.ServiceDiscovered += OnServiceDiscovered;
             _serviceDiscovery.ServiceInstanceDiscovered += OnServiceInstanceDiscovered;
         }
@@ -25,36 +25,55 @@ namespace RF_Go.Services
         {
             _multicastService.Start();
             _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
-
+            _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
         }
 
-        // Handle general service discovery by name (without full details)
         private void OnServiceDiscovered(object sender, DomainName serviceName)
         {
-            // Simply trigger event with the service name for now
-            DeviceDiscovered?.Invoke(this, $"Service discovered: {serviceName}");
-
-            // Optionally query service instances (for more details)
             _serviceDiscovery.QueryServiceInstances(serviceName);
         }
 
-        // Handle detailed instance discovery (with addresses and more details)
         private void OnServiceInstanceDiscovered(object sender, ServiceInstanceDiscoveryEventArgs e)
         {
-            // Extract relevant information from the service instance
-            var addresses = string.Join(", ", e.Message.AdditionalRecords
+            // Extract IP addresses
+            var addresses = e.Message.AdditionalRecords
                 .OfType<AddressRecord>()
-                .Select(record => record.Address.ToString()));
+                .Select(record => record.Address.ToString())
+                .ToList();
 
-            var deviceInfo = $"{e.ServiceInstanceName} - IP: {addresses}";
+            // Infer service type from the queried service
+            string type = InferServiceType(e.ServiceInstanceName.ToString());
+
+            var deviceInfo = new DeviceDiscoveredEventArgs
+            {
+                Name = e.ServiceInstanceName.ToString(),
+                Type = type, // Set the inferred type here
+                IPAddresses = addresses
+            };
+
             DeviceDiscovered?.Invoke(this, deviceInfo);
+        }
+
+        private string InferServiceType(string serviceInstanceName)
+        {
+            if (serviceInstanceName.Contains("_ssc"))
+                return "Sennheiser";
+            if (serviceInstanceName.Contains("_ewd"))
+                return "EW-D";
+            return "Unknown";
         }
 
         public void StopDiscovery()
         {
-            // Clean up the service
             _multicastService.Stop();
             _serviceDiscovery.Dispose();
         }
+    }
+
+    public class DeviceDiscoveredEventArgs : EventArgs
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public List<string> IPAddresses { get; set; }
     }
 }
