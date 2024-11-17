@@ -142,7 +142,6 @@ else
 
         var context = new DatabaseContext();
         DevicesViewModel = new DevicesViewModel(context);
-        var json = JsonFiles.Devices;
         Debug.Print(json);
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
