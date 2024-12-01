@@ -1,0 +1,107 @@
+﻿@using System.Text;
+@using System.Text.Json;
+@using RF_Go.Utils
+@page "/register"
+@inject NavigationManager NavigationManager
+
+<h3>Créer un Compte</h3>
+<p>Veuillez vous inscrire pour utiliser l'application.</p>
+
+<input @bind="FirstName" placeholder="Prénom" />
+<input @bind="LastName" placeholder="Nom" />
+<input @bind="Email" placeholder="Email" />
+<input type="password" @bind="Password" placeholder="Mot de passe" />
+<button @onclick="RegisterUser">S'inscrire</button>
+
+<p>@Message</p>
+
+@code {
+    private string FirstName = "";
+    private string LastName = "";
+    private string Email = "";
+    private string Password = "";
+    private string Message = "";
+    private string deviceIdentifier = "";
+
+    private HttpClient CreateHttpClient()
+    {
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+        client.DefaultRequestHeaders.Add("X-DEVICE-ID", deviceIdentifier);
+        return client;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Récupérer ou générer le Device Identifier
+        deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
+        Console.WriteLine($"Device Identifier: {deviceIdentifier}");
+    }
+
+    private async Task RegisterUser()
+    {
+        if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+        {
+            Message = "Tous les champs sont obligatoires.";
+            return;
+        }
+
+        try
+        {
+            var client = CreateHttpClient();
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    firstName = FirstName,
+                    lastName = LastName,
+                    email = Email,
+                    password = Password
+                }),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await client.PostAsync("http://localhost:3000/users", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Message = "Compte créé avec succès !";
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<UserResponse>(responseContent);
+
+                // Stocker la clé de licence pour une utilisation hors ligne
+                await SecureStorage.SetAsync("licenseKey", result.message);
+
+                // Rediriger l'utilisateur vers la page principale
+                NavigationManager.NavigateTo("/main");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Message = $"Erreur : {response.StatusCode}. Détails : {errorContent}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"Une erreur est survenue : {ex.Message}";
+        }
+    }
+
+    public class UserResponse
+    {
+        public string message { get; set; }
+        public User user { get; set; }
+    }
+    public class User
+    {
+        public int Id { get; set; }
+        public string UserName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; } //ne pas inclure en production
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
+}

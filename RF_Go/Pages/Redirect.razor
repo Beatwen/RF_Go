@@ -1,0 +1,64 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+@using Microsoft.Maui.Storage
+@using System.Text.Json
+@using System.Net.Http
+@using System.Net.Http.Json
+@using RF_Go.Utils
+
+<h3>Redirection...</h3>
+
+@code {
+    private HttpClient client = new HttpClient();
+    private string deviceIdentifier = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Récupérer ou générer l'identifiant du device
+        deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
+        Console.WriteLine($"Device Identifier: {deviceIdentifier}");
+
+        var licenseKey = await SecureStorage.GetAsync("licenseKey");
+
+        if (string.IsNullOrEmpty(licenseKey))
+        {
+            // Rediriger vers la page d'inscription si aucune licence n'est trouvée
+            NavigationManager.NavigateTo("/register");
+        }
+        else
+        {
+            // Vérification avec le serveur si la licence est valide
+            var response = await client.PostAsJsonAsync("http://localhost:3000/licenses/validate", new
+            {
+                licenseKey,
+                deviceId = deviceIdentifier
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<LicenseValidationResponse>(responseContent);
+
+                if (result.Valid)
+                {
+                    NavigationManager.NavigateTo("/index");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/license"); // Page d'achat ou d'activation
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Erreur serveur : {response.StatusCode}");
+                NavigationManager.NavigateTo("/error"); // Page d'erreur
+            }
+        }
+    }
+
+    public class LicenseValidationResponse
+    {
+        public bool Valid { get; set; }
+        public string Message { get; set; }
+    }
+}

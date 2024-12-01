@@ -1,5 +1,5 @@
 ﻿@inherits ComponentBase
-@page "/"
+@page "/main"
 @using MudBlazor
 @using Newtonsoft.Json
 @using System.IO
@@ -17,6 +17,7 @@
 @inject GroupsViewModel GroupsViewModel
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
 
+
 @if (isLoadingJSON)
 {
     <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
@@ -33,12 +34,6 @@ else
                     <MudGrid Spacing="1" Class="display-6 pl-6 pr-6">
                         <MudItem xs="12" md="3">
                             <MudPaper Class="mt-4">
-                                <DeviceSelection DeviceData="deviceData"
-                                                 DevicesViewModel="DevicesViewModel"
-                                                 GroupsViewModel="GroupsViewModel"
-                                                 OnDeviceSaved="RefreshComponents" />
-                            </MudPaper>
-                            <MudPaper Class="mt-4">
                                 <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
                             </MudPaper>
                         </MudItem>
@@ -47,8 +42,7 @@ else
                                 <MainTab DeviceData="deviceData"
                                          ExclusionChannelViewModel="ExclusionChannelViewModel"
                                          DevicesViewModel="DevicesViewModel"
-                                         GroupsViewModel="GroupsViewModel"
-                                         OnDeviceSaved="RefreshComponents" />
+                                         GroupsViewModel="GroupsViewModel" />
                             </MudPaper>
                         </MudItem>
                         <MudItem xs="12" md="3">
@@ -93,6 +87,9 @@ else
     private RFDevice selectedItem1 = null;
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
+
+
+
 
     private void RefreshComponents()
     {

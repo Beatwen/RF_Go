@@ -6,8 +6,8 @@
 @using RF_Go.Models
 @using RF_Go.ViewModels
 @using System.Diagnostics
+@inject IDialogService Dialog
 @inject MudBlazor.ISnackbar Snackbar
-
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
@@ -18,19 +18,14 @@
         else
         {
     <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
-        <div class="flex-none d-flex">
-            <MudText Typo="Typo.h5" Class="">Devices</MudText>
-        </div>
-        <div class="">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
-                Calculate
-            </MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
-                Send Data to Device
-            </MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="mx-2" @onclick="DeleteAll">
-                Delete All Devices
-            </MudButton>
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogAsync())">Open</MudFab>
+            <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
+                    Calculate
+                </MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
+                    Sync
+                </MudButton>
         </div>
     </div>
     
@@ -43,7 +38,11 @@
         <HeaderContent>
             <MudTh Style="min-width: 200px;">Device</MudTh>
             <MudTh Style="min-width: 150px;">Set Frequencies</MudTh>
-            <MudTh Style="min-width: 150px;">Inclusion Group</MudTh>
+            <MudTh Class="d-flex align-center justify-space-between" Style="min-width: 150px;">
+                    <span>Group</span>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="DeleteAll" />
+            </MudTh>
+
         </HeaderContent>
 
         <RowTemplate>
@@ -69,7 +68,7 @@
 
                             <MudTd Class="d-flex align-center mt-0">
                                 <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step" Style="@CalculateStyle(chan)" Class="mt-0" Label="@GetRange(chan)" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                                <MudCheckBox @bind-Value="chan.IsLocked" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Favorite" UncheckedIcon="@Icons.Material.Filled.FavoriteBorder" Class="pl-1"></MudCheckBox>
+                                <MudCheckBox @bind-Value="chan.IsLocked" Dense="true" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Lock" UncheckedIcon="@Icons.Material.Filled.LockOpen" Class="pl-3"></MudCheckBox>
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -144,7 +143,6 @@
         int endRange = DeviceData.Brands[device.Brand][device.Model][device.Frequency][1];
         return device.Frequency + " - " + $"{startRange:#,0} - {endRange:#,0}";
     }
-
     protected override async Task OnInitializedAsync()
     {
         await DevicesViewModel.LoadDevicesAsync();
@@ -277,5 +275,34 @@
         string startRange = (chan.Range[0] / 1000).ToString();
         string endRange = (chan.Range[1] / 1000).ToString();
         return $"{startRange} - {endRange} Mhz";
+    }
+    private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    private Task OpenDialogAsync()
+    {
+        // Initialize dialog options
+        var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            };
+
+        // Pass parameters and options in the correct order
+        return Dialog.ShowAsync<DeviceSelection>(
+            "Add your devices",
+            new DialogParameters
+                    {
+            { "DeviceData", DeviceData },
+            { "DevicesViewModel", DevicesViewModel },
+            { "GroupsViewModel", GroupsViewModel },
+            { "OnDeviceSaved", EventCallback.Factory.Create(this, RefreshParentState) },
+                    },
+            options
+        );
+    }
+
+    private void RefreshParentState()
+    {
+        StateHasChanged();
     }
 }

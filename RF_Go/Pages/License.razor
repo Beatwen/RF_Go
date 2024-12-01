@@ -1,0 +1,20 @@
+﻿@page "/license"
+@inject NavigationManager NavigationManager
+
+<h3>Gérer votre Licence</h3>
+<p>Vous devez activer ou acheter une licence pour utiliser l'application.</p>
+
+<button @onclick="NavigateToPurchase">Acheter une Licence</button>
+<button @onclick="NavigateToActivate">Activer une Licence</button>
+
+@code {
+    private void NavigateToPurchase()
+    {
+        NavigationManager.NavigateTo("/purchase");
+    }
+
+    private void NavigateToActivate()
+    {
+        NavigationManager.NavigateTo("/activate");
+    }
+}
