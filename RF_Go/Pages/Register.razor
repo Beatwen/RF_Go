@@ -8,59 +8,45 @@
 @using RF_Go.Models.Licensing
 @inject NavigationManager NavigationManager
 
-<MudGrid>
-    <MudItem xs="12" sm="7">
-        <MudPaper Class="pa-4">
-            <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-                <MudTextField T="string" Label="First Name" Required="true" RequiredError="First Name is required!"
-                              @bind-Value="@registrationModel.FirstName" />
-                <MudTextField T="string" Label="Last Name" Required="true" RequiredError="Last Name is required!"
-                              @bind-Value="@registrationModel.LastName" />
-                <MudTextField T="string" Label="Email" Required="true" RequiredError="Email is required!"
-                              @bind-Value="@registrationModel.Email"
-                              Validation="@(new EmailAddressAttribute() { ErrorMessage = "Invalid email address!" })" />
-                <MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pwField1"
-                              InputType="InputType.Password"
-                              Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
-                              Required="true" RequiredError="Password is required!"
-                              @bind-Value="@registrationModel.Password" />
-                <MudTextField T="string" Label="Confirm Password" HelperText="Repeat the password"
-                              InputType="InputType.Password"
-                              Validation="@(new Func<string, string>(PasswordMatch))" />
-
-                <MudCheckBox T="bool" Required="true" RequiredError="You must agree to the terms"
-                             Label="I agree to the terms and conditions!"
-                             @bind-Checked="@registrationModel.AcceptedTerms" />
-
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="mt-4"
-                           OnClick="@RegisterForm">Register</MudButton>
-
-                <div class="mt-4">
-                    <MudText Typo="Typo.body1">
-                        Already have an account?
-                        <MudLink Href="/login" Class="ml-1" Color="Color.Primary">Log in here</MudLink>
-                    </MudText>
-                </div>
-            </MudForm>
-        </MudPaper>
-
-
-        <MudPaper Class="pa-4 mt-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="@(()=>form.Validate())">Validate</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Secondary" DropShadow="false" OnClick="@(()=>form.ResetAsync())" Class="mx-2">Reset</MudButton>
-            <MudButton Variant="Variant.Filled" DropShadow="false" OnClick="@(()=>form.ResetValidation())">Reset Validation</MudButton>
-        </MudPaper>
-    </MudItem>
-    <MudItem xs="12" sm="5">
-        <MudPaper Class="pa-4 mud-height-full">
-            <MudText Typo="Typo.subtitle2">@($"Errors ({errors.Length})")</MudText>
+<MudContainer MaxWidth="MaxWidth.Small" Style="margin: auto; padding: 40px;">
+    <MudPaper Class="pa-4" Elevation="3">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Create Your Account</MudText>
+        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField T="string" Label="First Name" Required="true" RequiredError="First Name is required!"
+                          @bind-Value="@registrationModel.FirstName" FullWidth="true" Class="mb-3" />
+            <MudTextField T="string" Label="Last Name" Required="true" RequiredError="Last Name is required!"
+                          @bind-Value="@registrationModel.LastName" FullWidth="true" Class="mb-3" />
+            <MudTextField T="string" Label="Email" Required="true" RequiredError="Email is required!"
+                          @bind-Value="@registrationModel.Email"
+                          Validation="@(new EmailAddressAttribute() { ErrorMessage = "Invalid email address!" })"
+                          FullWidth="true" Class="mb-3" />
+            <MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pwField1"
+                          InputType="@PasswordInput"
+                          AdornmentIcon="@PasswordInputIcon"
+                          OnAdornmentClick="TogglePasswordVisibility"
+                          AdornmentAriaLabel="Show Password"
+                          Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
+                          Required="true" RequiredError="Password is required!"
+                          @bind-Value="@registrationModel.Password" FullWidth="true" Class="mb-3" />
+            <MudTextField T="string" Label="Confirm Password" HelperText="Repeat the password"
+                          InputType="InputType.Password"
+                          Validation="@(new Func<string, string>(PasswordMatch))"
+                          FullWidth="true" Class="mb-3" />
+            <MudCheckBox T="bool" Required="true" RequiredError="You must agree to the terms"
+                         Label="I agree to the terms and conditions!"
+                         @bind-Checked="@registrationModel.AcceptedTerms" Class="mb-4" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" FullWidth="true"
+                       OnClick="@RegisterForm">Register</MudButton>
             @foreach (var error in errors)
             {
                 <MudText Color="@Color.Error">@error</MudText>
             }
-        </MudPaper>
-    </MudItem>
-</MudGrid>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="mt-4">
+                Already have an account? <MudLink Href="/login" Color="Color.Primary">Log in here</MudLink>
+            </MudText>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private RegistrationModel registrationModel = new();
@@ -69,13 +55,20 @@
     private MudTextField<string> pwField1;
     private MudForm form;
     private HttpClient httpClient = new HttpClient();
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        isShow = !isShow;
+        PasswordInputIcon = isShow ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+        PasswordInput = isShow ? InputType.Text : InputType.Password;
+    }
 
     private async Task RegisterForm()
     {
-        if (!success)
-        {
-            return;
-        }
+        if (!success) return;
 
         try
         {
@@ -83,17 +76,13 @@
                 {
                     Content = JsonContent.Create(registrationModel)
                 };
-
             request.Headers.Add("X-API-KEY", AppConfig.ApiKey);
 
             var response = await httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<RegistrationResponse>(responseContent);
                 NavigationManager.NavigateTo("/login?from=register");
-
             }
             else
             {
@@ -109,49 +98,24 @@
 
     private IEnumerable<string> PasswordStrength(string pw)
     {
-        if (string.IsNullOrWhiteSpace(pw))
-        {
-            yield return "Password is required!";
-            yield break;
-        }
-        if (pw.Length < 8)
-            yield return "Password must be at least of length 8";
-        if (!Regex.IsMatch(pw, @"[A-Z]"))
-            yield return "Password must contain at least one capital letter";
-        if (!Regex.IsMatch(pw, @"[a-z]"))
-            yield return "Password must contain at least one lowercase letter";
-        if (!Regex.IsMatch(pw, @"[0-9]"))
-            yield return "Password must contain at least one digit";
+        if (string.IsNullOrWhiteSpace(pw)) yield return "Password is required!";
+        if (pw.Length < 8) yield return "Password must be at least of length 8";
+        if (!Regex.IsMatch(pw, @"[A-Z]")) yield return "Password must contain at least one capital letter";
+        if (!Regex.IsMatch(pw, @"[a-z]")) yield return "Password must contain at least one lowercase letter";
+        if (!Regex.IsMatch(pw, @"[0-9]")) yield return "Password must contain at least one digit";
     }
 
     private string PasswordMatch(string arg)
     {
-        if (pwField1?.Value != arg)
-            return "Passwords don't match";
-        return null;
+        return pwField1?.Value != arg ? "Passwords don't match" : null;
     }
 
     public class RegistrationModel
     {
-        [Required]
-        public string FirstName { get; set; } = string.Empty;
-
-        [Required]
-        public string LastName { get; set; } = string.Empty;
-
-        [Required, EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
-        public string Password { get; set; } = string.Empty;
-
-        [Required]
-        public bool AcceptedTerms { get; set; } = false;
-    }
-
-    public class RegistrationResponse
-    {
-        public User user { get; set; }
-        public string message { get; set; }
+        [Required] public string FirstName { get; set; } = string.Empty;
+        [Required] public string LastName { get; set; } = string.Empty;
+        [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+        [Required] public string Password { get; set; } = string.Empty;
+        [Required] public bool AcceptedTerms { get; set; } = false;
     }
 }

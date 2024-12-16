@@ -12,7 +12,16 @@
 
         @if (DevicesViewModel.Devices.Count == 0)
         {
-            <MudAlert Severity="Severity.Info" Variant="Variant.Filled">No devices found</MudAlert>
+            <MudContainer MaxWidth="MaxWidth.Medium" Style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+                <MudPaper Class="pa-6" Elevation="3" Style="text-align: center; max-width: 400px;">
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
+                        No devices found. Start by adding a device.
+                    </MudAlert>
+                    <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogAsync())">
+                        Add Device
+                    </MudFab>
+                </MudPaper>
+            </MudContainer>
         }
         else
         {

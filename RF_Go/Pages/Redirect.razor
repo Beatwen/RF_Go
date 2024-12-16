@@ -21,8 +21,10 @@
 
         var userKey = await SecureStorage.GetAsync("userKey");
         var licenseKey = await SecureStorage.GetAsync("licenseKey");
+        var user = await SecureStorage.GetAsync("user");
         Debug.Print("user" + userKey);
         Debug.Print("license" + licenseKey);
+        Debug.Print("user" + user);
 
         if (string.IsNullOrEmpty(userKey))
         {

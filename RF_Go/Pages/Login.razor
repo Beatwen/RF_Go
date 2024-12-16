@@ -27,8 +27,7 @@
         }
 
         <MudTextField Label="Email" @bind-Value="Email" FullWidth="true" Required="true" />
-        <MudTextField Label="Password" @bind-Value="Password" FullWidth="true" Password="true" Required="true" />
-
+        <MudTextField @bind-Value="Password" Label="Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" AdornmentAriaLabel="Show Password" />
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginUser" Class="mt-4" FullWidth="true">
             Login
         </MudButton>
@@ -49,24 +48,33 @@
     private string Password = "";
     private string Message = "";
     private bool ShowRegisterMessage = false;
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
 
+    void ButtonTestclick()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
     protected override void OnInitialized()
     {
         var uri = new Uri(NavigationManager.Uri);
         var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
-
-        // Vérifiez si le paramètre "from" existe et vaut "register"
         if (queryParameters["from"] == "register")
         {
             ShowRegisterMessage = true;
         }
-    }
-
-    private HttpClient CreateHttpClient()
-    {
-        var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey); // Utilisez votre clé API ici
-        return client;
     }
 
     private async Task LoginUser()
@@ -79,8 +87,9 @@
 
         try
         {
-            var client = CreateHttpClient();
-
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+            client.DefaultRequestHeaders.Add("X-DEVICE-ID", await GUID.GetOrCreateDeviceIdentifier());
             var content = new StringContent(
                 JsonSerializer.Serialize(new
                 {
@@ -95,17 +104,15 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Message = "Login successful!";
-                var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
-                var responseContenttest = await response.Content.ReadAsStringAsync();
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<LoginResponse>(responseContent);
-                await SecureStorageUtils.SaveUserToSecureStorage(result.user);
-                await SecureStorage.SetAsync("userKey", result.user.id.ToString());
-                NavigationManager.NavigateTo("/license");
+
+                if (result?.user != null)
+                {
+                    await SecureStorageUtils.SaveUserToSecureStorage(result.user);
+                    await SecureStorage.SetAsync("userKey", result.user.id.ToString());
+                    NavigationManager.NavigateTo(result.redirectTo ?? "/license");
+                }
             }
             else
             {
@@ -123,6 +130,7 @@
     {
         public string message { get; set; }
         public User user { get; set; }
+        public string redirectTo { get; set; } // Ajout de ce champ
     }
 }
 
