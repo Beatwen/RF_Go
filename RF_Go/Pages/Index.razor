@@ -19,44 +19,45 @@
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
 
 
-@if (isLoadingJSON)
-{
-    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
-}
-else
-{
-        <MudTabs
-                 KeepPanelsAlive="true"
+<MudContainer MaxWidth="MaxWidth.False" Style="max-height:50vh">
+    @if (isLoadingJSON)
+    {
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    }
+    else
+    {
+        <MudTabs KeepPanelsAlive="true"
                  Elevation="4"
                  Centered="true"
                  Rounded="false"
+
                  AlwaysShowScrollButtons="true">
             <MudTabPanel Text="Devices" ID='"devices_tab"' Class="flex-grow-1">
-                    <MudGrid Spacing="1" Class="display-6 pl-6 pr-6">
-                        <MudItem xs="12" md="3">
-                            <MudPaper Class="mt-4">
-                                <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudPaper Class="mt-4">
-                                <MainTab DeviceData="deviceData"
-                                         ExclusionChannelViewModel="ExclusionChannelViewModel"
-                                         DevicesViewModel="DevicesViewModel"
-                                         GroupsViewModel="GroupsViewModel" />
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" md="3">
-                            <MudPaper Class="mt-4">
-                                <SlidersSpacers DeviceData="deviceData"
-                                                DevicesViewModel="DevicesViewModel"
-                                                GroupsViewModel="GroupsViewModel" />
-                            </MudPaper>
-                        </MudItem>
-                    </MudGrid>
-                    <RFGroupsLayout DeviceData="deviceData"
-                                    DevicesViewModel="DevicesViewModel"
-                                    GroupsViewModel="GroupsViewModel" />
+                <MudGrid Spacing="1" Class="display-6 pl-6 pr-6">
+                    <MudItem xs="12" md="3">
+                        <MudPaper Class="mt-4">
+                            <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudPaper Class="mt-4" Style="height:88vh">
+                            <MainTab DeviceData="deviceData"
+                                     ExclusionChannelViewModel="ExclusionChannelViewModel"
+                                     DevicesViewModel="DevicesViewModel"
+                                     GroupsViewModel="GroupsViewModel" />
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudPaper Class="mt-4" Style="height:88vh">
+                            <SlidersSpacers DeviceData="deviceData"
+                                            DevicesViewModel="DevicesViewModel"
+                                            GroupsViewModel="GroupsViewModel" />
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+                <RFGroupsLayout DeviceData="deviceData"
+                                DevicesViewModel="DevicesViewModel"
+                                GroupsViewModel="GroupsViewModel" />
             </MudTabPanel>
 
             <MudTabPanel Text="Remote" ID='"remote_tab"'>
@@ -68,11 +69,14 @@ else
             </MudTabPanel>
 
             <MudTabPanel Icon="@Icons.Material.Filled.AccountCircle" ID='"account_tab"' DisableRipple="true">
-                <MudText Typo="Typo.h6" Align="Align.Center">
-                   <AccountInfo />
+                <MudText Typo="Typo.h6" Align="Align.Center" Style="height:70vh">
+                    <AccountInfo  />
                 </MudText>
             </MudTabPanel>
         </MudTabs>
+    }
+</MudContainer>
+
 }
 
 @code 
