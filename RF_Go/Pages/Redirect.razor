@@ -1,10 +1,11 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
 @using Microsoft.Maui.Storage
-@using System.Text.Json
-@using System.Net.Http
-@using System.Net.Http.Json
-@using RF_Go.Utils
+@using System.Diagnostics;
+@using System.Text.Json;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+@using RF_Go.Utils;
 
 <h3>Redirection...</h3>
 
@@ -16,18 +17,35 @@
     {
         // Récupérer ou générer l'identifiant du device
         deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
-        Console.WriteLine($"Device Identifier: {deviceIdentifier}");
+        Debug.WriteLine($"Device Identifier: {deviceIdentifier}");
 
+        var userKey = await SecureStorage.GetAsync("userKey");
         var licenseKey = await SecureStorage.GetAsync("licenseKey");
+        Debug.Print("user" + userKey);
+        Debug.Print("license" + licenseKey);
+
+        if (string.IsNullOrEmpty(userKey))
+        {
+            NavigationManager.NavigateTo("/register");
+            return;
+        }
 
         if (string.IsNullOrEmpty(licenseKey))
         {
-            // Rediriger vers la page d'inscription si aucune licence n'est trouvée
-            NavigationManager.NavigateTo("/register");
+            Debug.WriteLine("userKey" + userKey);
+            NavigationManager.NavigateTo("/license");
+            return;
         }
-        else
+
+        try
         {
-            // Vérification avec le serveur si la licence est valide
+            // Vérification du réseau et validation de la licence
+
+            client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+            client.DefaultRequestHeaders.Add("X-USER-KEY", userKey);
+            client.DefaultRequestHeaders.Add("X-DEVICE-ID", deviceIdentifier);
+            client.DefaultRequestHeaders.Add("X-LICENSE-KEY", licenseKey);
+
             var response = await client.PostAsJsonAsync("http://localhost:3000/licenses/validate", new
             {
                 licenseKey,
@@ -39,26 +57,31 @@
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<LicenseValidationResponse>(responseContent);
 
-                if (result.Valid)
+                if (result.valid)
                 {
                     NavigationManager.NavigateTo("/index");
                 }
                 else
                 {
-                    NavigationManager.NavigateTo("/license"); // Page d'achat ou d'activation
+                    NavigationManager.NavigateTo("/license");
                 }
             }
             else
             {
-                Console.WriteLine($"Erreur serveur : {response.StatusCode}");
-                NavigationManager.NavigateTo("/error"); // Page d'erreur
+                Debug.Print(response.Content.ToString());
+                NavigationManager.NavigateTo("/index");
             }
+        }
+        catch
+        {
+            // Mode hors ligne
+            NavigationManager.NavigateTo("/index");
         }
     }
 
     public class LicenseValidationResponse
     {
-        public bool Valid { get; set; }
-        public string Message { get; set; }
+        public bool valid { get; set; }
+        public string message { get; set; }
     }
 }

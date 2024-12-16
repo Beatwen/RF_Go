@@ -1,0 +1,128 @@
+﻿@page "/login"
+@using RF_Go.Components
+@using RF_Go.Utils
+@using MudBlazor
+@using System.IO
+@using System
+@using System.Text.Json
+@using System.Text
+@using Microsoft.AspNetCore
+@using RF_Go.Data
+@using RF_Go.Models.Licensing
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using System.Diagnostics
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Small" Style="margin: auto; padding: 20px;">
+    <MudPaper Elevation="3" Class="pa-4">
+
+        <MudText Typo="Typo.h4" Class="mb-4">Login</MudText>
+
+        @if (ShowRegisterMessage)
+        {
+            <MudText Typo="Typo.body1" Class="mb-2" Color="Color.Success">
+                You just received an email. Please confirm your email and copy your license.
+            </MudText>
+        }
+
+        <MudTextField Label="Email" @bind-Value="Email" FullWidth="true" Required="true" />
+        <MudTextField Label="Password" @bind-Value="Password" FullWidth="true" Password="true" Required="true" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginUser" Class="mt-4" FullWidth="true">
+            Login
+        </MudButton>
+
+        <MudText Typo="Typo.body2" Class="mt-2">
+            Don't have an account? <MudLink Href="/register">Register here</MudLink>
+        </MudText>
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@Message</MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string Email = "";
+    private string Password = "";
+    private string Message = "";
+    private bool ShowRegisterMessage = false;
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        // Vérifiez si le paramètre "from" existe et vaut "register"
+        if (queryParameters["from"] == "register")
+        {
+            ShowRegisterMessage = true;
+        }
+    }
+
+    private HttpClient CreateHttpClient()
+    {
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey); // Utilisez votre clé API ici
+        return client;
+    }
+
+    private async Task LoginUser()
+    {
+        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+        {
+            Message = "Both email and password are required.";
+            return;
+        }
+
+        try
+        {
+            var client = CreateHttpClient();
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    email = Email,
+                    password = Password
+                }),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await client.PostAsync("http://localhost:3000/auth/login", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Message = "Login successful!";
+                var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                var responseContenttest = await response.Content.ReadAsStringAsync();
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<LoginResponse>(responseContent);
+                await SecureStorageUtils.SaveUserToSecureStorage(result.user);
+                await SecureStorage.SetAsync("userKey", result.user.id.ToString());
+                NavigationManager.NavigateTo("/license");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Message = $"Login failed: {errorContent}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"An error occurred: {ex.Message}";
+        }
+    }
+
+    public class LoginResponse
+    {
+        public string message { get; set; }
+        public User user { get; set; }
+    }
+}
+

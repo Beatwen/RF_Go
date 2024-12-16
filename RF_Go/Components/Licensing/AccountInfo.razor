@@ -1,0 +1,115 @@
+﻿@using System.Net.Http.Json
+@using Utils
+@using Models.Licensing
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<MudContainer MaxWidth="MaxWidth.Medium" Style="margin: auto; padding: 20px;">
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Mon Compte</MudText>
+
+        @if (User != null)
+        {
+            <MudCard Class="pa-2 mb-2">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">Nom d'utilisateur</MudText>
+                    <MudText Typo="Typo.subtitle2">@User.userName</MudText>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard Class="pa-2 mb-2">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">Prénom</MudText>
+                    <MudText Typo="Typo.subtitle2">@User.firstName</MudText>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard Class="pa-2 mb-2">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">Nom</MudText>
+                    <MudText Typo="Typo.subtitle2">@User.lastName</MudText>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard Class="pa-2 mb-2">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">Email</MudText>
+                    <MudText Typo="Typo.subtitle2">@User.email</MudText>
+                </MudCardContent>
+            </MudCard>
+        }
+        else
+        {
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Color="Color.Error">
+                Impossible de charger les informations de votre compte.
+            </MudText>
+        }
+
+        <MudDivider Class="mt-4 mb-4" />
+
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="ConfirmUserDeletion">
+            Supprimer mon compte
+        </MudButton>
+    </MudPaper>
+</MudContainer>
+
+<MudDialog @bind-IsVisible="IsDeleteDialogOpen" MaxWidth="MaxWidth.Small" Style="padding: 20px;">
+    <MudDialogTitle>Confirmer la suppression</MudDialogTitle>
+    <MudDialogContent>
+        <MudText Typo="Typo.body1">Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.</MudText>
+    </MudDialogContent>
+    <MudDialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => IsDeleteDialogOpen = false">
+            Annuler
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteUser">
+            Supprimer
+        </MudButton>
+    </MudDialogActions>
+</MudDialog>
+
+@code {
+    private User User = null;
+    private bool IsDeleteDialogOpen = false;
+    private string Message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await SecureStorageUtils.GetUserFromSecureStorage();
+    }
+
+    private void ConfirmUserDeletion()
+    {
+        IsDeleteDialogOpen = true;
+    }
+
+    private async Task DeleteUser()
+    {
+        try
+        {
+            string userKey = await SecureStorage.GetAsync("userKey");
+            if (!string.IsNullOrEmpty(userKey))
+            {
+                var response = await HttpClient.DeleteAsync($"http://localhost:3000/users/{userKey}");
+                if (response.IsSuccessStatusCode)
+                {
+                    // Redirige l'utilisateur après suppression
+                    await SecureStorage.SetAsync("userKey", "");
+                    NavigationManager.NavigateTo("/register");
+                }
+                else
+                {
+                    Message = "Erreur lors de la suppression de votre compte.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"Erreur : {ex.Message}";
+        }
+        finally
+        {
+            IsDeleteDialogOpen = false;
+        }
+    }
+}

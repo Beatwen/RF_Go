@@ -1,10 +1,11 @@
-﻿@inherits ComponentBase
-@page "/main"
-@using MudBlazor
+﻿@page "/index"
+@inherits ComponentBase
+
 @using Newtonsoft.Json
 @using System.IO
 @using System
 @using System.Text
+@using RF_Go.Components.Licensing
 @using RF_Go.Data
 @using RF_Go.Models
 @using RF_Go.ViewModels
@@ -57,7 +58,9 @@ else
                                     DevicesViewModel="DevicesViewModel"
                                     GroupsViewModel="GroupsViewModel" />
             </MudTabPanel>
+
             <MudTabPanel Text="TVChannels" ID='"tvchannels_tab"' />
+
             <MudTabPanel Text="Remote" ID='"remote_tab"'>
                 <MudText>
                     <RemoteTab DeviceData="deviceData"
@@ -65,6 +68,13 @@ else
                                GroupsViewModel="GroupsViewModel" />
                 </MudText>
             </MudTabPanel>
+
+            <MudTabPanel Icon="@Icons.Material.Filled.AccountCircle" ID='"account_tab"' DisableRipple="true">
+                <MudText Typo="Typo.h6" Align="Align.Center">
+                   <AccountInfo />
+                </MudText>
+            </MudTabPanel>
+
         </MudTabs>
 }
 

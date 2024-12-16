@@ -12,8 +12,6 @@ namespace RF_Go.Utils
         public static async Task<string> GetOrCreateDeviceIdentifier()
         {
             const string key = "deviceIdentifier";
-
-            // Vérifiez si un identifiant existe déjà
             var identifier = await SecureStorage.GetAsync(key);
 
             if (string.IsNullOrEmpty(identifier))

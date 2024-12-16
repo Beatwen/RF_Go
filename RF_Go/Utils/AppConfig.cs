@@ -9,6 +9,8 @@ namespace RF_Go.Utils
     public static class AppConfig
     {
         public const string ApiKey = "123456789987654321"; 
+
     }
+
 
 }
