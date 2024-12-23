@@ -1,25 +1,16 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 html, body {
+    height: 100%; 
     margin: 0;
     padding: 0;
-    height: 100%;
 }
-
-#app {
-    height: 100%; /* Full height for the Blazor app */
-    display: flex;
-    flex-direction: column;
+html {
+    font-size: 14px; /* Définit une taille globale */
 }
-
-.full-height {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
+td .portal {
+    height: unset;
 }
-
-
-
 .mud-input-control .mud-select-input {
     margin-top: 0 !important;
 }
@@ -85,9 +76,10 @@ a, .btn-link {
 .status-bar-safe-area {
     display: none;
 }
-.mud-table-cell {
-    padding : 0px;
-}
+/*.mud-table-dense .mud-table-row .mud-table-cell {
+    padding: 4px 12px !important;*/ /* Ajustez les valeurs à votre convenance */
+/*}*/
+
 
 @supports (-webkit-touch-callout: none) {
     .status-bar-safe-area {

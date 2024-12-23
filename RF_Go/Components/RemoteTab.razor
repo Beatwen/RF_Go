@@ -10,9 +10,13 @@
 @inject DiscoveryService discoveryService
 @inject ShureDiscoveryService shureDiscoveryService
 @inject SennheiserDiscoveryService sennheiserDiscoveryService
-
-<h3>Discovered Devices</h3>
-<MudTable Items="@DiscoveredDevices" Bordered="true" Hover="true" Striped="true" Dense="true" Class="100vh">
+    
+<MudTable Items="@DiscoveredDevices"
+          Bordered="true"
+          Hover="true"
+          Striped="true"
+          Dense="true"
+          Style="margin: auto; overflow: auto; height: calc(100vh - 150px);">
     <HeaderContent>
         <MudTh>Brand</MudTh>
         <MudTh>Type</MudTh>
@@ -27,7 +31,7 @@
         <MudTd>
             @foreach (var ip in context.IPAddresses)
             {
-                <MudChip Color="Color.Info">@ip</MudChip>
+                <MudChip T="string">@ip</MudChip>
             }
         </MudTd>
         <MudTd>
@@ -73,7 +77,7 @@
 
     private void SyncDevice(DeviceDiscoveredEventArgs device)
     {
-        // Call service to sync device details
+        // A faire dans le futur
     }
 
     public void Dispose()

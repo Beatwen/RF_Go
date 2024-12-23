@@ -19,7 +19,7 @@
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
 
 
-<MudContainer MaxWidth="MaxWidth.False" Style="max-height:50vh">
+<MudContainer Style="max-height:60vh">
     @if (isLoadingJSON)
     {
         <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
@@ -30,17 +30,18 @@
                  Elevation="4"
                  Centered="true"
                  Rounded="false"
-
                  AlwaysShowScrollButtons="true">
-            <MudTabPanel Text="Devices" ID='"devices_tab"' Class="flex-grow-1">
+            <MudTabPanel Text="Devices" ID='"devices_tab"' Class="">
                 <MudGrid Spacing="1" Class="display-6 pl-6 pr-6">
-                    <MudItem xs="12" md="3">
+                    @* <MudItem xs="12" md="3"> *@
+                    @*     <MudPaper Class="mt-4"> *@
+                    @*         <TVChannelsFilter DeviceData="deviceData" *@
+                    @*                         DevicesViewModel="DevicesViewModel" *@
+                    @*                         GroupsViewModel="GroupsViewModel" /> *@
+                    @*     </MudPaper> *@
+                    @* </MudItem> *@
+                    <MudItem xs="12" md="9" Style="min-width: 600px; max-width: 750px;">
                         <MudPaper Class="mt-4">
-                            <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudPaper Class="mt-4" Style="height:30vh">
                             <MainTab DeviceData="deviceData"
                                      ExclusionChannelViewModel="ExclusionChannelViewModel"
                                      DevicesViewModel="DevicesViewModel"
@@ -48,18 +49,26 @@
                         </MudPaper>
                     </MudItem>
                     <MudItem xs="12" md="3">
-                        <MudPaper Class="mt-4" Style="height:88vh">
+                        <MudPaper Class="mt-4">
                             <SlidersSpacers DeviceData="deviceData"
                                             DevicesViewModel="DevicesViewModel"
                                             GroupsViewModel="GroupsViewModel" />
                         </MudPaper>
                     </MudItem>
                 </MudGrid>
-                <RFGroupsLayout DeviceData="deviceData"
-                                DevicesViewModel="DevicesViewModel"
-                                GroupsViewModel="GroupsViewModel" />
-            </MudTabPanel>
 
+
+            </MudTabPanel>
+            <MudTabPanel Text="TV Channels" ID='"exclusion_tab"'>
+                            <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
+            </MudTabPanel>
+            <MudTabPanel Text="Groups" ID='"groups"'>
+                <MudPaper>
+                    <RFGroupsLayout DeviceData="deviceData"
+                                    DevicesViewModel="DevicesViewModel"
+                                    GroupsViewModel="GroupsViewModel" />
+                </MudPaper>
+            </MudTabPanel>
             <MudTabPanel Text="Remote" ID='"remote_tab"'>
                 <MudText>
                     <RemoteTab DeviceData="deviceData"
@@ -69,15 +78,13 @@
             </MudTabPanel>
 
             <MudTabPanel Icon="@Icons.Material.Filled.AccountCircle" ID='"account_tab"' DisableRipple="true">
-                <MudText Typo="Typo.h6" Align="Align.Center" Style="height:70vh">
+                <MudText Typo="Typo.h6" Align="Align.Center">
                     <AccountInfo  />
                 </MudText>
             </MudTabPanel>
         </MudTabs>
     }
 </MudContainer>
-
-}
 
 @code 
 {
@@ -142,3 +149,5 @@
         StateHasChanged();
     }
 }
+
+
