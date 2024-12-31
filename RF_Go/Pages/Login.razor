@@ -104,8 +104,8 @@
                 Encoding.UTF8,
                 "application/json"
             );
-
-            var response = await client.PostAsync("http://localhost:3000/auth/login", content);
+            var baseUrl = AppConfig.ApiBaseUrl;
+            var response = await client.PostAsync($"{baseUrl}/auth/login", content);
 
             if (response.IsSuccessStatusCode)
             {

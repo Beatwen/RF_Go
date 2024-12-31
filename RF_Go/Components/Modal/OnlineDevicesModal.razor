@@ -1,0 +1,28 @@
+﻿@using RF_Go.Models
+@using RF_Go.Components
+@using RF_Go.ViewModels
+
+<MudDialog>
+    <DialogContent>
+        <OnlineTab DevicesViewModel="DevicesViewModel" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseModal" Color="Color.Secondary">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    //[Parameter] public EventCallback<RFDevice> OnDeviceSynced { get; set; }
+
+    private void CloseModal()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    // private async Task HandleDeviceSynced(RFDevice device)
+    // {
+    //     await OnDeviceSynced.InvokeAsync(device);
+    // }
+}

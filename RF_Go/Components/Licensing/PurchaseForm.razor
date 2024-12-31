@@ -45,7 +45,7 @@
             client.DefaultRequestHeaders.Add("X-USER-KEY", await SecureStorage.GetAsync("userKey"));
             client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
 
-            var response = await client.PostAsJsonAsync("http://localhost:3000/licenses/buy", payload);
+            var response = await client.PostAsJsonAsync($"{AppConfig.ApiBaseUrl}/licenses/buy", payload);
 
             if (response.IsSuccessStatusCode)
             {

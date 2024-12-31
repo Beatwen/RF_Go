@@ -11,12 +11,16 @@
 @using RF_Go.ViewModels
 @using RF_Go.Components
 @using System.Diagnostics
+@using RF_Go.Services;
+@using RF_Go.Services.NetworkProtocols
 
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject DevicesViewModel DevicesViewModel
 @inject GroupsViewModel GroupsViewModel
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
+@inject DiscoveryService DiscoveryService
+
 
 
 <MudContainer Style="max-height:60vh">
@@ -40,15 +44,15 @@
                     @*                         GroupsViewModel="GroupsViewModel" /> *@
                     @*     </MudPaper> *@
                     @* </MudItem> *@
-                    <MudItem xs="12" md="9" Style="min-width: 600px; max-width: 750px;">
+                    <MudItem xs="12" md="10" Style="min-width: 600px; max-width: 750px;">
                         <MudPaper Class="mt-4">
-                            <MainTab DeviceData="deviceData"
+                            <OfflineTab DeviceData="deviceData"
                                      ExclusionChannelViewModel="ExclusionChannelViewModel"
                                      DevicesViewModel="DevicesViewModel"
                                      GroupsViewModel="GroupsViewModel" />
                         </MudPaper>
                     </MudItem>
-                    <MudItem xs="12" md="3">
+                    <MudItem xs="12" md="2">
                         <MudPaper Class="mt-4">
                             <SlidersSpacers DeviceData="deviceData"
                                             DevicesViewModel="DevicesViewModel"
@@ -71,9 +75,9 @@
             </MudTabPanel>
             <MudTabPanel Text="Remote" ID='"remote_tab"'>
                 <MudText>
-                    <RemoteTab DeviceData="deviceData"
-                               DevicesViewModel="DevicesViewModel"
-                               GroupsViewModel="GroupsViewModel" />
+                    @* <RemoteTab DeviceData="deviceData" *@
+                    @*            DevicesViewModel="DevicesViewModel" *@
+                    @*            GroupsViewModel="GroupsViewModel" /> *@
                 </MudText>
             </MudTabPanel>
 
@@ -106,15 +110,10 @@
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
 
-
-
-
     private void RefreshComponents()
     {
         StateHasChanged();  
     }
-
-
     private bool EnableSpacingInChannels(string brand, string model, string frequency, int spacing)
     {
         return true;
@@ -138,13 +137,12 @@
     }
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         var json = JsonData.Devices;
-
         var context = new DatabaseContext();
-        DevicesViewModel = new DevicesViewModel(context);
+        DevicesViewModel = new DevicesViewModel(context, DiscoveryService);
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
-        await base.OnInitializedAsync();
         isLoadingJSON = false;
         StateHasChanged();
     }

@@ -153,7 +153,6 @@ namespace RF_Go.Models
                                     && (SpacingEnable(f1, ThreeTX3rdOrder, ThirdOrderSpacing3TxEnable, ThirdOrderSpacing3Tx))
                                         && !UsedFrequencies.Any(f => Math.Abs(f - f1) <= SelfSpacing));
         }
-
         public bool SpacingEnable(int f1, HashSet<int>freqs, bool OrderSpacingEnable, int OrderSpacing)
         {
             if(OrderSpacingEnable) 

@@ -63,7 +63,7 @@ namespace RF_Go.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during communication: {ex.Message}");
+                Debug.WriteLine($"Error during communication: {ex.Message}");
             }
         }
 

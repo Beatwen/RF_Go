@@ -1,0 +1,123 @@
+﻿@using System.Diagnostics
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using RF_Go.Services.NetworkProtocols
+@using RF_Go.Components.Modal
+@using MudBlazor
+@inject DiscoveryService discoveryService
+@inject IDialogService DialogService
+
+<div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
+    <div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="Resync">
+            Refresh
+        </MudButton>
+    </div>
+</div>
+
+<MudTable Items="@DiscoveredDevices"
+          Bordered="true"
+          Hover="true"
+          Striped="true"
+          Dense="true"
+          Style="margin: auto; overflow: auto; height: calc(100vh - 150px);">
+    <HeaderContent>
+        <MudTh>Brand</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>IP Address</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Brand</MudTd>
+        <MudTd>@context.Type</MudTd>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>
+            <MudChip T="string">@context.IPAddress</MudChip>
+        </MudTd>
+        <MudTd>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => HandleSyncDevice(context)">
+                Sync
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    //[Parameter] public EventCallback<RFDevice> OnDeviceSynced { get; set; }
+    private List<DeviceDiscoveredEventArgs> DiscoveredDevices = new();
+    private List<RFDevice> MatchingOfflineDevices = new();
+
+    protected override void OnInitialized()
+    {
+        discoveryService.DeviceDiscovered += OnDeviceDiscovered;
+        discoveryService.StartDiscovery();
+        discoveryService.TriggerSennheiserDiscovery();
+    }
+
+    private void OnDeviceDiscovered(object sender, DeviceDiscoveredEventArgs e)
+    {
+        if (!DiscoveredDevices.Any(d => d.Name == e.Name))
+        {
+            InvokeAsync(() =>
+            {
+                DiscoveredDevices.Add(e);
+                StateHasChanged();
+            });
+        }
+    }
+
+    private void Resync()
+    {
+        discoveryService.StartDiscovery();
+        discoveryService.TriggerSennheiserDiscovery();
+    }
+    private async void HandleSyncDevice(DeviceDiscoveredEventArgs device)
+    {
+        MatchingOfflineDevices = DevicesViewModel.Devices
+            .Where(d => d.Brand == device.Brand && d.Model == device.Type && d.Frequency == device.Frequency && !d.IsSynced)
+            .ToList();
+
+        if (MatchingOfflineDevices.Any())
+        {
+            await OpenDialog(device);
+        }
+        else
+        {
+            Debug.Print("no match");
+        }
+    }
+
+    private async Task OpenDialog(DeviceDiscoveredEventArgs onlineDevice)
+    {
+        var parameters = new DialogParameters
+        {
+            { "MatchingOfflineDevices", MatchingOfflineDevices },
+            { "OnlineDevice", onlineDevice }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = DialogService.Show<MappingModal>("Choose a device to map", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var selectedDevice = (RFDevice)result.Data;
+            MapDevice(selectedDevice);
+        }
+    }
+
+    private void MapDevice(RFDevice offlineDevice)
+    {
+        offlineDevice.IsSynced = true;
+        DevicesViewModel.OnlineDevices.Add(offlineDevice);
+        DiscoveredDevices.Remove(DiscoveredDevices.First(d => d.Name == offlineDevice.Name));
+    }
+    public void Dispose()
+    {
+        discoveryService.StopDiscovery();
+        discoveryService.DeviceDiscovered -= OnDeviceDiscovered;
+    }
+}

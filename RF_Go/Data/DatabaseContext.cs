@@ -27,7 +27,7 @@ namespace RF_Go.Data
 
         private async Task CreateTableIfNotExists<TTable>() where TTable : class, new()
         {
-            Console.WriteLine($"Creating table for {typeof(TTable).Name}");
+            Debug.WriteLine($"Creating table for {typeof(TTable).Name}");
             await Database.CreateTableAsync<TTable>();
         }
 

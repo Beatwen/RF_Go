@@ -17,6 +17,7 @@ namespace RF_Go.Models
     {
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
+        public string SerialNumber { get; set; } = null;
         public bool Selected { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
@@ -39,6 +40,7 @@ namespace RF_Go.Models
         public string IpAddress { get; set; } = "0.0.0.0";
         public string Calendar { get; set; }
         public string Stage { get; set; }
+        public bool IsSynced { get; set; }
         public int NumberOfChannels { get; set; }
         private int _groupID = 1;
         public int GroupID

@@ -48,7 +48,7 @@
             client.DefaultRequestHeaders.Add("X-DEVICE-ID", deviceIdentifier);
             client.DefaultRequestHeaders.Add("X-LICENSE-KEY", licenseKey);
 
-            var response = await client.PostAsJsonAsync("http://localhost:3000/licenses/validate", new
+            var response = await client.PostAsJsonAsync($"{AppConfig.ApiBaseUrl}/licenses/validate", new
             {
                 licenseKey,
                 deviceId = deviceIdentifier

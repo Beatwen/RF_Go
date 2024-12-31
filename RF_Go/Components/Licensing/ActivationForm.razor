@@ -35,8 +35,8 @@
             {
                 licenseKey = LicenseKey
             };
-
-            var response = await httpClient.PostAsJsonAsync("http://localhost:3000/licenses/activate-and-validate", payload);
+            string baseUrl = AppConfig.ApiBaseUrl;
+            var response = await httpClient.PostAsJsonAsync($"{baseUrl}/licenses/activate-and-validate", payload);
 
             if (response.IsSuccessStatusCode)
             {

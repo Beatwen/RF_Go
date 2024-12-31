@@ -95,7 +95,8 @@
             {
                 // SecureStorage.RemoveAll(); // A supprimer en prod, on supprime que si le user est delete de la DB
                 client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
-                var response = await client.DeleteAsync($"http://localhost:3000/users/{userKey}");
+                string baseUrl = AppConfig.ApiBaseUrl;
+                var response = await client.DeleteAsync($"{baseUrl}/users/{userKey}");
                 if (response.IsSuccessStatusCode)
                 {
                     SecureStorage.RemoveAll();

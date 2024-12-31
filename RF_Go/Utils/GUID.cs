@@ -29,7 +29,8 @@ namespace RF_Go.Utils
     public class DeviceService
     {
         private readonly HttpClient _httpClient;
-        private const string ApiEndpoint = "http://localhost:3000/devices/add";
+        
+        private string ApiEndpoint = $"{AppConfig.ApiBaseUrl}/devices/add";
 
         public DeviceService(HttpClient httpClient)
         {

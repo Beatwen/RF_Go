@@ -38,7 +38,7 @@ public class ShureDiscoveryService : IDisposable
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error receiving data: {ex.Message}");
+                Debug.WriteLine($"Error receiving data: {ex.Message}");
             }
         }
     }

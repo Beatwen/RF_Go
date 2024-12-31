@@ -1,13 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
 using RF_Go.Data;
 using RF_Go.ViewModels;
+using RF_Go.Services.Mapping;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using RF_Go.Services;
+using RF_Go.Services.Commands;
 using RF_Go.Models;
 using System.Reflection;
+using RF_Go.Services.DeviceHandlers;
+using RF_Go.Services.NetworkProtocols;
 
 
 namespace RF_Go
@@ -45,9 +48,16 @@ namespace RF_Go
             builder.Services.AddTransient<ExclusionChannelViewModel>();
             
             builder.Services.AddScoped<MainPage>();
+            builder.Services.AddSingleton<IDeviceHandler, SennheiserDeviceHandler>();
+            builder.Services.AddSingleton<IDeviceCommandSet, SennheiserCommandSet>();
             builder.Services.AddSingleton<DiscoveryService>();
+            builder.Services.AddSingleton<UDPCommunicationService>();
+            builder.Services.AddSingleton<DeviceMappingService>();
+            builder.Services.AddSingleton<SennheiserDeviceHandler>();
             builder.Services.AddSingleton<ShureDiscoveryService>();
             builder.Services.AddSingleton<SennheiserDiscoveryService>();
+
+
             return builder.Build();
         }
     }

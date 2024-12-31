@@ -75,7 +75,7 @@
 
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:3000/users")
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{AppConfig.ApiBaseUrl}/users")
                 {
                     Content = JsonContent.Create(registrationModel)
                 };
