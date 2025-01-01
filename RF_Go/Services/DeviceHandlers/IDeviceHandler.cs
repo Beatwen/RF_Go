@@ -6,7 +6,8 @@ namespace RF_Go.Services.DeviceHandlers
     public interface IDeviceHandler
     {
         bool CanHandle(string serviceName);
-        void HandleDevice(DeviceDiscoveredEventArgs deviceInfo);
+        Task HandleDevice(DeviceDiscoveredEventArgs deviceInfo);
+        Task<bool> CheckDeviceSync(DeviceDiscoveredEventArgs deviceInfo);
         string Brand { get; }
     }
 

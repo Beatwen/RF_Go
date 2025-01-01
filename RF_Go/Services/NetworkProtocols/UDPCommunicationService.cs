@@ -21,6 +21,7 @@ namespace RF_Go.Services.NetworkProtocols
             try
             {
                 var data = Encoding.UTF8.GetBytes(command);
+                Debug.WriteLine("Commande envoyé : " + command);
                 await _udpClient.SendAsync(data, data.Length, ip, port);
                 var result = await _udpClient.ReceiveAsync();
                 return Encoding.UTF8.GetString(result.Buffer);

@@ -34,29 +34,42 @@ namespace RF_Go
 #if DEBUG
             builder.Logging.AddDebug();
 
-    #if IOS || MACCATALYST
-            var handlerType = typeof(BlazorWebViewHandler);
-            var field = handlerType.GetField("AppOriginUri", BindingFlags.Static | BindingFlags.NonPublic) ?? throw new Exception("AppOriginUri field not found");
-            field.SetValue(null, new Uri("app://localhost/"));
-    #endif
+#if IOS || MACCATALYST
+                var handlerType = typeof(BlazorWebViewHandler);
+                var field = handlerType.GetField("AppOriginUri", BindingFlags.Static | BindingFlags.NonPublic) ?? throw new Exception("AppOriginUri field not found");
+                field.SetValue(null, new Uri("app://localhost/"));
+#endif
 
 #endif
             builder.Services.AddScoped<DatabaseContext>();
 
-            builder.Services.AddTransient<DevicesViewModel>();
+            // Enregistrer DevicesViewModel en tant que singleton
+            builder.Services.AddSingleton<DevicesViewModel>();
+
+            // Enregistrer les autres ViewModels
             builder.Services.AddTransient<GroupsViewModel>();
             builder.Services.AddTransient<ExclusionChannelViewModel>();
-            
+
+            // Enregistrer les pages
             builder.Services.AddScoped<MainPage>();
+
+            // Enregistrer les services et handlers
             builder.Services.AddSingleton<IDeviceHandler, SennheiserDeviceHandler>();
             builder.Services.AddSingleton<IDeviceCommandSet, SennheiserCommandSet>();
-            builder.Services.AddSingleton<DiscoveryService>();
             builder.Services.AddSingleton<UDPCommunicationService>();
             builder.Services.AddSingleton<DeviceMappingService>();
             builder.Services.AddSingleton<SennheiserDeviceHandler>();
             builder.Services.AddSingleton<ShureDiscoveryService>();
             builder.Services.AddSingleton<SennheiserDiscoveryService>();
 
+            // Enregistrer DiscoveryService avec ses dépendances
+            builder.Services.AddSingleton<DiscoveryService>(provider =>
+            {
+                var handlers = provider.GetServices<IDeviceHandler>().ToList();
+                var devicesViewModel = provider.GetRequiredService<DevicesViewModel>();
+                var discoveryService = new DiscoveryService(handlers, devicesViewModel);
+                return discoveryService;
+            });
 
             return builder.Build();
         }

@@ -9,10 +9,16 @@ using System.Diagnostics;
 
 namespace RF_Go.ViewModels
 {
-    public partial class DevicesViewModel(DatabaseContext context, DiscoveryService discoveryService) : ObservableObject
+    public partial class DevicesViewModel : ObservableObject
     {
-        private readonly DatabaseContext _context = context ?? throw new ArgumentNullException(nameof(context));
-        private readonly DiscoveryService _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
+        private readonly DatabaseContext _context;
+        //private DiscoveryService _discoveryService;
+
+        public DevicesViewModel(DatabaseContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
         [ObservableProperty]
         private ObservableCollection<RFDevice> _devices = new();
         [ObservableProperty]
@@ -37,12 +43,11 @@ namespace RF_Go.ViewModels
                     foreach (var device in devices)
                     {
                         Devices.Add(device);
+                        if (device.IsSynced)
+                        {
+                            OnlineDevices.Add(device);
+                        }
                     }
-                    Debug.WriteLine($"Number of devices loaded: {Devices.Count}");
-                }
-                else
-                {
-                    Debug.WriteLine("No devices found in the database.");
                 }
             }
             catch (Exception ex)
@@ -51,12 +56,14 @@ namespace RF_Go.ViewModels
                 throw; // Rethrow the exception to propagate it
             }
         }
+
         [RelayCommand]
         public void SetOperatingDevice(RFDevice Device)
         {
             System.Diagnostics.Debug.WriteLine("edit device!");
             OperatingDevice = Device ?? new();
         }
+
         [RelayCommand]
         public async Task SaveDeviceAsync()
         {
@@ -101,40 +108,6 @@ namespace RF_Go.ViewModels
                 SetOperatingDeviceCommand.Execute(new());
             }, busyText);
         }
-        [RelayCommand]
-        public async Task LoadOnlineDevicesAsync()
-        {
-            try
-            {
-                IsBusy = true;
-                BusyText = "Detecting Online Devices...";
-                var discoveredDevices = await discoveryService.DetectDevicesAsync();
-                OnlineDevices.Clear();
-                foreach (var device in discoveredDevices)
-                {
-                    OnlineDevices.Add(new RFDevice
-                    {
-                        Name = device.Name,
-                        Model = device.Type,
-                        Frequency = device.Frequency,
-                        IpAddress = device.IPAddress,
-                        SerialNumber = device.SerialNumber,
-                        IsSynced = device.IsSynced
-                    });
-                }
-
-                Debug.WriteLine($"Number of online devices detected: {OnlineDevices.Count}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error detecting online devices: {ex.Message}");
-            }
-            finally
-            {
-                IsBusy = false;
-                BusyText = null;
-            }
-        }
         public void MapOnlineToOffline(RFDevice onlineDevice)
         {
             var matchingOfflineDevice = Devices.FirstOrDefault(d =>
@@ -167,6 +140,7 @@ namespace RF_Go.ViewModels
                 }
             }, "Deleting Device...");
         }
+
         public async Task DeleteAllDeviceAsync()
         {
             await ExecuteAsync(async () =>
@@ -187,6 +161,7 @@ namespace RF_Go.ViewModels
                 }
             }, "Deleting Devices...");
         }
+
         private async Task ExecuteAsync(Func<Task> operation, string busyText = null)
         {
             IsBusy = true;

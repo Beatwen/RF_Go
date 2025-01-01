@@ -1,9 +1,11 @@
-﻿@page "/mapping-dialog"
+﻿
 @using RF_Go.Models
+@using RF_Go.ViewModels
 @using RF_Go.Services
 @using RF_Go.Services.Mapping
 @using RF_Go.Services.NetworkProtocols
 @using MudBlazor
+@inject MudBlazor.ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject DeviceMappingService DeviceMappingService
 
@@ -24,10 +26,10 @@
                 <MudTd>@context.Model</MudTd>
                 <MudTd>@context.Frequency</MudTd>
                 <MudTd>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => SyncToDevice(context)">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => MapDevice(context, true)">
                         Sync to Device
                     </MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="() => SyncFromDevice(context)">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="() => MapDevice(context, false)">
                         Sync from Device
                     </MudButton>
                 </MudTd>
@@ -43,27 +45,40 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public List<RFDevice> MatchingOfflineDevices { get; set; }
     [Parameter] public DeviceDiscoveredEventArgs OnlineDevice { get; set; }
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
 
-    private async Task SyncToDevice(RFDevice offlineDevice)
+    private async Task MapDevice(RFDevice offlineDevice, bool fromOrTo)
     {
-        if (offlineDevice == null || OnlineDevice == null)
+
+        RFDevice rfDevice = DeviceMappingService.CastDeviceDiscoveredToRFDevice(OnlineDevice);
+
+        if (fromOrTo)
         {
-            throw new ArgumentNullException("Device cannot be null");
+            var errors = await DeviceMappingService.FirstSyncToDevice(offlineDevice, rfDevice);
+            if (errors.Count() > 0)
+            {
+                foreach (string error in errors)
+                {
+                    Snackbar.Add(error, Severity.Info);
+                }
+            }
+            else
+            {
+                offlineDevice.IsSynced = true;
+                OnlineDevice.IsSynced = true;
+                DevicesViewModel.OnlineDevices.Add(offlineDevice);
+                
+                MudDialog.Close(DialogResult.Ok(offlineDevice));
+            }
         }
-
-        await DeviceMappingService.SyncToDevice(offlineDevice, OnlineDevice);
-        MudDialog.Close(DialogResult.Ok(offlineDevice));
-    }
-
-    private void SyncFromDevice(RFDevice offlineDevice)
-    {
-        if (offlineDevice == null || OnlineDevice == null)
+        else
         {
-            throw new ArgumentNullException("Device cannot be null");
+            DeviceMappingService.FirstSyncFromDevice(offlineDevice, rfDevice);
+            offlineDevice.IsSynced = true;
+            OnlineDevice.IsSynced = true;
+            DevicesViewModel.OnlineDevices.Add(offlineDevice);
+            MudDialog.Close(DialogResult.Ok(offlineDevice));
         }
-
-        DeviceMappingService.SyncFromDevice(offlineDevice, OnlineDevice);
-        MudDialog.Close(DialogResult.Ok(offlineDevice));
     }
 
     private void Cancel()

@@ -39,7 +39,7 @@ else
     </div>
 
     <MudTable Hover="true" Dense="true" Bordered="false" Striped="false" HorizontalScrollbar="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
-              RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc" Style="margin: auto; overflow: auto; max-height: calc(100vh - 150px);">
+    RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc" Style="margin: auto; overflow: auto; max-height: calc(100vh - 150px);">
         <HeaderContent>
             <MudTh Style="min-width: 200px;">Device</MudTh>
             <MudTh Style="min-width: 150px;">Set Frequencies</MudTh>
@@ -55,7 +55,7 @@ else
                     <RowTemplate Context="chan">
                         <MudTd Class="d-flex align-center mt-0">
                             <MudTextField Typo="Typo.caption" Label="@GetBrandAndModel(context)" @bind-Value="@chan.ChannelName" Class="mt-0" Margin="Margin.Dense" Variant="Variant.Outlined"
-                                          @onblur="() => SaveDeviceAsync(context)" />
+                            @onblur="() => SaveDeviceAsync(context)" />
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -83,7 +83,7 @@ else
                 </div>
                 <div class="d-flex justify-content-between">
                     <MudTextField Typo="Typo.caption" Style="margin:0;" @bind-Value="@context.IpAddress" Placeholder="IP Address" @onblur="() => SaveDeviceAsync(context)" Class="custom-textfield" />
-                    <MudIcon Icon="@GetSyncIcon(context)" Color="@GetSyncColor(context)" Size="Size.Small" />
+                    <MudIconButton @onclick="() => OpenQuickSyncModal(context)" Icon="@GetSyncIcon(context)" Color="@GetSyncColor(context)" Size="Size.Small" />
                 </div>
             </MudTd>
         </RowTemplate>
@@ -95,6 +95,13 @@ else
 
 @code
 {
+
+
+
+
+
+
+
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
@@ -186,6 +193,10 @@ else
     private async Task DesyncDevice(RFDevice device)
     {
         device.IsSynced = false;
+        device.SerialNumber = null;
+        device.IpAddress = null;
+        DevicesViewModel.OnlineDevices.Remove(device);
+
         await SaveDeviceAsync(device);
         Snackbar.Add("Device desynchronized", Severity.Info);
     }
@@ -322,11 +333,11 @@ else
         return Dialog.ShowAsync<DeviceSelection>(
             "Add your devices",
             new DialogParameters
-                    {
+                        {
                     { "DeviceData", DeviceData },
                     { "DevicesViewModel", DevicesViewModel },
                     { "GroupsViewModel", GroupsViewModel }
-                    },
+                        },
             options
         );
     }
@@ -339,12 +350,42 @@ else
         };
 
         var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        var dialog = Dialog.Show<OnlineDevicesModal>("Online Devices", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            StateHasChanged();
+        }
+    }
+
+
+    private async Task OpenQuickSyncModal(RFDevice device)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Device", device },
+            { "OnlineDevices", DevicesViewModel.OnlineDevices }
+        };
+
+        var options = new DialogOptions
             {
-                MaxWidth = MaxWidth.Medium,
+                MaxWidth = MaxWidth.Small,
                 FullWidth = true
             };
 
-        await Dialog.ShowAsync<OnlineDevicesModal>("Online Devices", parameters, options);
+        var dialog = Dialog.Show<SyncModal>("Quick Sync", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            StateHasChanged();
+        }
     }
     private void RefreshParentState()
     {
@@ -352,12 +393,19 @@ else
     }
     private string GetSyncIcon(RFDevice device)
     {
+        if (device.PendingSync)
+        {
+            return Icons.Material.Filled.Sync;
+        }
         return device.IsSynced ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel;
     }
     private Color GetSyncColor(RFDevice device)
     {
+        if (device.PendingSync)
+        {
+            return Color.Warning;
+        }
         return device.IsSynced ? Color.Success : Color.Error;
     }
 }
-
 

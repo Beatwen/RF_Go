@@ -1,0 +1,99 @@
+﻿@using System.Collections.ObjectModel
+@using RF_Go.Models
+@using RF_Go.Services
+@using RF_Go.Services.Mapping
+@using RF_Go.Services.NetworkProtocols
+@using MudBlazor
+@inject IDialogService DialogService
+@inject MudBlazor.ISnackbar Snackbar
+@inject DeviceMappingService DeviceMappingService
+@inject DiscoveryService DiscoveryService
+@inject IJSRuntime JSRuntime
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">Choose a device to map</MudText>
+        <MudTable Items="@Devices">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Brand</MudTh>
+                <MudTh>Model</MudTh>
+                <MudTh>Frequency</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Name</MudTd>
+                <MudTd>@context.Brand</MudTd>
+                <MudTd>@context.Model</MudTd>
+                <MudTd>@context.Frequency</MudTd>
+                <MudTd>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => SyncToDevice(context)">
+                        Sync to Device
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="() => SyncFromDevice(context)">
+                        Sync from Device
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Secondary">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public RFDevice Device { get; set; }
+    [Parameter] public ObservableCollection<RFDevice> OnlineDevices { get; set; }
+
+    private List<RFDevice> Devices = new();
+
+    protected override void OnInitialized()
+    {
+        Devices.Add(Device);
+    }
+
+    private async Task SyncToDevice(RFDevice offlineDevice)
+    {
+        var errors = await DeviceMappingService.SyncToDevice(offlineDevice);
+        if (errors.Count() > 0)
+        {
+            foreach (string error in errors )
+            {
+                Snackbar.Add(error, Severity.Info);
+            }
+        }
+        else
+        {
+        offlineDevice.IsSynced = true;
+        Snackbar.Add("Device Synced", Severity.Success);
+        await DiscoveryService.CheckDeviceSync(offlineDevice);
+        MudDialog.Close(DialogResult.Ok(offlineDevice));
+        }
+    }
+    private async Task SyncFromDevice(RFDevice offlineDevice)
+    {
+        var onlineDevice = FindOnlineDevice(offlineDevice.SerialNumber);
+        if (offlineDevice == null || onlineDevice == null)
+        {
+            Snackbar.Add("Device not found on the network.", Severity.Info);
+            return;
+        }
+        await DeviceMappingService.SyncFromDevice(offlineDevice);
+        await DiscoveryService.CheckDeviceSync(offlineDevice);
+        MudDialog.Close(DialogResult.Ok(offlineDevice));
+    }
+
+    private RFDevice FindOnlineDevice(string serialNumber)
+    {
+        return OnlineDevices?.FirstOrDefault(device => device.SerialNumber == serialNumber);
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
+

@@ -21,8 +21,6 @@
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
 @inject DiscoveryService DiscoveryService
 
-
-
 <MudContainer Style="max-height:60vh">
     @if (isLoadingJSON)
     {
@@ -47,9 +45,9 @@
                     <MudItem xs="12" md="10" Style="min-width: 600px; max-width: 750px;">
                         <MudPaper Class="mt-4">
                             <OfflineTab DeviceData="deviceData"
-                                     ExclusionChannelViewModel="ExclusionChannelViewModel"
-                                     DevicesViewModel="DevicesViewModel"
-                                     GroupsViewModel="GroupsViewModel" />
+                                        ExclusionChannelViewModel="ExclusionChannelViewModel"
+                                        DevicesViewModel="DevicesViewModel"
+                                        GroupsViewModel="GroupsViewModel" />
                         </MudPaper>
                     </MudItem>
                     <MudItem xs="12" md="2">
@@ -60,11 +58,9 @@
                         </MudPaper>
                     </MudItem>
                 </MudGrid>
-
-
             </MudTabPanel>
             <MudTabPanel Text="TV Channels" ID='"exclusion_tab"'>
-                            <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
+                <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
             </MudTabPanel>
             <MudTabPanel Text="Groups" ID='"groups"'>
                 <MudPaper>
@@ -80,19 +76,17 @@
                     @*            GroupsViewModel="GroupsViewModel" /> *@
                 </MudText>
             </MudTabPanel>
-
             <MudTabPanel Icon="@Icons.Material.Filled.AccountCircle" ID='"account_tab"' DisableRipple="true">
                 <MudText Typo="Typo.h6" Align="Align.Center">
-                    <AccountInfo  />
+                    <AccountInfo />
                 </MudText>
             </MudTabPanel>
         </MudTabs>
     }
-</MudContainer>
+    </MudContainer>
 
-@code 
-{
-
+    @code
+    {
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool isLoadingJSON = true;
     private bool _selectOnRowClick = true;
@@ -112,7 +106,7 @@
 
     private void RefreshComponents()
     {
-        StateHasChanged();  
+        StateHasChanged();
     }
     private bool EnableSpacingInChannels(string brand, string model, string frequency, int spacing)
     {
@@ -139,13 +133,9 @@
     {
         await base.OnInitializedAsync();
         var json = JsonData.Devices;
-        var context = new DatabaseContext();
-        DevicesViewModel = new DevicesViewModel(context, DiscoveryService);
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
         isLoadingJSON = false;
         StateHasChanged();
     }
 }
-
-

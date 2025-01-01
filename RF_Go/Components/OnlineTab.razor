@@ -15,34 +15,56 @@
     </div>
 </div>
 
-<MudTable Items="@DiscoveredDevices"
-          Bordered="true"
-          Hover="true"
-          Striped="true"
-          Dense="true"
-          Style="margin: auto; overflow: auto; height: calc(100vh - 150px);">
-    <HeaderContent>
-        <MudTh>Brand</MudTh>
-        <MudTh>Type</MudTh>
-        <MudTh>Name</MudTh>
-        <MudTh>IP Address</MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd>@context.Brand</MudTd>
-        <MudTd>@context.Type</MudTd>
-        <MudTd>@context.Name</MudTd>
-        <MudTd>
-            <MudChip T="string">@context.IPAddress</MudChip>
-        </MudTd>
-        <MudTd>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => HandleSyncDevice(context)">
-                Sync
-            </MudButton>
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+@if (DiscoveredDevices.Count() == 0)
+{
+    <MudContainer MaxWidth="MaxWidth.Medium" Style="display: flex; justify-content: center; align-items: center;">
+        <MudPaper Class="pa-6" Elevation="3" Style="text-align: center; max-width: 400px;">
+            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
+                No devices found yet on the network.
+            </MudAlert>
+        </MudPaper>
+    </MudContainer>
+}
+else
+{
 
+    <MudTable Items="@DiscoveredDevices"
+              Bordered="true"
+              Hover="true"
+              Striped="true"
+              Dense="true"
+              Style="margin: auto; overflow: auto; height: calc(100vh - 150px);">
+        <HeaderContent>
+            <MudTh>Brand</MudTh>
+            <MudTh>Type</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>IP Address</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Brand</MudTd>
+            <MudTd>@context.Type</MudTd>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>
+                <MudChip T="string">@context.IPAddress</MudChip>
+            </MudTd>
+            <MudTd>
+                @if (context.IsSynced)
+                {
+                    <MudText Variant="Variant.Filled" Color="Color.Primary">
+                        Synced !
+                    </MudText>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => HandleSyncDevice(context)">
+                        Sync!!
+                    </MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
 @code {
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     //[Parameter] public EventCallback<RFDevice> OnDeviceSynced { get; set; }
@@ -67,11 +89,11 @@
             });
         }
     }
-
     private void Resync()
     {
         discoveryService.StartDiscovery();
         discoveryService.TriggerSennheiserDiscovery();
+        StateHasChanged();
     }
     private async void HandleSyncDevice(DeviceDiscoveredEventArgs device)
     {
@@ -94,26 +116,18 @@
         var parameters = new DialogParameters
         {
             { "MatchingOfflineDevices", MatchingOfflineDevices },
-            { "OnlineDevice", onlineDevice }
+            { "OnlineDevice", onlineDevice },
+            { "DevicesViewModel", DevicesViewModel }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-
         var dialog = DialogService.Show<MappingModal>("Choose a device to map", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
-            var selectedDevice = (RFDevice)result.Data;
-            MapDevice(selectedDevice);
+            StateHasChanged();
         }
-    }
-
-    private void MapDevice(RFDevice offlineDevice)
-    {
-        offlineDevice.IsSynced = true;
-        DevicesViewModel.OnlineDevices.Add(offlineDevice);
-        DiscoveredDevices.Remove(DiscoveredDevices.First(d => d.Name == offlineDevice.Name));
     }
     public void Dispose()
     {
@@ -121,3 +135,4 @@
         discoveryService.DeviceDiscovered -= OnDeviceDiscovered;
     }
 }
+

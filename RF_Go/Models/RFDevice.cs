@@ -41,6 +41,7 @@ namespace RF_Go.Models
         public string Calendar { get; set; }
         public string Stage { get; set; }
         public bool IsSynced { get; set; }
+        public bool PendingSync { get; set; }
         public int NumberOfChannels { get; set; }
         private int _groupID = 1;
         public int GroupID
@@ -63,7 +64,5 @@ namespace RF_Go.Models
             }
             return (true, string.Empty);
         }
-
-
-    }   
+    }
 }
