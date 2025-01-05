@@ -18,7 +18,7 @@
             <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
                 No devices found. Start by adding a device.
             </MudAlert>
-            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogAsync())">
+            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">
                 Add Device
             </MudFab>
         </MudPaper>
@@ -27,7 +27,7 @@
 else
 {
     <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
-        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogAsync())">Open</MudFab>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
         <div>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
                 Calculate
@@ -95,13 +95,6 @@ else
 
 @code
 {
-
-
-
-
-
-
-
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
@@ -195,7 +188,27 @@ else
         device.IsSynced = false;
         device.SerialNumber = null;
         device.IpAddress = null;
-        DevicesViewModel.OnlineDevices.Remove(device);
+
+        // Rechercher l'objet correspondant dans la collection OnlineDevices
+        var matchingDevice = DevicesViewModel.OnlineDevices.FirstOrDefault(d => d.ID == device.ID);
+        if (matchingDevice != null)
+        {
+            Debug.WriteLine($"Device {device.Name} found in OnlineDevices before removal.");
+            if (ReferenceEquals(device, matchingDevice))
+            {
+                Debug.WriteLine("The device instances are the same.");
+            }
+            else
+            {
+                Debug.WriteLine("The device instances are different.");
+            }
+            DevicesViewModel.OnlineDevices.Remove(matchingDevice);
+            Debug.WriteLine($"Device {device.Name} successfully removed from OnlineDevices.");
+        }
+        else
+        {
+            Debug.WriteLine($"Device {device.Name} not found in OnlineDevices before removal.");
+        }
 
         await SaveDeviceAsync(device);
         Snackbar.Add("Device desynchronized", Severity.Info);
@@ -323,24 +336,30 @@ else
     }
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
 
-    private Task OpenDialogAsync()
+    private async Task OpenDialogToAddDeviceAsync()
     {
+        var parameters = new DialogParameters
+        {
+            { "DeviceData", DeviceData },
+            { "DevicesViewModel", DevicesViewModel },
+            { "GroupsViewModel", GroupsViewModel }
+        };
+
         var options = new DialogOptions
-            {
-                MaxWidth = MaxWidth.Medium,
-                FullWidth = true
-            };
-        return Dialog.ShowAsync<DeviceSelection>(
-            "Add your devices",
-            new DialogParameters
-                        {
-                    { "DeviceData", DeviceData },
-                    { "DevicesViewModel", DevicesViewModel },
-                    { "GroupsViewModel", GroupsViewModel }
-                        },
-            options
-        );
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        var dialog = Dialog.Show<DeviceSelection>("Add your devices", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            StateHasChanged();
+        }
     }
+
     private async Task OpenDialogOnlineDevice()
     {
         var parameters = new DialogParameters
@@ -364,7 +383,6 @@ else
         }
     }
 
-
     private async Task OpenQuickSyncModal(RFDevice device)
     {
         var parameters = new DialogParameters
@@ -374,10 +392,10 @@ else
         };
 
         var options = new DialogOptions
-            {
-                MaxWidth = MaxWidth.Small,
-                FullWidth = true
-            };
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
 
         var dialog = Dialog.Show<SyncModal>("Quick Sync", parameters, options);
         var result = await dialog.Result;
@@ -408,4 +426,5 @@ else
         return device.IsSynced ? Color.Success : Color.Error;
     }
 }
+
 

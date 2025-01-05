@@ -6,23 +6,29 @@
 @using System.Net.Http;
 @using System.Net.Http.Json;
 @using RF_Go.Utils;
+@using MudBlazor;
 
-<h3>Redirection...</h3>
+<MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column justify-center" style="height:100vh;">
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Loading @LoadingProgress%</MudText>
+    <MudProgressLinear Color="Color.Secondary" Striped="true" Size="Size.Medium" Value="@LoadingProgress" Class="w-50 my-7" />
+</MudContainer>
 
 @code {
     private HttpClient client = new HttpClient();
     private string deviceIdentifier = "";
+    private int LoadingProgress = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        // Récupérer ou générer l'identifiant du device
+        LoadingProgress = 30;
         deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
+        LoadingProgress = 50;
         Debug.WriteLine($"Device Identifier: {deviceIdentifier}");
-
         var userKey = await SecureStorage.GetAsync("userKey");
         var licenseKey = await SecureStorage.GetAsync("licenseKey");
         var user = await SecureStorage.GetAsync("user");
-        Debug.Print("user" + userKey);
+        LoadingProgress = 75;
+        Debug.WriteLine("user " + userKey);
         Debug.Print("license" + licenseKey);
         Debug.Print("user" + user);
 
@@ -71,12 +77,12 @@
             else
             {
                 Debug.Print(response.Content.ToString());
+                LoadingProgress = 100;
                 NavigationManager.NavigateTo("/index");
             }
         }
         catch
         {
-            // Mode hors ligne
             NavigationManager.NavigateTo("/index");
         }
     }

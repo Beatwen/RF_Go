@@ -53,6 +53,7 @@ namespace RF_Go.Services.DeviceHandlers
 
             for (int channel = 1; channel <= 2; channel++)
             {
+                // A FAIRE : FAIRE UNE METHODE POUR RECUPERER LES COMMANDES ET UN POUR LES ENVOYER, ici on utilise en double dans IsDeviceSynced et ici..
                 var nameCommand = _commandSet.GetChannelNameCommand(channel);
                 var nameResponse = await _communicationService.SendCommandAsync(ip, Port, nameCommand);
 
@@ -71,7 +72,7 @@ namespace RF_Go.Services.DeviceHandlers
             }
         }
 
-        public async Task<bool> CheckDeviceSync(DeviceDiscoveredEventArgs deviceInfo)
+        public async Task<bool> IsDeviceSync(DeviceDiscoveredEventArgs deviceInfo)
         {
             if (deviceInfo.IPAddress == null)
             {
@@ -83,9 +84,10 @@ namespace RF_Go.Services.DeviceHandlers
 
             var serialCommand = _commandSet.GetSerialCommand();
             var serialResponse = await _communicationService.SendCommandAsync(ip, Port, serialCommand);
-            string serialName = ExtractValue(serialResponse, "device", "identity", "serial");
+            Debug.Print("Réponse du device : " + serialResponse);
+            string serialNumber = ExtractValue(serialResponse, "device", "identity", "serial");
 
-            if (serialName != deviceInfo.SerialNumber)
+            if (serialNumber != deviceInfo.SerialNumber)
             {
                 return false;
             }
@@ -95,9 +97,15 @@ namespace RF_Go.Services.DeviceHandlers
                 var freqCommand = _commandSet.GetChannelFrequencyCommand(channel);
                 var freqResponse = await _communicationService.SendCommandAsync(ip, Port, freqCommand);
                 string channelFrequency = ExtractValue(freqResponse, $"rx{channel}", "frequency");
+                Debug.Print("Réponse du device : " + channelFrequency);
+
+                var nameCommand = _commandSet.GetChannelNameCommand(channel);
+                var nameResponse = await _communicationService.SendCommandAsync(ip, Port, nameCommand);
+                string channelName = ExtractValue(nameResponse, $"rx{channel}", "name");
+                Debug.Print("Réponse du device : " + channelName);
 
                 var channelInfo = deviceInfo.Channels.FirstOrDefault(c => c.ChannelNumber == channel);
-                if (channelInfo != null && channelInfo.Frequency != channelFrequency)
+                if (channelInfo != null && channelInfo.Frequency != channelFrequency || channelInfo.Name != channelName)
                 {
                     return false;
                 }

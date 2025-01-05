@@ -31,9 +31,9 @@ namespace RF_Go.Services.NetworkProtocols
             _syncTimer = new Timer(SyncTimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
         }
 
-        private void SyncTimerCallback(object state)
+        private async void SyncTimerCallback(object state)
         {
-            CheckDeviceSync(state).GetAwaiter().GetResult();
+            await CheckDeviceSync(state);
         }
 
         public void StartDiscovery()
@@ -113,12 +113,12 @@ namespace RF_Go.Services.NetworkProtocols
             var query = new Message
             {
                 Questions = {
-                        new Question
-                        {
-                            Name = "_ssc._udp.local",
-                            Type = DnsType.PTR
+                            new Question
+                            {
+                                Name = "_ssc._udp.local",
+                                Type = DnsType.PTR
+                            }
                         }
-                    }
             };
             _multicastService.SendQuery(query);
         }
@@ -160,6 +160,7 @@ namespace RF_Go.Services.NetworkProtocols
 
             return discoveredDevices;
         }
+
         public async Task CheckDeviceSync(object state)
         {
             foreach (var discoveredDevice in _devicesViewModel.OnlineDevices)
@@ -183,18 +184,16 @@ namespace RF_Go.Services.NetworkProtocols
                         }).ToList()
                     };
 
-                    var isSynced = await handler.CheckDeviceSync(deviceInfo);
+                    var isSynced = await handler.IsDeviceSync(deviceInfo);
                     discoveredDevice.IsSynced = isSynced;
 
                     if (!isSynced)
                     {
-                        discoveredDevice.PendingSync = true;
-                        //discoveredDevice.PendingSyncDevice = deviceInfo; // Mise à jour de la nouvelle propriété
+                        _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, true);
                     }
                     else
                     {
-                        discoveredDevice.PendingSync = false;
-                        //discoveredDevice.PendingSyncDevice = null; // Réinitialisation de la nouvelle propriété
+                        _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, false);
                     }
                 }
             }

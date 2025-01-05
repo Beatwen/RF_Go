@@ -7,7 +7,8 @@ namespace RF_Go.Services.DeviceHandlers
     {
         bool CanHandle(string serviceName);
         Task HandleDevice(DeviceDiscoveredEventArgs deviceInfo);
-        Task<bool> CheckDeviceSync(DeviceDiscoveredEventArgs deviceInfo);
+
+        Task<bool> IsDeviceSync(DeviceDiscoveredEventArgs deviceInfo);
         string Brand { get; }
     }
 

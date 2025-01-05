@@ -13,13 +13,9 @@ namespace RF_Go.Utils
         {
             const string key = "deviceIdentifier";
             var identifier = await SecureStorage.GetAsync(key);
-
             if (string.IsNullOrEmpty(identifier))
             {
-                // Créez un nouvel identifiant unique
                 identifier = Guid.NewGuid().ToString();
-
-                // Stockez-le pour les futures utilisations
                 await SecureStorage.SetAsync(key, identifier);
             }
 

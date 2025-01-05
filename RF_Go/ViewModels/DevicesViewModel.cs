@@ -12,7 +12,6 @@ namespace RF_Go.ViewModels
     public partial class DevicesViewModel : ObservableObject
     {
         private readonly DatabaseContext _context;
-        //private DiscoveryService _discoveryService;
 
         public DevicesViewModel(DatabaseContext context)
         {
@@ -40,12 +39,14 @@ namespace RF_Go.ViewModels
                 if (devices != null && devices.Any())
                 {
                     Devices.Clear();
+                    OnlineDevices.Clear(); // Assurez-vous de vider la collection avant de la remplir
+
                     foreach (var device in devices)
                     {
                         Devices.Add(device);
                         if (device.IsSynced)
                         {
-                            OnlineDevices.Add(device);
+                            OnlineDevices.Add(device); // Utiliser la même instance
                         }
                     }
                 }
@@ -108,6 +109,7 @@ namespace RF_Go.ViewModels
                 SetOperatingDeviceCommand.Execute(new());
             }, busyText);
         }
+
         public void MapOnlineToOffline(RFDevice onlineDevice)
         {
             var matchingOfflineDevice = Devices.FirstOrDefault(d =>
@@ -131,8 +133,17 @@ namespace RF_Go.ViewModels
             {
                 if (await _context.DeleteItemByKeyAsync<RFDevice>(id))
                 {
-                    var Device = Devices.FirstOrDefault(p => p.ID == id);
-                    Devices.Remove(Device);
+                    var device = Devices.FirstOrDefault(p => p.ID == id);
+                    if (device != null)
+                    {
+                        Devices.Remove(device);
+                    }
+
+                    var onlineDevice = OnlineDevices.FirstOrDefault(p => p.ID == id);
+                    if (onlineDevice != null)
+                    {
+                        OnlineDevices.Remove(onlineDevice);
+                    }
                 }
                 else
                 {
@@ -153,6 +164,12 @@ namespace RF_Go.ViewModels
                     {
                         var device = Devices.FirstOrDefault(p => p.ID == deviceId);
                         Devices.Remove(device);
+
+                        var onlineDevice = OnlineDevices.FirstOrDefault(p => p.ID == deviceId);
+                        if (onlineDevice != null)
+                        {
+                            OnlineDevices.Remove(onlineDevice);
+                        }
                     }
                     else
                     {
@@ -179,6 +196,16 @@ namespace RF_Go.ViewModels
             {
                 IsBusy = false;
                 BusyText = null;
+            }
+        }
+        public void UpdateDeviceSyncStatus(RFDevice onlineDevice, bool isPendingSync)
+        {
+            onlineDevice.PendingSync = isPendingSync;
+
+            var matchingDevice = Devices.FirstOrDefault(d => d.ID == onlineDevice.ID);
+            if (matchingDevice != null)
+            {
+                matchingDevice.PendingSync = isPendingSync;
             }
         }
     }
