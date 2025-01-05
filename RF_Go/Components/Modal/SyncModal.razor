@@ -1,11 +1,13 @@
 ﻿@using System.Collections.ObjectModel
 @using RF_Go.Models
+@using RF_Go.ViewModels
 @using RF_Go.Services
 @using RF_Go.Services.Mapping
 @using RF_Go.Services.NetworkProtocols
 @using MudBlazor
 @inject IDialogService DialogService
 @inject MudBlazor.ISnackbar Snackbar
+@inject DevicesViewModel DevicesViewModel
 @inject DeviceMappingService DeviceMappingService
 @inject DiscoveryService DiscoveryService
 @inject IJSRuntime JSRuntime
@@ -67,10 +69,10 @@
         }
         else
         {
-        offlineDevice.IsSynced = true;
-        Snackbar.Add("Device Synced", Severity.Success);
-        await DiscoveryService.CheckDeviceSync(offlineDevice);
-        MudDialog.Close(DialogResult.Ok(offlineDevice));
+            offlineDevice.IsSynced = true;
+            Snackbar.Add("Device Synced", Severity.Success);
+            await DiscoveryService.CheckDeviceSync(offlineDevice);
+            MudDialog.Close(DialogResult.Ok(offlineDevice));
         }
     }
     private async Task SyncFromDevice(RFDevice offlineDevice)
@@ -83,6 +85,8 @@
         }
         await DeviceMappingService.SyncFromDevice(offlineDevice);
         await DiscoveryService.CheckDeviceSync(offlineDevice);
+        await DevicesViewModel.UpdateDeviceAsync(offlineDevice);
+
         MudDialog.Close(DialogResult.Ok(offlineDevice));
     }
 

@@ -1,5 +1,6 @@
 ﻿
 using Newtonsoft.Json;
+using System.ComponentModel;
 using SQLite;
 using System;
 using System.Diagnostics;
@@ -13,7 +14,7 @@ namespace RF_Go.Models
     {
         public List<RFDevice> Devices { get; set; } = new List<RFDevice>();
     }
-    public class RFDevice
+    public class RFDevice : INotifyPropertyChanged
     {
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
@@ -40,8 +41,32 @@ namespace RF_Go.Models
         public string IpAddress { get; set; } = "0.0.0.0";
         public string Calendar { get; set; }
         public string Stage { get; set; }
-        public bool IsSynced { get; set; }
-        public bool PendingSync { get; set; }
+        private bool _isSynced;
+        public bool IsSynced
+        {
+            get => _isSynced;
+            set
+            {
+                if (_isSynced != value)
+                {
+                    _isSynced = value;
+                    OnPropertyChanged(nameof(IsSynced));
+                }
+            }
+        }
+        private bool _pendingSync;
+        public bool PendingSync
+        {
+            get => _pendingSync;
+            set
+            {
+                if (_pendingSync != value)
+                {
+                    _pendingSync = value;
+                    OnPropertyChanged(nameof(PendingSync));
+                }
+            }
+        }
         public int NumberOfChannels { get; set; }
         private int _groupID = 1;
         public int GroupID
@@ -63,6 +88,14 @@ namespace RF_Go.Models
                 return (false, $"{nameof(ID)} brand is required.");
             }
             return (true, string.Empty);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            Debug.Print("property changed " + propertyName);
         }
     }
 }

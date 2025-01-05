@@ -109,6 +109,71 @@ namespace RF_Go.ViewModels
                 SetOperatingDeviceCommand.Execute(new());
             }, busyText);
         }
+        public async Task SaveAllDevicesAsync()
+        {
+            var busyText = "Saving All Devices...";
+            await ExecuteAsync(async () =>
+            {
+                foreach (var device in Devices)
+                {
+                    var (isValid, errorMessage) = device.Validate();
+                    if (!isValid)
+                    {
+                        await Shell.Current.DisplayAlert("Validation Error", $"Device {device.Name}: {errorMessage}", "Ok");
+                        continue;
+                    }
+
+                    if (device.ID == 0)
+                    {
+                        // Create Device
+                        await _context.AddItemAsync<RFDevice>(device);
+                    }
+                    else
+                    {
+                        // Update Device
+                        await _context.UpdateItemAsync<RFDevice>(device);
+                    }
+                }
+            }, busyText);
+        }
+
+
+        public async Task UpdateDeviceAsync(RFDevice device)
+        {
+            if (device == null)
+                throw new ArgumentNullException(nameof(device));
+
+            var (isValid, errorMessage) = device.Validate();
+            if (!isValid)
+            {
+                await Shell.Current.DisplayAlert("Validation Error", errorMessage, "Ok");
+                return;
+            }
+
+            var busyText = "Updating Device...";
+            await ExecuteAsync(async () =>
+            {
+                if (await _context.UpdateItemAsync<RFDevice>(device))
+                {
+                    var deviceCopy = device.Clone();
+
+                    var index = Devices.IndexOf(device);
+                    if (index >= 0)
+                    {
+                        Devices[index] = deviceCopy;
+                    }
+                    else
+                    {
+                        Devices.Add(deviceCopy);
+                    }
+                }
+                else
+                {
+                    // A FAIRE remonter les info à la snackbar
+                    await Shell.Current.DisplayAlert("Error", "Device update error", "Ok");
+                }
+            }, busyText);
+        }
 
         public void MapOnlineToOffline(RFDevice onlineDevice)
         {
@@ -198,6 +263,7 @@ namespace RF_Go.ViewModels
                 BusyText = null;
             }
         }
+
         public void UpdateDeviceSyncStatus(RFDevice onlineDevice, bool isPendingSync)
         {
             onlineDevice.PendingSync = isPendingSync;

@@ -5,14 +5,15 @@
         public bool UppercaseOnly { get; set; }
         public bool NoSpecialCharacters { get; set; }
         public int MaxLength { get; set; }
+        public HashSet<char> AllowedSpecialCharacters { get; set; } = new HashSet<char>();
     }
 
     public static class DeviceValidationRules
     {
         public static readonly Dictionary<string, ValidationRules> Rules = new Dictionary<string, ValidationRules>
-            {
-                { "EWDX2CH", new ValidationRules { UppercaseOnly = true, NoSpecialCharacters = true, MaxLength = 8 } },
-            };
+                {
+                    { "EWDX2CH", new ValidationRules { UppercaseOnly = true, NoSpecialCharacters = true, MaxLength = 8, AllowedSpecialCharacters = new HashSet<char> { ' ', '-' } } },
+                };
     }
 
     public static class ValidationHelper
@@ -29,10 +30,10 @@
                     errors.Add("Text must be uppercase.");
                     validatedInput = validatedInput.ToUpper();
                 }
-                if (rules.NoSpecialCharacters && input.Any(c => !char.IsLetterOrDigit(c)))
+                if (rules.NoSpecialCharacters && input.Any(c => !char.IsLetterOrDigit(c) && !rules.AllowedSpecialCharacters.Contains(c)))
                 {
-                    errors.Add("Special characters are not allowed.");
-                    validatedInput = new string(validatedInput.Where(c => char.IsLetterOrDigit(c)).ToArray());
+                    errors.Add("Special characters are not allowed except ' ' and '-'.");
+                    validatedInput = new string(validatedInput.Where(c => char.IsLetterOrDigit(c) || rules.AllowedSpecialCharacters.Contains(c)).ToArray());
                 }
                 if (input.Length > rules.MaxLength)
                 {

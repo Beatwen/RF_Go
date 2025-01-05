@@ -8,8 +8,6 @@
 @using RF_Go.Components
 @using System.Diagnostics
 
-
-<MudText Typo="Typo.h5" Class="pl-6 pt-2">Spacing</MudText>
 <div class="SlidersSpacers">
     @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
     {

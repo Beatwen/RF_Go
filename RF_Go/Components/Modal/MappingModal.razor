@@ -47,12 +47,12 @@
     [Parameter] public DeviceDiscoveredEventArgs OnlineDevice { get; set; }
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
 
-    private async Task MapDevice(RFDevice offlineDevice, bool fromOrTo)
+    private async Task MapDevice(RFDevice offlineDevice, bool from)
     {
 
         RFDevice rfDevice = DeviceMappingService.CastDeviceDiscoveredToRFDevice(OnlineDevice);
 
-        if (fromOrTo)
+        if (from)
         {
             var errors = await DeviceMappingService.FirstSyncToDevice(offlineDevice, rfDevice);
             if (errors.Count() > 0)

@@ -24,7 +24,10 @@
 <MudContainer Style="max-height:60vh">
     @if (isLoadingJSON)
     {
-        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        <MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column justify-center" style="height:100vh;">
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4" >Getting devices</MudText>
+            <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Striped="true" Size="Size.Medium" Class="w-50 my-7" />
+        </MudContainer>
     }
     else
     {
@@ -42,7 +45,7 @@
                     @*                         GroupsViewModel="GroupsViewModel" /> *@
                     @*     </MudPaper> *@
                     @* </MudItem> *@
-                    <MudItem xs="12" md="10" Style="min-width: 600px; max-width: 750px;">
+                    <MudItem xs="12" md="9" Style="min-width: 600px;">
                         <MudPaper Class="mt-4">
                             <OfflineTab DeviceData="deviceData"
                                         ExclusionChannelViewModel="ExclusionChannelViewModel"
@@ -50,7 +53,7 @@
                                         GroupsViewModel="GroupsViewModel" />
                         </MudPaper>
                     </MudItem>
-                    <MudItem xs="12" md="2">
+                    <MudItem xs="12" md="3">
                         <MudPaper Class="mt-4">
                             <SlidersSpacers DeviceData="deviceData"
                                             DevicesViewModel="DevicesViewModel"

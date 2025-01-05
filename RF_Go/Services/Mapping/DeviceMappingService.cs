@@ -7,6 +7,7 @@ using RF_Go.Services.DeviceHandlers;
 using RF_Go.Utils.ValidationRules;
 using System.Text.Json;
 using MudBlazor;
+using RF_Go.Components;
 
 namespace RF_Go.Services.Mapping
 {
@@ -68,7 +69,7 @@ namespace RF_Go.Services.Mapping
             {
                 throw new ArgumentNullException("Device cannot be null");
             }
-            // this cannot stay like this, the port must be dynamic
+            // A FAIRE : this cannot stay like this, the port must be dynamic
             var ip = onlineDevice.IpAddress;
             var port = 45;
 
@@ -88,7 +89,6 @@ namespace RF_Go.Services.Mapping
                     await _communicationService.SendCommandAsync(ip, port, channelNameCommand);
                 }
             }
-
             return errors;
         }
         public async Task<List<string>> SyncToDevice(RFDevice offlineDevice)
@@ -193,7 +193,6 @@ namespace RF_Go.Services.Mapping
                         Debug.WriteLine($"Channel number {channel.ChannelNumber} is out of range for offlineDevice.Channels");
                     }
                 }
-
                 Debug.WriteLine("SyncFromDeviceUsingOfflineDevice completed successfully");
             }
             catch (Exception ex)

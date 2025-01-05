@@ -35,33 +35,19 @@ namespace RF_Go.Services.DeviceHandlers
 
             var ip = deviceInfo.IPAddress;
 
-
-            var modelCommand = _commandSet.GetModelCommand();
-            var modelResponse = await _communicationService.SendCommandAsync(ip, Port, modelCommand);
-            string modelName = ExtractValue(modelResponse, "device", "identity", "product");
+            var modelName = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetModelCommand(), "device", "identity", "product");
             deviceInfo.Type = modelName;
 
-            var frequencyCommand = _commandSet.GetFrequencyCodeCommand();
-            var frequencyResponse = await _communicationService.SendCommandAsync(ip, Port, frequencyCommand);
-            string frequencyName = ExtractValue(frequencyResponse, "device", "frequency_code");
+            var frequencyName = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetFrequencyCodeCommand(), "device", "frequency_code");
             deviceInfo.Frequency = frequencyName;
 
-            var serialCommand = _commandSet.GetSerialCommand();
-            var serialResponse = await _communicationService.SendCommandAsync(ip, Port, serialCommand);
-            string serialName = ExtractValue(serialResponse, "device", "identity", "serial");
+            var serialName = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetSerialCommand(), "device", "identity", "serial");
             deviceInfo.SerialNumber = serialName;
 
             for (int channel = 1; channel <= 2; channel++)
             {
-                // A FAIRE : FAIRE UNE METHODE POUR RECUPERER LES COMMANDES ET UN POUR LES ENVOYER, ici on utilise en double dans IsDeviceSynced et ici..
-                var nameCommand = _commandSet.GetChannelNameCommand(channel);
-                var nameResponse = await _communicationService.SendCommandAsync(ip, Port, nameCommand);
-
-                var freqCommand = _commandSet.GetChannelFrequencyCommand(channel);
-                var freqResponse = await _communicationService.SendCommandAsync(ip, Port, freqCommand);
-
-                string channelName = ExtractValue(nameResponse, $"rx{channel}", "name");
-                string channelFrequency = ExtractValue(freqResponse, $"rx{channel}", "frequency");
+                var channelName = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetChannelNameCommand(channel), $"rx{channel}", "name");
+                var channelFrequency = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetChannelFrequencyCommand(channel), $"rx{channel}", "frequency");
 
                 deviceInfo.Channels.Add(new DeviceDiscoveredEventArgs.ChannelInfo
                 {
@@ -82,10 +68,8 @@ namespace RF_Go.Services.DeviceHandlers
 
             var ip = deviceInfo.IPAddress;
 
-            var serialCommand = _commandSet.GetSerialCommand();
-            var serialResponse = await _communicationService.SendCommandAsync(ip, Port, serialCommand);
-            Debug.Print("Réponse du device : " + serialResponse);
-            string serialNumber = ExtractValue(serialResponse, "device", "identity", "serial");
+            var serialNumber = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetSerialCommand(), "device", "identity", "serial");
+            Debug.Print("Réponse du device : " + serialNumber);
 
             if (serialNumber != deviceInfo.SerialNumber)
             {
@@ -94,18 +78,12 @@ namespace RF_Go.Services.DeviceHandlers
 
             for (int channel = 1; channel <= 2; channel++)
             {
-                var freqCommand = _commandSet.GetChannelFrequencyCommand(channel);
-                var freqResponse = await _communicationService.SendCommandAsync(ip, Port, freqCommand);
-                string channelFrequency = ExtractValue(freqResponse, $"rx{channel}", "frequency");
-                Debug.Print("Réponse du device : " + channelFrequency);
+                var channelFrequency = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetChannelFrequencyCommand(channel), $"rx{channel}", "frequency");
 
-                var nameCommand = _commandSet.GetChannelNameCommand(channel);
-                var nameResponse = await _communicationService.SendCommandAsync(ip, Port, nameCommand);
-                string channelName = ExtractValue(nameResponse, $"rx{channel}", "name");
-                Debug.Print("Réponse du device : " + channelName);
+                var channelName = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetChannelNameCommand(channel), $"rx{channel}", "name");
 
                 var channelInfo = deviceInfo.Channels.FirstOrDefault(c => c.ChannelNumber == channel);
-                if (channelInfo != null && channelInfo.Frequency != channelFrequency || channelInfo.Name != channelName)
+                if (channelInfo != null && (channelInfo.Frequency != channelFrequency || channelInfo.Name != channelName))
                 {
                     return false;
                 }
@@ -140,6 +118,11 @@ namespace RF_Go.Services.DeviceHandlers
                 Debug.WriteLine($"Error parsing JSON: {ex.Message}");
                 return string.Empty;
             }
+        }
+        private async Task<string> SendCommandAndExtractValueAsync(string ip, int port, string command, params string[] keys)
+        {
+            var response = await _communicationService.SendCommandAsync(ip, port, command);
+            return ExtractValue(response, keys);
         }
     }
 }
