@@ -2,7 +2,9 @@
 @using System.Text.Json
 @using System.Text
 @using System.Net.Http.Json
+@using System.Diagnostics
 @inject NavigationManager NavigationManager
+@inject RF_Go.Utils.AuthService AuthService
 
 <MudCard Class="pa-4">
     <MudText Typo="Typo.h6" Align="Align.Center">Activer une Licence</MudText>
@@ -27,9 +29,18 @@
         try
         {
             var httpClient = new HttpClient();
+            var accessToken = await AuthService.GetValidAccessTokenAsync();
+            Debug.Print("Access Token found : " + accessToken);
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                Message = "Access token is missing.";
+                return;
+            }
             httpClient.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
             httpClient.DefaultRequestHeaders.Add("X-DEVICE-ID", await GUID.GetOrCreateDeviceIdentifier());
             httpClient.DefaultRequestHeaders.Add("X-USER-KEY", await SecureStorage.GetAsync("userKey"));
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
 
             var payload = new
             {

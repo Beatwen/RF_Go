@@ -1,0 +1,73 @@
+﻿
+@using LiveChartsCore
+@using LiveChartsCore.SkiaSharpView.Maui
+@using LiveChartsCore.Defaults
+@using LiveChartsCore.SkiaSharpView.Painting
+@using LiveChartsCore.SkiaSharpView
+@using SkiaSharp
+@using RF_Go.ViewModels
+@using System.Collections.ObjectModel
+
+<div>
+    <CartesianChart Series="_series"></CartesianChart>
+</div>
+
+@code {
+    [Parameter] public FrequencyData FrequencyData { get; set; }
+
+    public Axis[] XAxes { get; set; }
+    public Axis[] YAxes { get; set; }
+    private ISeries[] _series =
+    new ISeries[]
+    {
+            new LineSeries<double>
+            {
+                Values = new double[] { 2, 1, 3, 5, 3, 4, 6 },
+                Fill = null
+            }
+    };
+
+    // protected override void OnParametersSet()
+    // {
+    //     ChartViewModel.Series = new ISeries[]
+    //     {
+    //         CreateSeries(FrequencyData.UsedFrequencies, SKColors.Blue, "Used Frequencies"),
+    //         CreateSeries(FrequencyData.TwoTX3rdOrder, SKColors.Red, "Two TX 3rd Order"),
+    //         CreateSeries(FrequencyData.TwoTX5rdOrder, SKColors.Green, "Two TX 5th Order"),
+    //         CreateSeries(FrequencyData.TwoTX7rdOrder, SKColors.Orange, "Two TX 7th Order"),
+    //         CreateSeries(FrequencyData.TwoTX9rdOrder, SKColors.Purple, "Two TX 9th Order"),
+    //         CreateSeries(FrequencyData.ThreeTX3rdOrder, SKColors.Brown, "Three TX 3rd Order")
+    //     };
+
+    //     XAxes = new Axis[]
+    //     {
+    //         new Axis
+    //         {
+    //             Name = "Index",
+    //             LabelsRotation = 15
+    //         }
+    //     };
+
+    //     YAxes = new Axis[]
+    //     {
+    //         new Axis
+    //         {
+    //             Name = "Frequency (Hz)",
+    //             MinLimit = 0,
+    //             MaxLimit = 6_000_000_000 // 6 GHz
+    //         }
+    //     };
+    // }
+
+    private LineSeries<ObservablePoint> CreateSeries(HashSet<int> frequencies, SKColor color, string name)
+    {
+        var points = frequencies.Select((freq, index) => new ObservablePoint(index, freq)).ToList();
+        return new LineSeries<ObservablePoint>
+        {
+            Values = new ObservableCollection<ObservablePoint>(points),
+            Fill = null,
+            Stroke = new SolidColorPaint(color) { StrokeThickness = 2 },
+            Name = name
+        };
+    }
+}

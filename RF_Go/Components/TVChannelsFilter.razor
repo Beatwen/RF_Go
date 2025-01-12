@@ -108,7 +108,7 @@
         activeTabIndex = GetTabIndexByDivision(division);
         ExclusionChannelViewModel.SelectedCountry = division;
         await ExclusionChannelViewModel.ApplyFiltersCommand.ExecuteAsync(null);
-        InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);
     }
 
     private int GetTabIndexByDivision(string division)

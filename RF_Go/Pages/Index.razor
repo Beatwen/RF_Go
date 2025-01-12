@@ -20,12 +20,16 @@
 @inject GroupsViewModel GroupsViewModel
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
 @inject DiscoveryService DiscoveryService
+@inject ChartViewModel ChartViewModel
+
+
 
 <MudContainer Style="max-height:60vh">
+
     @if (isLoadingJSON)
     {
         <MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column justify-center" style="height:100vh;">
-            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4" >Getting devices</MudText>
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4" >Creating your account...</MudText>
             <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Striped="true" Size="Size.Medium" Class="w-50 my-7" />
         </MudContainer>
     }
@@ -38,22 +42,25 @@
                  AlwaysShowScrollButtons="true">
             <MudTabPanel Text="Devices" ID='"devices_tab"' Class="">
                 <MudGrid Spacing="1" Class="display-6 pl-6 pr-6">
-                    @* <MudItem xs="12" md="3"> *@
-                    @*     <MudPaper Class="mt-4"> *@
+                     <MudItem xs="12" md="1">
+                         <MudPaper Class="mt-4"> 
                     @*         <TVChannelsFilter DeviceData="deviceData" *@
                     @*                         DevicesViewModel="DevicesViewModel" *@
                     @*                         GroupsViewModel="GroupsViewModel" /> *@
-                    @*     </MudPaper> *@
-                    @* </MudItem> *@
-                    <MudItem xs="12" md="9" Style="min-width: 600px;">
+                            <FrequencyChart FrequencyData="frequencyData" />
+                        </MudPaper>
+                    
+                    </MudItem>
+                    <MudItem xs="12" md="8" Style="min-width: 600px;">
                         <MudPaper Class="mt-4">
                             <OfflineTab DeviceData="deviceData"
                                         ExclusionChannelViewModel="ExclusionChannelViewModel"
                                         DevicesViewModel="DevicesViewModel"
-                                        GroupsViewModel="GroupsViewModel" />
+                                        GroupsViewModel="GroupsViewModel"
+                                        FrequencyData="frequencyData" />
                         </MudPaper>
                     </MudItem>
-                    <MudItem xs="12" md="3">
+                    <MudItem xs="12" md="2">
                         <MudPaper Class="mt-4">
                             <SlidersSpacers DeviceData="deviceData"
                                             DevicesViewModel="DevicesViewModel"
@@ -86,10 +93,10 @@
             </MudTabPanel>
         </MudTabs>
     }
-    </MudContainer>
+</MudContainer>
 
-    @code
-    {
+@code
+{
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool isLoadingJSON = true;
     private bool _selectOnRowClick = true;
@@ -99,13 +106,12 @@
     private int id;
     private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
     private MudTable<RFDevice> mudTable;
-    private int selectedRowNumber = -1;
     private bool selectAll { get; set; }
     private List<string> clickedEvents = new();
-    private string searchString1 = "";
     private RFDevice selectedItem1 = null;
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
+    private FrequencyData frequencyData = new();
 
     private void RefreshComponents()
     {
@@ -127,10 +133,6 @@
     private void DeleteDevice(RFDevice context)
     {
         DevicesViewModel.SetOperatingDevice(context);
-    }
-    private void AddDevice()
-    {
-        isAddingDevice = true;
     }
     protected override async Task OnInitializedAsync()
     {

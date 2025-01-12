@@ -27,6 +27,7 @@
         var userKey = await SecureStorage.GetAsync("userKey");
         var licenseKey = await SecureStorage.GetAsync("licenseKey");
         var user = await SecureStorage.GetAsync("user");
+        var token = await SecureStorage.GetAsync("access_token");
         LoadingProgress = 75;
         Debug.WriteLine("user " + userKey);
         Debug.Print("license" + licenseKey);
@@ -37,8 +38,12 @@
             NavigationManager.NavigateTo("/register");
             return;
         }
-
-        if (string.IsNullOrEmpty(licenseKey))
+        else if (string.IsNullOrEmpty(token))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        else if (string.IsNullOrEmpty(licenseKey))
         {
             Debug.WriteLine("userKey" + userKey);
             NavigationManager.NavigateTo("/license");

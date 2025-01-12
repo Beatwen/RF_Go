@@ -8,6 +8,12 @@ namespace RF_Go.Utils
 {
     public static class TokenStorage
     {
+        private const string AccessTokenKey = "access_token";
+        private const string 
+            TokenKey = "refresh_token";
+        private const string ClientIdKey = "client_id";
+        private const string ClientSecretKey = "client_secret";
+
         public static async Task SaveAccessTokenAsync(string accessToken)
         {
             await SecureStorage.SetAsync("access_token", accessToken);
@@ -27,7 +33,25 @@ namespace RF_Go.Utils
         {
             return await SecureStorage.GetAsync("refresh_token");
         }
+        public static async Task<string> GetClientIdAsync()
+        {
+            return await SecureStorage.GetAsync(ClientIdKey);
+        }
 
+        public static async Task SaveClientIdAsync(string clientId)
+        {
+            await SecureStorage.SetAsync(ClientIdKey, clientId);
+        }
+
+        public static async Task<string> GetClientSecretAsync()
+        {
+            return await SecureStorage.GetAsync(ClientSecretKey);
+        }
+
+        public static async Task SaveClientSecretAsync(string clientSecret)
+        {
+            await SecureStorage.SetAsync(ClientSecretKey, clientSecret);
+        }
         public static void ClearTokensAsync()
         {
             SecureStorage.Remove("access_token");

@@ -4,6 +4,10 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Net.Http.Json;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Diagnostics;
 
 namespace RF_Go.Utils
 {
@@ -16,21 +20,38 @@ namespace RF_Go.Utils
             _httpClient = httpClient;
         }
 
+        public async Task<TokenResponse> LoginAsync(string email, string password)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{AppConfig.ApiBaseUrl}/auth/login")
+            {
+                Content = JsonContent.Create(new { email, password })
+            };
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<TokenResponse>(responseContent);
+            }
+            else
+            {
+                throw new Exception("Login failed");
+            }
+        }
+
         public async Task<string> GetValidAccessTokenAsync()
         {
             var accessToken = await TokenStorage.GetAccessTokenAsync();
+            var refreshToken = await TokenStorage.GetRefreshTokenAsync();
 
-            if (string.IsNullOrEmpty(accessToken) || IsTokenExpired(accessToken))
+            if (IsTokenExpired(accessToken))
             {
-                var refreshToken = await TokenStorage.GetRefreshTokenAsync();
-                if (string.IsNullOrEmpty(refreshToken))
-                {
-                    throw new Exception("No valid tokens available. User needs to log in.");
-                }
-
-                // Refresh the token
-                var newAccessToken = await RefreshAccessTokenAsync(refreshToken);
-                return newAccessToken;
+                accessToken = await RefreshAccessTokenAsync(refreshToken);
+            }
+            else
+            {
+                Debug.Print("Token Still Valid");
             }
 
             return accessToken;
@@ -38,48 +59,41 @@ namespace RF_Go.Utils
 
         private bool IsTokenExpired(string token)
         {
-            // Implémentez une logique pour vérifier si le token est expiré.
-            // Par exemple : stockez la date d'expiration lors de l'obtention du token.
-            return false; // Exemple simplifié.
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+            return jwtToken.ValidTo < DateTime.UtcNow;
         }
 
         private async Task<string> RefreshAccessTokenAsync(string refreshToken)
         {
-            var content = new StringContent(
-                JsonSerializer.Serialize(new
-                {
-                    grant_type = "refresh_token",
-                    refresh_token = refreshToken,
-                    client_id = "your_client_id",
-                    client_secret = "your_client_secret"
-                }),
-                Encoding.UTF8,
-                "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{AppConfig.ApiBaseUrl}/auth/refresh")
+            {
+                Content = JsonContent.Create(new { refreshToken })
+            };
 
-            var response = await _httpClient.PostAsync("https://yourserver.com/auth/token", content);
+            var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseContent);
 
-                if (tokenResponse != null)
-                {
-                    await TokenStorage.SaveAccessTokenAsync(tokenResponse.AccessToken);
-                    await TokenStorage.SaveRefreshTokenAsync(tokenResponse.RefreshToken);
-                    return tokenResponse.AccessToken;
-                }
-            }
+                await TokenStorage.SaveAccessTokenAsync(tokenResponse.AccessToken);
+                await TokenStorage.SaveRefreshTokenAsync(tokenResponse.RefreshToken);
 
-            throw new Exception("Failed to refresh token.");
+                return tokenResponse.AccessToken;
+            }
+            else
+            {
+                throw new Exception("Token refresh failed");
+            }
+        }
+
+        public class TokenResponse
+        {
+            public string AccessToken { get; set; }
+            public string RefreshToken { get; set; }
+            public int ExpiresIn { get; set; }
         }
     }
-
-    public class TokenResponse
-    {
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
-        public int ExpiresIn { get; set; }
-    }
-
 }

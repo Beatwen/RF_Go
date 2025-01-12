@@ -27,7 +27,7 @@
         }
 
         <MudTextField Label="Email" @bind-Value="Email" FullWidth="true" Required="true" />
-        <MudTextField @bind-Value="Password" Label="Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" AdornmentAriaLabel="Show Password" />
+        <MudTextField @bind-Value="Password" Label="Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" OnAdornmentClick="PasswordVisibility" AdornmentIcon="@PasswordInputIcon" AdornmentAriaLabel="Show Password" />
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginUser" Class="mt-4" FullWidth="true">
             Login
         </MudButton>
@@ -53,21 +53,21 @@
     private string Password = "";
     private string Message = "";
     private bool ShowRegisterMessage = false;
-    bool isShow;
+    bool showPW;
     InputType PasswordInput = InputType.Password;
     string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
 
-    void ButtonTestclick()
+    private void PasswordVisibility()
     {
-        @if (isShow)
+        @if (showPW)
         {
-            isShow = false;
+            showPW = false;
             PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
             PasswordInput = InputType.Password;
         }
         else
         {
-            isShow = true;
+            showPW = true;
             PasswordInputIcon = Icons.Material.Filled.Visibility;
             PasswordInput = InputType.Text;
         }
@@ -93,17 +93,22 @@
         try
         {
             var client = new HttpClient();
+            var clientId = await TokenStorage.GetClientIdAsync();
+            var clientSecret = await TokenStorage.GetClientSecretAsync();
+            Email = Email.ToLower();
             client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
             client.DefaultRequestHeaders.Add("X-DEVICE-ID", await GUID.GetOrCreateDeviceIdentifier());
-            var content = new StringContent(
-                JsonSerializer.Serialize(new
-                {
-                    email = Email,
-                    password = Password
-                }),
-                Encoding.UTF8,
-                "application/json"
-            );
+
+            var content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("email", Email),
+                new KeyValuePair<string, string>("password", Password),
+                new KeyValuePair<string, string>("username", Email),
+                new KeyValuePair<string, string>("client_id", clientId),
+                new KeyValuePair<string, string>("client_secret", clientSecret),
+                new KeyValuePair<string, string>("grant_type", "password")
+            });
+
             var baseUrl = AppConfig.ApiBaseUrl;
             var response = await client.PostAsync($"{baseUrl}/auth/login", content);
 
@@ -116,6 +121,10 @@
                 {
                     await SecureStorageUtils.SaveUserToSecureStorage(result.user);
                     await SecureStorage.SetAsync("userKey", result.user.id.ToString());
+                    await TokenStorage.SaveAccessTokenAsync(result.token.accessToken);
+                    var token = await TokenStorage.GetAccessTokenAsync();
+                    await TokenStorage.SaveRefreshTokenAsync(result.token.refreshToken);
+                    var refreshToken = await TokenStorage.GetRefreshTokenAsync();
                     NavigationManager.NavigateTo(result.redirectTo ?? "/license");
                 }
             }
@@ -131,11 +140,19 @@
         }
     }
 
+    public class Token
+    {
+        public string accessToken { get; set; }
+        public string refreshToken { get; set; }
+        public int expiresIn { get; set; }
+        public string tokenType { get; set; }
+    }
+
     public class LoginResponse
     {
         public string message { get; set; }
         public User user { get; set; }
-        public string redirectTo { get; set; } // Ajout de ce champ
+        public string redirectTo { get; set; }
+        public Token token { get; set; }
     }
 }
-

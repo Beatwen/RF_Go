@@ -1,73 +1,103 @@
 ﻿@page "/register"
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
+@using System.Text.Json.Serialization;
 @using System.Text.Json
 @using System.Net.Http
 @using System.Net.Http.Json
 @using RF_Go.Utils
 @using RF_Go.Models.Licensing
 @inject NavigationManager NavigationManager
-
 <MudContainer MaxWidth="MaxWidth.Small" Style="margin: auto; padding: 40px;">
-    <MudPaper Class="pa-4" Elevation="3">
-        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Create Your Account</MudText>
-        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-            <MudTextField T="string" Label="First Name" Required="true" RequiredError="First Name is required!"
-                          @bind-Value="@registrationModel.FirstName" FullWidth="true" Class="mb-3" />
-            <MudTextField T="string" Label="Last Name" Required="true" RequiredError="Last Name is required!"
-                          @bind-Value="@registrationModel.LastName" FullWidth="true" Class="mb-3" />
-            <MudTextField T="string" Label="Email" Required="true" RequiredError="Email is required!"
-                          @bind-Value="@registrationModel.Email"
-                          Validation="@(new EmailAddressAttribute() { ErrorMessage = "Invalid email address!" })"
-                          FullWidth="true" Class="mb-3" />
-            <MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pwField1"
-                          InputType="@PasswordInput"
-                          AdornmentIcon="@PasswordInputIcon"
-                          OnAdornmentClick="TogglePasswordVisibility"
-                          AdornmentAriaLabel="Show Password"
-                          Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
-                          Required="true" RequiredError="Password is required!"
-                          @bind-Value="@registrationModel.Password" FullWidth="true" Class="mb-3" />
-            <MudTextField T="string" Label="Confirm Password" HelperText="Repeat the password"
-                          InputType="InputType.Password"
-                          Validation="@(new Func<string, string>(PasswordMatch))"
-                          FullWidth="true" Class="mb-3" />
-            <MudCheckBox T="bool" Required="true" RequiredError="You must agree to the terms"
-                         Label="I agree to the terms and conditions!"
-                         @bind-Checked="@registrationModel.AcceptedTerms" Class="mb-4" />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" FullWidth="true"
-                       OnClick="@RegisterForm">Register</MudButton>
-            @foreach (var error in errors)
-            {
-                <MudText Color="@Color.Error">@error</MudText>
-            }
-            <MudText Typo="Typo.body1" Align="Align.Center" Class="mt-4">
-                Already have an account? <MudLink Href="/login" Color="Color.Primary">Log in here</MudLink>
-            </MudText>
-            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
-                For debugging purpose, you can directly <MudLink Href="/index">go to the app</MudLink>
-            </MudText>
-        </MudForm>
-    </MudPaper>
+@if (loading)
+{
+    <MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column justify-center" style="height:100vh;">
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Getting devices</MudText>
+        <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Striped="true" Size="Size.Medium" Class="w-50 my-7" />
+    </MudContainer>
+}
+else
+{
+    
+        <MudPaper Class="pa-4" Elevation="3">
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Create Your Account</MudText>
+            <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+                <MudTextField T="string" Label="First Name" Required="true" RequiredError="First Name is required!"
+                @bind-Value="@registrationModel.FirstName" FullWidth="true" Class="mb-3" />
+                <MudTextField T="string" Label="Last Name" Required="true" RequiredError="Last Name is required!"
+                @bind-Value="@registrationModel.LastName" FullWidth="true" Class="mb-3" />
+                <MudTextField T="string" Label="Email" Required="true" RequiredError="Email is required!"
+                @bind-Value="@registrationModel.Email"
+                Validation="@(new EmailAddressAttribute() { ErrorMessage = "Invalid email address!" })"
+                FullWidth="true" Class="mb-3" />
+                <MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pwField1"
+                Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick='@( () => TogglePasswordVisibility("password") )' AdornmentAriaLabel="Show Password"
+                InputType="@PasswordInput"
+                Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
+                Required="true" RequiredError="Password is required!"
+                @bind-Value="@registrationModel.Password" FullWidth="true" Class="mb-3" />
+                <MudTextField T="string" Label="Confirm Password" HelperText="Repeat the password"
+                InputType="@ConfirmPasswordInput"
+                Validation="@(new Func<string, string>(PasswordMatch))"
+                Adornment="Adornment.End" AdornmentIcon="@ConfirmPasswordInputIcon" OnAdornmentClick='@( () => TogglePasswordVisibility("confirmPassword") )' AdornmentAriaLabel="Show Password Confirmation"
+                FullWidth="true" Class="mb-3" />
+                <MudCheckBox T="bool" Required="true" RequiredError="You must agree to the terms"
+                Label="I agree to the terms and conditions!"
+                @bind-Checked="@registrationModel.AcceptedTerms" Class="mb-4" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" FullWidth="true"
+                OnClick="@RegisterForm">Register</MudButton>
+                @foreach (var error in errors)
+                {
+                    <MudText Color="@Color.Error">@error</MudText>
+                }
+                <MudText Typo="Typo.body1" Align="Align.Center" Class="mt-4">
+                    Already have an account? <MudLink Href="/login" Color="Color.Primary">Log in here</MudLink>
+                </MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
+                    For debugging purpose, you can directly <MudLink Href="/index">go to the app</MudLink>
+                </MudText>
+            </MudForm>
+        </MudPaper>
+    
+}
 </MudContainer>
-
 @code {
+
     private RegistrationModel registrationModel = new();
     private bool success;
     private string[] errors = { };
     private MudTextField<string> pwField1;
     private MudForm form;
-    private HttpClient httpClient = new HttpClient();
-    bool isShow;
-    InputType PasswordInput = InputType.Password;
-    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private bool passwordVision;
+    private bool passwordConfirmationVision;
+    private InputType PasswordInput = InputType.Password;
+    private InputType ConfirmPasswordInput = InputType.Password;
+    private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private string ConfirmPasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private HttpClient httpClient = new();
+    private AuthService _authService;
+    private bool loading = false;
 
-    void TogglePasswordVisibility()
+    protected override void OnInitialized()
     {
-        isShow = !isShow;
-        PasswordInputIcon = isShow ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
-        PasswordInput = isShow ? InputType.Text : InputType.Password;
+        _authService = new AuthService(httpClient);
     }
+    private void TogglePasswordVisibility(string field)
+    {
+        if (field == "password")
+        {
+            passwordVision = !passwordVision;
+            PasswordInputIcon = passwordVision ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+            PasswordInput = passwordVision ? InputType.Text : InputType.Password;
+        }
+        else if (field == "confirmPassword")
+        {
+            passwordConfirmationVision = !passwordConfirmationVision;
+            ConfirmPasswordInputIcon = passwordConfirmationVision ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+            ConfirmPasswordInput = passwordConfirmationVision ? InputType.Text : InputType.Password;
+        }
+    }
+
 
     private async Task RegisterForm()
     {
@@ -75,27 +105,36 @@
 
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{AppConfig.ApiBaseUrl}/users")
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{AppConfig.ApiBaseUrl}/auth/register")
                 {
                     Content = JsonContent.Create(registrationModel)
                 };
             request.Headers.Add("X-API-KEY", AppConfig.ApiKey);
-
+            loading = true;
             var response = await httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var registrationResponse = JsonSerializer.Deserialize<RegistrationResponse>(responseContent);
+
+                // Stocker les informations du client OAuth
+                await TokenStorage.SaveClientIdAsync(registrationResponse.Client.ClientId);
+                await TokenStorage.SaveClientSecretAsync(registrationResponse.Client.ClientSecret);
+
                 NavigationManager.NavigateTo("/login?from=register");
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                errors = new[] { $"Server Error: {response.StatusCode}. Details: {errorContent}" };
+                errors = new[] { $"{errorContent}" };
             }
+            loading = false;
         }
         catch (Exception ex)
         {
             errors = new[] { $"Unexpected error: {ex.Message}" };
+            loading = false;
         }
     }
 
@@ -117,8 +156,67 @@
     {
         [Required] public string FirstName { get; set; } = string.Empty;
         [Required] public string LastName { get; set; } = string.Empty;
-        [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+        private string email;
+        [Required, EmailAddress]
+        public string Email
+        {
+            get => email;
+            set => email = value.ToLower();
+        }
         [Required] public string Password { get; set; } = string.Empty;
         [Required] public bool AcceptedTerms { get; set; } = false;
+    }
+    public class RegistrationResponse
+    {
+        [JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [JsonPropertyName("user")]
+        public UserInfo User { get; set; }
+
+        [JsonPropertyName("client")]
+        public ClientInfo Client { get; set; }
+    }
+
+    public class UserInfo
+    {
+        [JsonPropertyName("emailConfirmed")]
+        public bool EmailConfirmed { get; set; }
+
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("userName")]
+        public string UserName { get; set; }
+
+        [JsonPropertyName("firstName")]
+        public string FirstName { get; set; }
+
+        [JsonPropertyName("lastName")]
+        public string LastName { get; set; }
+
+        [JsonPropertyName("email")]
+        public string Email { get; set; }
+
+        [JsonPropertyName("password")]
+        public string Password { get; set; }
+
+        [JsonPropertyName("confirmationToken")]
+        public string ConfirmationToken { get; set; }
+
+        [JsonPropertyName("updatedAt")]
+        public DateTime UpdatedAt { get; set; }
+
+        [JsonPropertyName("createdAt")]
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class ClientInfo
+    {
+        [JsonPropertyName("clientId")]
+        public string ClientId { get; set; }
+
+        [JsonPropertyName("clientSecret")]
+        public string ClientSecret { get; set; }
     }
 }

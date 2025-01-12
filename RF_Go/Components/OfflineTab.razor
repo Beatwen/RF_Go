@@ -4,6 +4,7 @@
 @using RF_Go.Data
 @using RF_Go.Models
 @using RF_Go.Components.Modal
+@using RF_Go.Components
 @using RF_Go.ViewModels
 @using System.Diagnostics
 @using System.ComponentModel;
@@ -12,6 +13,8 @@
 @inject MudBlazor.ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+
+
 
 @if (DevicesViewModel.Devices.Count == 0)
 {
@@ -28,6 +31,7 @@
 }
 else
 {
+    
     <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
         <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
         <div>
@@ -96,6 +100,7 @@ else
             <MudTablePager />
         </PagerContent>
     </MudTable>
+
 }
 
 @code
@@ -105,6 +110,8 @@ else
     [Parameter] public DeviceData DeviceData { get; set; }
     [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
     [Parameter] public EventCallback OnDeviceSaved { get; set; }
+    [Parameter] public FrequencyData FrequencyData { get; set; }
+
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private string searchString1 = "";
@@ -251,6 +258,7 @@ else
 
     return excludedChannels;
     }
+
     private async Task RFCalcul()
     {
     var overlappingGroups = FindOverlappingGroups();
@@ -258,12 +266,12 @@ else
 
     foreach (var groupSet in overlappingGroups)
     {
-        HashSet<int> UsedFrequencies = new HashSet<int>();
-        HashSet<int> TwoTX3rdOrder = new HashSet<int>();
-        HashSet<int> TwoTX5rdOrder = new HashSet<int>();
-        HashSet<int> TwoTX7rdOrder = new HashSet<int>();
-        HashSet<int> TwoTX9rdOrder = new HashSet<int>();
-        HashSet<int> ThreeTX3rdOrder = new HashSet<int>();
+        FrequencyData.UsedFrequencies.Clear();
+        FrequencyData.TwoTX3rdOrder.Clear();
+        FrequencyData.TwoTX5rdOrder.Clear();
+        FrequencyData.TwoTX7rdOrder.Clear();
+        FrequencyData.TwoTX9rdOrder.Clear();
+        FrequencyData.ThreeTX3rdOrder.Clear();
 
         var devicesInGroup = GetDevicesForGroupSet(groupSet);
 
@@ -277,7 +285,7 @@ else
                 {
                     Debug.WriteLine("found one locked chan ! ");
                     Debug.WriteLine("We are checking: " + chan.Frequency);
-                    chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder, excludedRanges);
+                    chan.SetRandomFrequency(FrequencyData.UsedFrequencies, FrequencyData.TwoTX3rdOrder, FrequencyData.TwoTX5rdOrder, FrequencyData.TwoTX7rdOrder, FrequencyData.TwoTX9rdOrder, FrequencyData.ThreeTX3rdOrder, excludedRanges);
                 }
             }
         }
@@ -287,13 +295,14 @@ else
         {
             foreach (RFChannel chan in device.Channels)
             {
-                chan.SetRandomFrequency(UsedFrequencies, TwoTX3rdOrder, TwoTX5rdOrder, TwoTX7rdOrder, TwoTX9rdOrder, ThreeTX3rdOrder, excludedRanges);
+                chan.SetRandomFrequency(FrequencyData.UsedFrequencies, FrequencyData.TwoTX3rdOrder, FrequencyData.TwoTX5rdOrder, FrequencyData.TwoTX7rdOrder, FrequencyData.TwoTX9rdOrder, FrequencyData.ThreeTX3rdOrder, excludedRanges);
             }
         }
         await DevicesViewModel.SaveAllDevicesAsync();
         await OnDeviceSaved.InvokeAsync();
-        }
     }
+        }
+
     private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
     {
         var groupIds = groupSet.Select(g => g.ID).ToList();

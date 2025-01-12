@@ -1,6 +1,9 @@
 ﻿@page "/license"
 @using RF_Go.Components.Licensing
+@using RF_Go.Utils
+@using System.Diagnostics
 @inject NavigationManager NavigationManager
+
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="pa-4">
     <MudPaper Elevation="2" Class="pa-4">
@@ -37,7 +40,10 @@
 @code {
     private bool ShowPurchase = false;
     private bool ShowActivation = false;
-
+    protected override async void OnInitialized() {
+        var accessToken = await TokenStorage.GetAccessTokenAsync();
+        Debug.Print(accessToken);
+    }
     private void ShowPurchaseForm()
     {
         ShowPurchase = true;

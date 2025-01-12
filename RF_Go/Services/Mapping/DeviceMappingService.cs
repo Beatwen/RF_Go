@@ -201,7 +201,6 @@ namespace RF_Go.Services.Mapping
                 throw;
             }
         }
-
         private async Task<DeviceDiscoveredEventArgs> FetchDeviceData(RFDevice offlineDevice)
         {
             var handler = _deviceHandlers.FirstOrDefault(h => h.Brand == offlineDevice.Brand);

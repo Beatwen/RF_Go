@@ -91,7 +91,7 @@
         await DevicesViewModel.LoadDevicesAsync();
         await GroupsViewModel.LoadGroupsAsync();
         await base.OnInitializedAsync();
-    }        private bool isAddingDevice = false;
+    }  
 
     private async Task SaveDeviceInDB(RFDevice device)
     {
@@ -151,10 +151,6 @@
             chan.ThirdOrderSpacing3Tx = freq[8];
             count++;
         }
-    }
-    private void AddDevice()
-    {
-        isAddingDevice = true;
     }
     private void OnBrandChanged(string e)
     {
