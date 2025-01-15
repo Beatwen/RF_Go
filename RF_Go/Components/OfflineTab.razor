@@ -31,7 +31,7 @@
 }
 else
 {
-    
+
     <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
         <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
         <div>
@@ -45,7 +45,7 @@ else
     </div>
 
     <MudTable Hover="true" Dense="true" Bordered="false" Striped="false" HorizontalScrollbar="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
-    RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc" Style="margin: auto; overflow: auto; max-height: calc(100vh - 150px);">
+    RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc" Style="margin: auto; overflow: auto; max-height: calc(100vh - 310px);">
         <HeaderContent>
             <MudTh Style="min-width: 200px;">Device</MudTh>
             <MudTh Style="min-width: 150px;">Set Frequencies</MudTh>
@@ -110,7 +110,8 @@ else
     [Parameter] public DeviceData DeviceData { get; set; }
     [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
     [Parameter] public EventCallback OnDeviceSaved { get; set; }
-    [Parameter] public FrequencyData FrequencyData { get; set; }
+    [Parameter] public FrequencyDataViewModel FrequencyDataViewModel { get; set; }
+    [Parameter] public EventCallback OnCalculationCompleted { get; set; }
 
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
@@ -163,146 +164,141 @@ else
         int endRange = DeviceData.Brands[device.Brand][device.Model][device.Frequency][1];
         return device.Frequency + " - " + $"{startRange:#,0} - {endRange:#,0}";
     }
-    @code {
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        try
         {
-            try
+            if (DevicesViewModel == null)
             {
-                if (DevicesViewModel == null)
-                {
-                    throw new InvalidOperationException("DevicesViewModel is not initialized.");
-                }
-                if (GroupsViewModel == null)
-                {
-                    throw new InvalidOperationException("GroupsViewModel is not initialized.");
-                }
-                if (DeviceData == null)
-                {
-                    throw new InvalidOperationException("DeviceData is not initialized.");
-                }
-                if (ExclusionChannelViewModel == null)
-                {
-                    throw new InvalidOperationException("ExclusionChannelViewModel is not initialized.");
-                }
-
-                await DevicesViewModel.LoadDevicesAsync();
-                await GroupsViewModel.LoadGroupsAsync();
-
-                foreach (var device in DevicesViewModel.Devices)
-                {
-                    device.PropertyChanged += Device_PropertyChanged;
-                }
-
-                await base.OnInitializedAsync();
+                throw new InvalidOperationException("DevicesViewModel is not initialized.");
             }
-            catch (Exception ex)
+            if (GroupsViewModel == null)
             {
-                Debug.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
-                throw;
+                throw new InvalidOperationException("GroupsViewModel is not initialized.");
             }
-        }
-
-        private void Device_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(RFDevice.IsSynced) || e.PropertyName == nameof(RFDevice.PendingSync))
+            if (DeviceData == null)
             {
-                InvokeAsync(StateHasChanged);
+                throw new InvalidOperationException("DeviceData is not initialized.");
             }
-        }
+            if (ExclusionChannelViewModel == null)
+            {
+                throw new InvalidOperationException("ExclusionChannelViewModel is not initialized.");
+            }
 
-        public void Dispose()
-        {
+            await DevicesViewModel.LoadDevicesAsync();
+            await GroupsViewModel.LoadGroupsAsync();
+
             foreach (var device in DevicesViewModel.Devices)
             {
-                device.PropertyChanged -= Device_PropertyChanged;
+                device.PropertyChanged += Device_PropertyChanged;
             }
+
+            await base.OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
+            throw;
+        }
+    }
+    private void Device_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(RFDevice.IsSynced) || e.PropertyName == nameof(RFDevice.PendingSync))
+        {
+            InvokeAsync(StateHasChanged);
         }
     }
 
-
+    public void Dispose()
+    {
+        foreach (var device in DevicesViewModel.Devices)
+        {
+            device.PropertyChanged -= Device_PropertyChanged;
+        }
+    }
     private async Task DeleteDevice(RFDevice device)
     {
-    await DevicesViewModel.DeleteDeviceAsync(device.ID);
-    Snackbar.Add("Device deleted", Severity.Success);
+        await DevicesViewModel.DeleteDeviceAsync(device.ID);
+        Snackbar.Add("Device deleted", Severity.Success);
     }
     private async Task DesyncDevice(RFDevice device)
     {
-    device.IsSynced = false;
-    device.PendingSync = false;
-    device.SerialNumber = null;
-    device.IpAddress = null;
+        device.IsSynced = false;
+        device.PendingSync = false;
+        device.SerialNumber = null;
+        device.IpAddress = null;
 
-    // Rechercher l'objet correspondant dans la collection OnlineDevices
-    var matchingDevice = DevicesViewModel.OnlineDevices.FirstOrDefault(d => d.ID == device.ID);
-    if (matchingDevice != null)
-    {
-        Debug.WriteLine($"Device {device.Name} found in OnlineDevices before removal.");
-        DevicesViewModel.OnlineDevices.Remove(matchingDevice);
-        Debug.WriteLine($"Device {device.Name} successfully removed from OnlineDevices.");
-    }
-    else
-    {
-        Debug.WriteLine($"Device {device.Name} not found in OnlineDevices before removal.");
-    }
+        // Rechercher l'objet correspondant dans la collection OnlineDevices
+        var matchingDevice = DevicesViewModel.OnlineDevices.FirstOrDefault(d => d.ID == device.ID);
+        if (matchingDevice != null)
+        {
+            Debug.WriteLine($"Device {device.Name} found in OnlineDevices before removal.");
+            DevicesViewModel.OnlineDevices.Remove(matchingDevice);
+            Debug.WriteLine($"Device {device.Name} successfully removed from OnlineDevices.");
+        }
+        else
+        {
+            Debug.WriteLine($"Device {device.Name} not found in OnlineDevices before removal.");
+        }
 
-    await SaveDeviceAsync(device);
-    Snackbar.Add("Device desynchronized", Severity.Info);
+        await SaveDeviceAsync(device);
+        Snackbar.Add("Device desynchronized", Severity.Info);
     }
     private List<(float StartFrequency, float EndFrequency)> GetExcludedRanges()
     {
-    var excludedChannels = ExclusionChannelViewModel.ExclusionChannels
-        .Where(channel => channel.Exclude)
-        .Concat(ExclusionChannelViewModel.UserAddedChannels.Where(channel => channel.Exclude))
-        .Select(channel => (channel.StartFrequency, channel.EndFrequency))
-        .ToList();
+        var excludedChannels = ExclusionChannelViewModel.ExclusionChannels
+            .Where(channel => channel.Exclude)
+            .Concat(ExclusionChannelViewModel.UserAddedChannels.Where(channel => channel.Exclude))
+            .Select(channel => (channel.StartFrequency, channel.EndFrequency))
+            .ToList();
 
-    return excludedChannels;
+        return excludedChannels;
     }
-
     private async Task RFCalcul()
     {
-    var overlappingGroups = FindOverlappingGroups();
-    var excludedRanges = GetExcludedRanges();
+        var overlappingGroups = FindOverlappingGroups();
+        var excludedRanges = GetExcludedRanges();
 
-    foreach (var groupSet in overlappingGroups)
-    {
-        FrequencyData.UsedFrequencies.Clear();
-        FrequencyData.TwoTX3rdOrder.Clear();
-        FrequencyData.TwoTX5rdOrder.Clear();
-        FrequencyData.TwoTX7rdOrder.Clear();
-        FrequencyData.TwoTX9rdOrder.Clear();
-        FrequencyData.ThreeTX3rdOrder.Clear();
-
-        var devicesInGroup = GetDevicesForGroupSet(groupSet);
-
-        // First pass: lock frequencies
-        foreach (RFDevice device in devicesInGroup)
+        foreach (var groupSet in overlappingGroups)
         {
-            foreach (RFChannel chan in device.Channels)
+            FrequencyDataViewModel.FrequencyData.UsedFrequencies.Clear();
+            FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder.Clear();
+            FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder.Clear();
+            FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder.Clear();
+            FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder.Clear();
+            FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder.Clear();
+
+            var devicesInGroup = GetDevicesForGroupSet(groupSet);
+
+            // First pass: lock frequencies
+            foreach (RFDevice device in devicesInGroup)
             {
-                chan.Checked = false;
-                if (chan.IsLocked)
+                foreach (RFChannel chan in device.Channels)
                 {
-                    Debug.WriteLine("found one locked chan ! ");
-                    Debug.WriteLine("We are checking: " + chan.Frequency);
-                    chan.SetRandomFrequency(FrequencyData.UsedFrequencies, FrequencyData.TwoTX3rdOrder, FrequencyData.TwoTX5rdOrder, FrequencyData.TwoTX7rdOrder, FrequencyData.TwoTX9rdOrder, FrequencyData.ThreeTX3rdOrder, excludedRanges);
+                    chan.Checked = false;
+                    if (chan.IsLocked)
+                    {
+                        Debug.WriteLine("found one locked chan ! ");
+                        Debug.WriteLine("We are checking: " + chan.Frequency);
+                        chan.SetRandomFrequency(FrequencyDataViewModel.FrequencyData.UsedFrequencies, FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder, FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder, excludedRanges);
+                    }
                 }
             }
-        }
 
-        // Second pass: assign frequencies to unlocked channels
-        foreach (RFDevice device in devicesInGroup)
-        {
-            foreach (RFChannel chan in device.Channels)
+            // Second pass: assign frequencies to unlocked channels
+            foreach (RFDevice device in devicesInGroup)
             {
-                chan.SetRandomFrequency(FrequencyData.UsedFrequencies, FrequencyData.TwoTX3rdOrder, FrequencyData.TwoTX5rdOrder, FrequencyData.TwoTX7rdOrder, FrequencyData.TwoTX9rdOrder, FrequencyData.ThreeTX3rdOrder, excludedRanges);
+                foreach (RFChannel chan in device.Channels)
+                {
+                    chan.SetRandomFrequency(FrequencyDataViewModel.FrequencyData.UsedFrequencies, FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder, FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder, excludedRanges);
+                }
             }
-        }
-        await DevicesViewModel.SaveAllDevicesAsync();
-        await OnDeviceSaved.InvokeAsync();
+            await DevicesViewModel.SaveAllDevicesAsync();
+            await FrequencyDataViewModel.SaveFrequencyDataAsync();
+            await OnDeviceSaved.InvokeAsync();
+        await OnCalculationCompleted.InvokeAsync();
     }
-        }
-
+    }
     private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
     {
         var groupIds = groupSet.Select(g => g.ID).ToList();
@@ -373,7 +369,6 @@ else
         return $"{startRange} - {endRange} Mhz";
     }
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
-
     private async Task OpenDialogToAddDeviceAsync()
     {
         var parameters = new DialogParameters
@@ -397,7 +392,6 @@ else
             StateHasChanged();
         }
     }
-
     private async Task OpenDialogOnlineDevice()
     {
         var parameters = new DialogParameters
@@ -420,7 +414,6 @@ else
             StateHasChanged();
         }
     }
-
     private async Task OpenQuickSyncModal(RFDevice device)
     {
         var parameters = new DialogParameters

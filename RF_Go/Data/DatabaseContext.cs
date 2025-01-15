@@ -37,6 +37,7 @@ namespace RF_Go.Data
             await CreateTableIfNotExists<RFGroup>();
             await CreateTableIfNotExists<RFDevice>();
             await CreateTableIfNotExists<ExclusionChannel>();
+            await CreateTableIfNotExists<FrequencyData>();
             await InsertInitialGroups();
             await InsertInitialRFExclusionChannel();
             

@@ -22,8 +22,6 @@ namespace RF_Go.ViewModels
         private ObservableCollection<RFDevice> _devices = new();
         [ObservableProperty]
         public RFDevice _operatingDevice = new();
-        [ObservableProperty]
-        private ObservableCollection<RFDevice> _onlineDevices = new();
 
         [ObservableProperty]
         private bool _isBusy;
@@ -39,15 +37,10 @@ namespace RF_Go.ViewModels
                 if (devices != null && devices.Any())
                 {
                     Devices.Clear();
-                    OnlineDevices.Clear(); // Assurez-vous de vider la collection avant de la remplir
 
                     foreach (var device in devices)
                     {
                         Devices.Add(device);
-                        if (device.IsSynced)
-                        {
-                            OnlineDevices.Add(device); // Utiliser la même instance
-                        }
                     }
                 }
             }
@@ -177,6 +170,7 @@ namespace RF_Go.ViewModels
 
         public void MapOnlineToOffline(RFDevice onlineDevice)
         {
+            /// Attention _onlineDevices n'existe plus !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             var matchingOfflineDevice = Devices.FirstOrDefault(d =>
                 d.Model == onlineDevice.Model &&
                 d.Frequency == onlineDevice.Frequency);
@@ -202,12 +196,6 @@ namespace RF_Go.ViewModels
                     if (device != null)
                     {
                         Devices.Remove(device);
-                    }
-
-                    var onlineDevice = OnlineDevices.FirstOrDefault(p => p.ID == id);
-                    if (onlineDevice != null)
-                    {
-                        OnlineDevices.Remove(onlineDevice);
                     }
                 }
                 else

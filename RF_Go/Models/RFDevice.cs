@@ -54,6 +54,20 @@ namespace RF_Go.Models
                 }
             }
         }
+        private bool _isOnline { get; set; }
+        public bool IsOnline
+        {
+            get => _isOnline;
+            set
+            {
+                if (_isOnline != value)
+                {
+                    _isOnline = value;
+                    OnPropertyChanged(nameof(IsOnline));
+                }
+            }
+        }
+
         private bool _pendingSync;
         public bool PendingSync
         {

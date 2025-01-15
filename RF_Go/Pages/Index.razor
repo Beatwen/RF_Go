@@ -13,6 +13,7 @@
 @using System.Diagnostics
 @using RF_Go.Services;
 @using RF_Go.Services.NetworkProtocols
+@using Microsoft.JSInterop
 
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -20,8 +21,7 @@
 @inject GroupsViewModel GroupsViewModel
 @inject ExclusionChannelViewModel ExclusionChannelViewModel
 @inject DiscoveryService DiscoveryService
-@inject ChartViewModel ChartViewModel
-
+@inject FrequencyDataViewModel FrequencyDataViewModel
 
 
 <MudContainer Style="max-height:60vh">
@@ -36,35 +36,27 @@
     else
     {
         <MudTabs KeepPanelsAlive="true"
-                 Elevation="4"
-                 Centered="true"
-                 Rounded="false"
-                 AlwaysShowScrollButtons="true">
+        Elevation="4"
+        Centered="true"
+        Rounded="false"
+        AlwaysShowScrollButtons="true">
             <MudTabPanel Text="Devices" ID='"devices_tab"' Class="">
                 <MudGrid Spacing="1" Class="display-6 pl-6 pr-6">
-                     <MudItem xs="12" md="1">
-                         <MudPaper Class="mt-4"> 
-                    @*         <TVChannelsFilter DeviceData="deviceData" *@
-                    @*                         DevicesViewModel="DevicesViewModel" *@
-                    @*                         GroupsViewModel="GroupsViewModel" /> *@
-                            <FrequencyChart FrequencyData="frequencyData" />
-                        </MudPaper>
-                    
-                    </MudItem>
-                    <MudItem xs="12" md="8" Style="min-width: 600px;">
+                    <MudItem xs="12" md="10" Style="min-width: 600px;">
                         <MudPaper Class="mt-4">
                             <OfflineTab DeviceData="deviceData"
-                                        ExclusionChannelViewModel="ExclusionChannelViewModel"
-                                        DevicesViewModel="DevicesViewModel"
-                                        GroupsViewModel="GroupsViewModel"
-                                        FrequencyData="frequencyData" />
+                            ExclusionChannelViewModel="ExclusionChannelViewModel"
+                            DevicesViewModel="DevicesViewModel"
+                            GroupsViewModel="GroupsViewModel"
+                            FrequencyDataViewModel="FrequencyDataViewModel" 
+                            OnCalculationCompleted="HandleCalculationCompleted"/>
                         </MudPaper>
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudPaper Class="mt-4">
                             <SlidersSpacers DeviceData="deviceData"
-                                            DevicesViewModel="DevicesViewModel"
-                                            GroupsViewModel="GroupsViewModel" />
+                            DevicesViewModel="DevicesViewModel"
+                            GroupsViewModel="GroupsViewModel" />
                         </MudPaper>
                     </MudItem>
                 </MudGrid>
@@ -75,8 +67,8 @@
             <MudTabPanel Text="Groups" ID='"groups"'>
                 <MudPaper>
                     <RFGroupsLayout DeviceData="deviceData"
-                                    DevicesViewModel="DevicesViewModel"
-                                    GroupsViewModel="GroupsViewModel" />
+                    DevicesViewModel="DevicesViewModel"
+                    GroupsViewModel="GroupsViewModel" />
                 </MudPaper>
             </MudTabPanel>
             <MudTabPanel Text="Remote" ID='"remote_tab"'>
@@ -93,10 +85,14 @@
             </MudTabPanel>
         </MudTabs>
     }
-</MudContainer>
+    </MudContainer>
 
-@code
-{
+    <div class="chart-container">
+        <div id="sciChartDiv" style="width: 100%; height: 200px;"></div>
+    </div>
+    @code
+    {
+
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool isLoadingJSON = true;
     private bool _selectOnRowClick = true;
@@ -111,7 +107,6 @@
     private RFDevice selectedItem1 = null;
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
-    private FrequencyData frequencyData = new();
 
     private void RefreshComponents()
     {
@@ -140,7 +135,31 @@
         var json = JsonData.Devices;
         deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
         await DevicesViewModel.LoadDevicesAsync();
+        await FrequencyDataViewModel.LoadFrequencyDataAsync();
         isLoadingJSON = false;
         StateHasChanged();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
+        }
+    }
+    private async void HandleCalculationCompleted()
+    {
+        StateHasChanged();
+
+        Debug.Print("State Has Changed !");
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error calling JavaScript: {ex.Message}");
+            // A FAIRE Gérer l'erreur ici en cas de bug du tableau
+        }
     }
 }

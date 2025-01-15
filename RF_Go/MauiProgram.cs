@@ -48,7 +48,7 @@ namespace RF_Go
             builder.Services.AddTransient<GroupsViewModel>();
             builder.Services.AddTransient<ExclusionChannelViewModel>();
             builder.Services.AddScoped<MainPage>();
-            builder.Services.AddSingleton<ChartViewModel>();
+            builder.Services.AddSingleton<FrequencyDataViewModel>();
 
 
 
