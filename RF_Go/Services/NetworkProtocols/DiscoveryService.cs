@@ -38,6 +38,7 @@ namespace RF_Go.Services.NetworkProtocols
 
         public void StartDiscovery()
         {
+
             _multicastService.Start();
             _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
             _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
@@ -94,7 +95,7 @@ namespace RF_Go.Services.NetworkProtocols
 
             if (!string.IsNullOrEmpty(deviceInfo.SerialNumber))
             {
-                var existingDevice = _devicesViewModel.OnlineDevices.FirstOrDefault(d => d.SerialNumber == deviceInfo.SerialNumber);
+                var existingDevice = _devicesViewModel.Devices.FirstOrDefault(d => d.SerialNumber == deviceInfo.SerialNumber);
                 if (existingDevice != null)
                 {
                     deviceInfo.IsSynced = true;
@@ -163,8 +164,12 @@ namespace RF_Go.Services.NetworkProtocols
 
         public async Task CheckDeviceSync(object state)
         {
-            foreach (var discoveredDevice in _devicesViewModel.OnlineDevices)
+            foreach (var discoveredDevice in _devicesViewModel.Devices)
             {
+                if (!discoveredDevice.IsSynced)
+                {
+                    continue;
+                }
                 var handler = _handlers.FirstOrDefault(h => h.Brand == discoveredDevice.Brand);
                 if (handler != null)
                 {
@@ -184,17 +189,24 @@ namespace RF_Go.Services.NetworkProtocols
                         }).ToList()
                     };
 
-                    var isSynced = await handler.IsDeviceSync(deviceInfo);
-                    discoveredDevice.IsSynced = isSynced;
-
-                    if (!isSynced)
+                    var (IsEqual, IsNotResponding)= await handler.IsDevicePendingSync(deviceInfo);
+                    if (IsNotResponding)
                     {
-                        _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, true);
+                        discoveredDevice.IsOnline = false;
                     }
                     else
                     {
-                        _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, false);
+                    discoveredDevice.PendingSync = !IsEqual;
                     }
+
+                    //if (!isSynced)
+                    //{
+                    //    _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, true);
+                    //}
+                    //else
+                    //{
+                    //    _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, false);
+                    //}
                 }
             }
         }

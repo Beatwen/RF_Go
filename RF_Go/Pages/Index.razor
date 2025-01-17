@@ -93,6 +93,12 @@
     @code
     {
 
+
+
+
+
+
+
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool isLoadingJSON = true;
     private bool _selectOnRowClick = true;
@@ -141,10 +147,7 @@
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
-        }
+        await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
     }
     private async void HandleCalculationCompleted()
     {

@@ -100,7 +100,7 @@
                 yAxisId: "yAxis"   // Associer la série à l'axe Y
             });
         };
-
+        console.log(frequencyData.usedFrequencies);
         // Création des séries de données avec les IDs d'axes spécifiés
         const seriesData = [
             { data: frequencyData.usedFrequencies, level: 0, color: "SteelBlue" },

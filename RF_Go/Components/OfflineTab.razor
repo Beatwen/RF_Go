@@ -86,7 +86,7 @@ else
                     </MudSelect>
                     @if (context.IsSynced)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.LinkOff" @onclick="() => DesyncDevice(context)" aria-label="desync" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Link" @onclick="() => DesyncDevice(context)" aria-label="desync" />
                     }
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="() => DeleteDevice(context)" aria-label="delete" />
                 </div>
@@ -224,23 +224,10 @@ else
     private async Task DesyncDevice(RFDevice device)
     {
         device.IsSynced = false;
+        device.IsOnline = false;
         device.PendingSync = false;
         device.SerialNumber = null;
         device.IpAddress = null;
-
-        // Rechercher l'objet correspondant dans la collection OnlineDevices
-        var matchingDevice = DevicesViewModel.OnlineDevices.FirstOrDefault(d => d.ID == device.ID);
-        if (matchingDevice != null)
-        {
-            Debug.WriteLine($"Device {device.Name} found in OnlineDevices before removal.");
-            DevicesViewModel.OnlineDevices.Remove(matchingDevice);
-            Debug.WriteLine($"Device {device.Name} successfully removed from OnlineDevices.");
-        }
-        else
-        {
-            Debug.WriteLine($"Device {device.Name} not found in OnlineDevices before removal.");
-        }
-
         await SaveDeviceAsync(device);
         Snackbar.Add("Device desynchronized", Severity.Info);
     }
@@ -419,7 +406,7 @@ else
         var parameters = new DialogParameters
         {
             { "Device", device },
-            { "OnlineDevices", DevicesViewModel.OnlineDevices }
+            { "OnlineDevices", DevicesViewModel.Devices }
         };
 
         var options = new DialogOptions
@@ -442,7 +429,11 @@ else
     }
     private string GetSyncIcon(RFDevice device)
     {
-        if (device.PendingSync)
+        if (!device.IsOnline && device.IsSynced)
+        {
+            return Icons.Material.Filled.QuestionMark;
+        }
+        if (device.PendingSync && device.IsOnline)
         {
             return Icons.Material.Filled.Sync;
         }

@@ -64,10 +64,11 @@
             }
             else
             {
+                offlineDevice.IsOnline = true;
                 offlineDevice.IsSynced = true;
                 OnlineDevice.IsSynced = true;
-                DevicesViewModel.OnlineDevices.Add(offlineDevice);
                 
+
                 MudDialog.Close(DialogResult.Ok(offlineDevice));
             }
         }
@@ -75,8 +76,8 @@
         {
             DeviceMappingService.FirstSyncFromDevice(offlineDevice, rfDevice);
             offlineDevice.IsSynced = true;
+            offlineDevice.IsOnline = true;
             OnlineDevice.IsSynced = true;
-            DevicesViewModel.OnlineDevices.Add(offlineDevice);
             MudDialog.Close(DialogResult.Ok(offlineDevice));
         }
     }

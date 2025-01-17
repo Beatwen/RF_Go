@@ -217,12 +217,6 @@ namespace RF_Go.ViewModels
                     {
                         var device = Devices.FirstOrDefault(p => p.ID == deviceId);
                         Devices.Remove(device);
-
-                        var onlineDevice = OnlineDevices.FirstOrDefault(p => p.ID == deviceId);
-                        if (onlineDevice != null)
-                        {
-                            OnlineDevices.Remove(onlineDevice);
-                        }
                     }
                     else
                     {
@@ -252,15 +246,15 @@ namespace RF_Go.ViewModels
             }
         }
 
-        public void UpdateDeviceSyncStatus(RFDevice onlineDevice, bool isPendingSync)
-        {
-            onlineDevice.PendingSync = isPendingSync;
+        //public void UpdateDeviceSyncStatus(RFDevice onlineDevice, bool isPendingSync)
+        //{
+        //    onlineDevice.PendingSync = isPendingSync;
 
-            var matchingDevice = Devices.FirstOrDefault(d => d.ID == onlineDevice.ID);
-            if (matchingDevice != null)
-            {
-                matchingDevice.PendingSync = isPendingSync;
-            }
-        }
+        //    var matchingDevice = Devices.FirstOrDefault(d => d.ID == onlineDevice.ID);
+        //    if (matchingDevice != null)
+        //    {
+        //        matchingDevice.PendingSync = isPendingSync;
+        //    }
+        //}
     }
 }

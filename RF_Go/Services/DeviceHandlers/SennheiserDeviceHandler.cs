@@ -58,22 +58,25 @@ namespace RF_Go.Services.DeviceHandlers
             }
         }
 
-        public async Task<bool> IsDeviceSync(DeviceDiscoveredEventArgs deviceInfo)
+        public async Task<(bool IsEqual,bool IsNotResponding)> IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo)
         {
             if (deviceInfo.IPAddress == null)
             {
                 Debug.WriteLine("No IP addresses found for the device.");
-                return false;
+                return (false,false);
             }
 
             var ip = deviceInfo.IPAddress;
 
             var serialNumber = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetSerialCommand(), "device", "identity", "serial");
             Debug.Print("Réponse du device : " + serialNumber);
-
+            if (serialNumber == string.Empty)
+            {// A FAIRE : on await mais si on a pas réponse en fait on fait rien... Donc faut set le true différemment!
+                return (false,true);
+            }
             if (serialNumber != deviceInfo.SerialNumber)
             {
-                return false;
+                return (false,false);
             }
 
             for (int channel = 1; channel <= 2; channel++)
@@ -85,11 +88,11 @@ namespace RF_Go.Services.DeviceHandlers
                 var channelInfo = deviceInfo.Channels.FirstOrDefault(c => c.ChannelNumber == channel);
                 if (channelInfo != null && (channelInfo.Frequency != channelFrequency || channelInfo.Name != channelName))
                 {
-                    return false;
+                    return (false, false);
                 }
             }
 
-            return true;
+            return (true, false);
         }
 
         private string ExtractValue(string json, params string[] keys)
@@ -124,5 +127,6 @@ namespace RF_Go.Services.DeviceHandlers
             var response = await _communicationService.SendCommandAsync(ip, port, command);
             return ExtractValue(response, keys);
         }
+
     }
 }
