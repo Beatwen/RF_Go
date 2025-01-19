@@ -103,11 +103,11 @@
         console.log(frequencyData.usedFrequencies);
         // Création des séries de données avec les IDs d'axes spécifiés
         const seriesData = [
-            { data: frequencyData.usedFrequencies, level: 0, color: "SteelBlue" },
-            { data: frequencyData.twoTX3rdOrder, level: -40, color: "Red" },
-            { data: frequencyData.twoTX5rdOrder, level: -60, color: "Green" },
+            { data: frequencyData.usedFrequencies, level: 0, color: "Green" },
+            { data: frequencyData.twoTX3rdOrder, level: -40, color: "Purple" },
+            { data: frequencyData.twoTX5rdOrder, level: -60, color: "SteelBlue" },
             { data: frequencyData.twoTX7rdOrder, level: -80, color: "Orange" },
-            { data: frequencyData.twoTX9rdOrder, level: -100, color: "Purple" },
+            { data: frequencyData.twoTX9rdOrder, level: -100, color: "Blue" },
             { data: frequencyData.threeTX3rdOrder, level: -80, color: "Magenta" }
         ];
 

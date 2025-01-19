@@ -33,6 +33,17 @@ namespace RF_Go.Services.NetworkProtocols
                 _responseTasks[ip] = tcs;
 
                 await _udpClient.SendAsync(data, data.Length, ip, port);
+
+                var timeoutTask = Task.Delay(5000); // Timeout de 5 secondes
+                var completedTask = await Task.WhenAny(tcs.Task, timeoutTask);
+
+                if (completedTask == timeoutTask)
+                {
+                    _responseTasks.TryRemove(ip, out _);
+                    Debug.WriteLine($"Aucune réponse reçue de {ip}:{port} après 5 secondes.");
+                    return null;
+                }
+
                 var response = await tcs.Task;
                 Debug.WriteLine($"Réponse reçue de {ip}:{port} : {response}");
                 return response;

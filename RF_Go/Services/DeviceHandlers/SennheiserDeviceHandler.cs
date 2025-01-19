@@ -70,14 +70,15 @@ namespace RF_Go.Services.DeviceHandlers
 
             var serialNumber = await SendCommandAndExtractValueAsync(ip, Port, _commandSet.GetSerialCommand(), "device", "identity", "serial");
             Debug.Print("Réponse du device : " + serialNumber);
+            if (serialNumber == null)
+            {
+                return (false, true);
+            }
             if (serialNumber == string.Empty)
             {// A FAIRE : on await mais si on a pas réponse en fait on fait rien... Donc faut set le true différemment!
                 return (false,true);
             }
-            if (serialNumber != deviceInfo.SerialNumber)
-            {
-                return (false,false);
-            }
+            
 
             for (int channel = 1; channel <= 2; channel++)
             {

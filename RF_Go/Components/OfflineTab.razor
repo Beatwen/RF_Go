@@ -7,10 +7,12 @@
 @using RF_Go.Components
 @using RF_Go.ViewModels
 @using System.Diagnostics
-@using System.ComponentModel;
+@using System.ComponentModel
+@using RF_Go.Services.Mapping
 
 @inject IDialogService Dialog
 @inject MudBlazor.ISnackbar Snackbar
+@inject DeviceMappingService DeviceMappingService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
@@ -34,13 +36,13 @@ else
 
     <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
         <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
-        <div>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul">
-                Calculate
-            </MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="OpenDialogOnlineDevice">
-                Sync
-            </MudButton>
+        <div class="d-flex">
+            <MudIconButton Icon="@Icons.Material.Filled.Calculate" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul"/>
+            <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" Color="Color.Primary" Variant="Variant.Filled">
+                <MudMenuItem Class="mx-2" @onclick="OpenDialogOnlineDevice" Icon="@Icons.Material.Filled.Map">Map</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("FromDevices")'>Sync From</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("ToDevices")'>Sync To</MudMenuItem>
+            </MudMenu>
         </div>
     </div>
 
@@ -48,8 +50,15 @@ else
     RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc" Style="margin: auto; overflow: auto; max-height: calc(100vh - 310px);">
         <HeaderContent>
             <MudTh Style="min-width: 200px;">Device</MudTh>
-            <MudTh Style="min-width: 150px;">Set Frequencies</MudTh>
-            <MudTh Class="d-flex align-center justify-space-between" Style="min-width: 150px;">
+            <MudTh Class="">
+                <div class="d-flex align-center justify-space-between">
+                    <span>Set Frequencies</span>
+                    <div>
+                        <MudIconButton><MudCheckBox @bind-Value="lockAll" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Lock" UncheckedIcon="@Icons.Material.Filled.LockOpen" @onclick="LockAll" /></MudIconButton>
+                    </div>
+                </div>
+            </MudTh>
+            <MudTh Class="d-flex align-center justify-space-between">
                 <span>Group</span>
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="DeleteAll" />
             </MudTh>
@@ -123,6 +132,7 @@ else
     private bool OfflineBoxVisibility = false;
     private bool isAddingDevice = false;
     private int selectedQuantity = 1;
+    private bool lockAll = false;
     private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
 
     private string CalculateStyle(RFChannel chan)
@@ -203,7 +213,7 @@ else
     }
     private void Device_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(RFDevice.IsSynced) || e.PropertyName == nameof(RFDevice.PendingSync))
+        if (e.PropertyName == nameof(RFDevice.IsSynced) || e.PropertyName == nameof(RFDevice.PendingSync) || e.PropertyName == nameof(RFDevice.IsOnline))
         {
             InvokeAsync(StateHasChanged);
         }
@@ -283,8 +293,8 @@ else
             await DevicesViewModel.SaveAllDevicesAsync();
             await FrequencyDataViewModel.SaveFrequencyDataAsync();
             await OnDeviceSaved.InvokeAsync();
-        await OnCalculationCompleted.InvokeAsync();
-    }
+            await OnCalculationCompleted.InvokeAsync();
+        }
     }
     private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
     {
@@ -348,6 +358,16 @@ else
     {
         await DevicesViewModel.DeleteAllDeviceAsync();
         await OnDeviceSaved.InvokeAsync();
+    }
+    private void LockAll()
+    {
+        foreach (RFDevice device in DevicesViewModel.Devices)
+        {
+            foreach (RFChannel chan in device.Channels)
+            {
+                chan.IsLocked = !lockAll;
+            }
+        }
     }
     private string GetRange(RFChannel chan)
     {
@@ -423,6 +443,23 @@ else
             StateHasChanged();
         }
     }
+    private async Task MagicSync(string destination)
+    {
+        List<string> errors = new();
+        if (destination == "ToDevices")
+        {
+            errors = await DeviceMappingService.SyncAllToDevice();
+        }
+        else if (destination == "FromDevices")
+        {
+            errors = await DeviceMappingService.SyncAllFromDevice();
+        }
+        foreach (string e in errors)
+        {
+            Snackbar.Add(e, Severity.Error);
+        }
+        return;
+    }
     private void RefreshParentState()
     {
         StateHasChanged();
@@ -441,7 +478,7 @@ else
     }
     private Color GetSyncColor(RFDevice device)
     {
-        if (device.PendingSync)
+        if (device.PendingSync || !device.IsOnline)
         {
             return Color.Warning;
         }

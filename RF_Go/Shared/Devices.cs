@@ -1,5 +1,8 @@
 ﻿
-public static class JsonData
+using System.Text.Json;
+using RF_Go.Data;
+
+public static class DeviceDataJson
 {
     public static string Devices = """
     {
@@ -121,4 +124,13 @@ public static class JsonData
     }
     }
     """;
+
+    public static DeviceData GetDeviceData()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+        return JsonSerializer.Deserialize<DeviceData>(Devices, options);
+    }
 }

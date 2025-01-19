@@ -17,6 +17,7 @@ namespace RF_Go.Services.NetworkProtocols
         private readonly List<IDeviceHandler> _handlers;
         private readonly DevicesViewModel _devicesViewModel;
         private readonly Timer _syncTimer;
+        public readonly List<DeviceDiscoveredEventArgs> DiscoveredDevices;
         public event EventHandler<DeviceDiscoveredEventArgs> DeviceDiscovered;
 
         public DiscoveryService(IEnumerable<IDeviceHandler> handlers, DevicesViewModel devicesViewModel)
@@ -27,6 +28,7 @@ namespace RF_Go.Services.NetworkProtocols
             _serviceDiscovery.ServiceDiscovered += OnServiceDiscovered;
             _serviceDiscovery.ServiceInstanceDiscovered += OnServiceInstanceDiscovered;
             _devicesViewModel = devicesViewModel ?? throw new ArgumentNullException(nameof(devicesViewModel));
+            DiscoveredDevices = new List<DeviceDiscoveredEventArgs>();
 
             _syncTimer = new Timer(SyncTimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
         }
@@ -38,19 +40,23 @@ namespace RF_Go.Services.NetworkProtocols
 
         public void StartDiscovery()
         {
-
+            DiscoveredDevices.Clear();
             _multicastService.Start();
             _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
             _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
+            TriggerSennheiserDiscovery();
         }
 
         private void OnServiceDiscovered(object sender, DomainName serviceName)
         {
+            Debug.WriteLine($"Service discovered: {serviceName}");
             _serviceDiscovery.QueryServiceInstances(serviceName);
         }
 
         private async void OnServiceInstanceDiscovered(object sender, ServiceInstanceDiscoveryEventArgs e)
         {
+            Debug.WriteLine($"Service instance discovered: {e.ServiceInstanceName}");
+
             var addressIPV4 = e.Message.Answers
                 .OfType<AddressRecord>()
                 .Select(record => record.Address)
@@ -58,6 +64,7 @@ namespace RF_Go.Services.NetworkProtocols
 
             if (addressIPV4 == null)
             {
+                Debug.WriteLine("No IPv4 address found in answers. Trying additional records.");
                 var srvRecord = e.Message.AdditionalRecords
                     .OfType<SRVRecord>()
                     .FirstOrDefault();
@@ -68,6 +75,7 @@ namespace RF_Go.Services.NetworkProtocols
                     {
                         var resolvedAddresses = await Dns.GetHostAddressesAsync(srvRecord.Target.ToString());
                         addressIPV4 = resolvedAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork); // Première IPv4
+                        Debug.WriteLine($"Resolved address: {addressIPV4}");
                     }
                     catch (Exception ex)
                     {
@@ -99,27 +107,39 @@ namespace RF_Go.Services.NetworkProtocols
                 if (existingDevice != null)
                 {
                     deviceInfo.IsSynced = true;
-                    Debug.WriteLine($"Device with Serial Number {deviceInfo.SerialNumber} is already synced. Skipping.");
                 }
                 else
                 {
                     deviceInfo.IsSynced = false;
                 }
             }
+
+            if (string.IsNullOrEmpty(deviceInfo.IPAddress))
+            {
+                Debug.WriteLine($"No IP addresses found for the device: {deviceInfo.Name}");
+            }
+
+            var discoveredDevicesCopy = DiscoveredDevices.ToList(); // Créez une copie de la collection
+            if (!discoveredDevicesCopy.Any(d => d.Name == deviceInfo.Name))
+            {
+                DiscoveredDevices.Add(deviceInfo);
+                Debug.WriteLine($"Device added to discovered devices: {deviceInfo.Name}");
+            }
             DeviceDiscovered?.Invoke(this, deviceInfo);
         }
 
         public void TriggerSennheiserDiscovery()
         {
+            Debug.WriteLine("Triggering Sennheiser discovery.");
             var query = new Message
             {
                 Questions = {
-                            new Question
-                            {
-                                Name = "_ssc._udp.local",
-                                Type = DnsType.PTR
-                            }
-                        }
+                                        new Question
+                                        {
+                                            Name = "_ssc._udp.local",
+                                            Type = DnsType.PTR
+                                        }
+                                    }
             };
             _multicastService.SendQuery(query);
         }
@@ -161,10 +181,10 @@ namespace RF_Go.Services.NetworkProtocols
 
             return discoveredDevices;
         }
-
         public async Task CheckDeviceSync(object state)
         {
-            foreach (var discoveredDevice in _devicesViewModel.Devices)
+            var devicesCopy = _devicesViewModel.Devices.ToList();
+            foreach (var discoveredDevice in devicesCopy)
             {
                 if (!discoveredDevice.IsSynced)
                 {
@@ -189,28 +209,19 @@ namespace RF_Go.Services.NetworkProtocols
                         }).ToList()
                     };
 
-                    var (IsEqual, IsNotResponding)= await handler.IsDevicePendingSync(deviceInfo);
+                    var (IsEqual, IsNotResponding) = await handler.IsDevicePendingSync(deviceInfo);
                     if (IsNotResponding)
                     {
                         discoveredDevice.IsOnline = false;
                     }
                     else
                     {
-                    discoveredDevice.PendingSync = !IsEqual;
+                        discoveredDevice.IsOnline = true;
+                        discoveredDevice.PendingSync = !IsEqual;
                     }
-
-                    //if (!isSynced)
-                    //{
-                    //    _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, true);
-                    //}
-                    //else
-                    //{
-                    //    _devicesViewModel.UpdateDeviceSyncStatus(discoveredDevice, false);
-                    //}
                 }
             }
         }
-
         public void StopDiscovery()
         {
             _multicastService.Stop();

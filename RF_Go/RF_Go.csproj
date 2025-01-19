@@ -52,6 +52,7 @@
         <MauiFont Include="Resources\Fonts\*" />
 
     </ItemGroup>
+
     <ItemGroup>
       <MauiAsset Remove="Resources\Raw\AboutAssets.txt" />
     </ItemGroup>

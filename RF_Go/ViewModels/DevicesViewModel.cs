@@ -1,14 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json;
 using RF_Go.Data;
 using RF_Go.Models;
 using RF_Go.Services.NetworkProtocols;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-
 namespace RF_Go.ViewModels
 {
+
     public partial class DevicesViewModel : ObservableObject
     {
         private readonly DatabaseContext _context;
@@ -21,7 +22,9 @@ namespace RF_Go.ViewModels
         [ObservableProperty]
         private ObservableCollection<RFDevice> _devices = new();
         [ObservableProperty]
-        public RFDevice _operatingDevice = new();
+        private List<DeviceDiscoveredEventArgs> _discoveredDevices = new();
+        [ObservableProperty]
+        private RFDevice _operatingDevice = new();
 
         [ObservableProperty]
         private bool _isBusy;
@@ -37,13 +40,12 @@ namespace RF_Go.ViewModels
                 if (devices != null && devices.Any())
                 {
                     Devices.Clear();
-
                     foreach (var device in devices)
                     {
                         Devices.Add(device);
                     }
                 }
-            }
+        }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading devices: {ex.Message}");
@@ -62,12 +64,14 @@ namespace RF_Go.ViewModels
         public async Task SaveDeviceAsync()
         {
             Debug.WriteLine("Save function called !");
+            var device = OperatingDevice;
             if (OperatingDevice is null)
                 return;
 
             var (isValid, errorMessage) = OperatingDevice.Validate();
             if (!isValid)
             {
+                // A FAIRE : revérifier les datas et l'erreur générer ici
                 await Shell.Current.DisplayAlert("Validation Error", errorMessage, "Ok");
                 return;
             }
@@ -102,6 +106,8 @@ namespace RF_Go.ViewModels
                 SetOperatingDeviceCommand.Execute(new());
             }, busyText);
         }
+
+        [RelayCommand]
         public async Task SaveAllDevicesAsync()
         {
             var busyText = "Saving All Devices...";
@@ -129,7 +135,6 @@ namespace RF_Go.ViewModels
                 }
             }, busyText);
         }
-
 
         public async Task UpdateDeviceAsync(RFDevice device)
         {
@@ -168,24 +173,7 @@ namespace RF_Go.ViewModels
             }, busyText);
         }
 
-        public void MapOnlineToOffline(RFDevice onlineDevice)
-        {
-            /// Attention _onlineDevices n'existe plus !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            var matchingOfflineDevice = Devices.FirstOrDefault(d =>
-                d.Model == onlineDevice.Model &&
-                d.Frequency == onlineDevice.Frequency);
-
-            if (matchingOfflineDevice != null)
-            {
-                matchingOfflineDevice.IpAddress = onlineDevice.IpAddress;
-                Debug.WriteLine($"Mapped {onlineDevice.Name} to {matchingOfflineDevice.Name}");
-            }
-            else
-            {
-                Debug.WriteLine($"No matching offline device found for {onlineDevice.Name}");
-            }
-        }
-
+        [RelayCommand]
         public async Task DeleteDeviceAsync(int id)
         {
             await ExecuteAsync(async () =>
@@ -204,7 +192,39 @@ namespace RF_Go.ViewModels
                 }
             }, "Deleting Device...");
         }
-
+        public void SaveDataDevicesInfo(RFDevice device)
+        {
+            var json = DeviceDataJson.Devices;
+            var deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+            device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
+            device.Step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
+            device.NumberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
+            Debug.WriteLine(device.NumberOfChannels);
+            device.Channels = new List<RFChannel>();
+            for (int i = 0; i < device.NumberOfChannels; i++)
+            {
+                device.Channels.Add(new RFChannel());
+            }
+        }
+        public void SaveDataChannelsInfo(RFDevice device)
+        {
+            var json = DeviceDataJson.Devices;
+            var deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+            var freq = deviceData.Brands[device.Brand][device.Model][device.Frequency];
+            int count = 1;
+            foreach (RFChannel chan in device.Channels)
+            {
+                chan.Range = device.Range;
+                chan.Step = device.Step;
+                chan.chanNumber = count;
+                chan.SelfSpacing = freq[4];
+                chan.ThirdOrderSpacing = freq[5];
+                chan.FifthOrderSpacing = freq[6];
+                chan.SeventhOrderSpacing = freq[7];
+                chan.ThirdOrderSpacing3Tx = freq[8];
+                count++;
+            }
+        }
         public async Task DeleteAllDeviceAsync()
         {
             await ExecuteAsync(async () =>
@@ -245,16 +265,5 @@ namespace RF_Go.ViewModels
                 BusyText = null;
             }
         }
-
-        //public void UpdateDeviceSyncStatus(RFDevice onlineDevice, bool isPendingSync)
-        //{
-        //    onlineDevice.PendingSync = isPendingSync;
-
-        //    var matchingDevice = Devices.FirstOrDefault(d => d.ID == onlineDevice.ID);
-        //    if (matchingDevice != null)
-        //    {
-        //        matchingDevice.PendingSync = isPendingSync;
-        //    }
-        //}
     }
 }
