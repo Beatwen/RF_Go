@@ -36,8 +36,7 @@
                         <MudCheckBox Value="context.Exclude"
                                      ValueChanged="@(async (bool isChecked) => await ToggleExclusion(context, isChecked))"
                              Class="align-self-center pl-2" Color="Color.Tertiary" />
-                        <Mud
-                        Button Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteExclusionChannel(context)"
+                        <MudButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteExclusionChannel(context)"
                                        Class="align-self-center" />
             
             </div>
