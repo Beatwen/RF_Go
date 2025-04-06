@@ -1,5 +1,8 @@
 ﻿
-public static class JsonData
+using System.Text.Json;
+using RF_Go.Data;
+
+public static class DeviceDataJson
 {
     public static string Devices = """
     {
@@ -82,6 +85,11 @@ public static class JsonData
           "C": [ 734000, 776000, 2, 25, 400, 250, 0, 0, 150 ],
           "D": [ 780000, 822000, 2, 25, 400, 250, 0, 0, 150 ],
           "E": [ 823000, 865000, 2, 25, 400, 250, 0, 0, 150 ]
+        },
+        "EWDX2CH": {
+            "Q1-9" : [ 470000, 550000, 2, 25, 400, 250, 0, 0, 150 ],
+            "S1-10": [606200, 693800, 2, 25, 400, 250, 0, 0, 150],
+            "U1/5": [823200, 831800, 2, 25, 400, 250, 0, 0, 150]
         }
       },
       "Wisycom": {
@@ -116,4 +124,13 @@ public static class JsonData
     }
     }
     """;
+
+    public static DeviceData GetDeviceData()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+        return JsonSerializer.Deserialize<DeviceData>(Devices, options);
+    }
 }

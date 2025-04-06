@@ -1,0 +1,63 @@
+﻿@page "/license"
+@using RF_Go.Components.Licensing
+@using RF_Go.Utils
+@using System.Diagnostics
+@inject NavigationManager NavigationManager
+
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="pa-4">
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudText Typo="Typo.h4" Align="Align.Center">Licenses</MudText>
+        <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-4">
+            Your device isn't registered yet. Redeem a licence to get started. You received a free license by email.
+        </MudText>
+
+        <MudStack Row="true" AlignItems="AlignItems.Center" JustifyContent="Center" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowPurchaseForm">
+                Buy a license
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="ShowActivationForm">
+                Activate a license
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="DeleteUser">
+                Delete user Data (to restart registration)
+            </MudButton>
+        </MudStack>
+
+        <MudDivider Class="my-4" />
+
+        @if (ShowPurchase)
+        {
+            <PurchaseForm />
+        }
+        else if (ShowActivation)
+        {
+            <ActivationForm />
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private bool ShowPurchase = false;
+    private bool ShowActivation = false;
+    protected override async void OnInitialized() {
+        var accessToken = await TokenStorage.GetAccessTokenAsync();
+        Debug.Print(accessToken);
+    }
+    private void ShowPurchaseForm()
+    {
+        ShowPurchase = true;
+        ShowActivation = false;
+    }
+
+    private void ShowActivationForm()
+    {
+        ShowPurchase = false;
+        ShowActivation = true;
+    }
+    private async Task DeleteUser()
+    {
+        SecureStorage.RemoveAll();
+
+    }
+}

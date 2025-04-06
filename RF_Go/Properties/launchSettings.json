@@ -1,9 +1,7 @@
 {
   "profiles": {
     "Windows Machine": {
-      "commandName": "MsixPackage",
-      "native
-        ging": false
+      "commandName": "MsixPackage"
     }
   }
 }

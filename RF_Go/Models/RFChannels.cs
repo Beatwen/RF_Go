@@ -56,7 +56,7 @@ namespace RF_Go.Models
                 }
             }
         }
-        public void SetRandomFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder, List<(int StartFrequency, int EndFrequency)> excludedRanges)
+        public void SetRandomFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder, List<(float StartFrequency, float EndFrequency)> excludedRanges)
         {
             int f1;
                 if (!Checked && !IsLocked)
@@ -109,7 +109,7 @@ namespace RF_Go.Models
             int randomIndex = random.Next(0, numberOfValue);
             return (Range[0] + (randomIndex * Range[3]));
         }
-        public int LoopForFreeFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder, List<(int StartFrequency, int EndFrequency)> excludedRanges)
+        public int LoopForFreeFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder, List<(float StartFrequency, float EndFrequency)> excludedRanges)
         {
             int f1;
             int count = 0;
@@ -135,7 +135,7 @@ namespace RF_Go.Models
 
             return 0;
         }
-        public bool CheckFreeFrequency(int f1, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder, List<(int StartFrequency, int EndFrequency)> excludedRanges)
+        public bool CheckFreeFrequency(int f1, HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder, List<(float StartFrequency, float EndFrequency)> excludedRanges)
         {
             // Check if the frequency falls within any of the exclusion ranges
 
@@ -153,7 +153,6 @@ namespace RF_Go.Models
                                     && (SpacingEnable(f1, ThreeTX3rdOrder, ThirdOrderSpacing3TxEnable, ThirdOrderSpacing3Tx))
                                         && !UsedFrequencies.Any(f => Math.Abs(f - f1) <= SelfSpacing));
         }
-
         public bool SpacingEnable(int f1, HashSet<int>freqs, bool OrderSpacingEnable, int OrderSpacing)
         {
             if(OrderSpacingEnable) 

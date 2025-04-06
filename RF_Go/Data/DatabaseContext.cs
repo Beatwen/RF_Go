@@ -11,7 +11,7 @@ namespace RF_Go.Data
 {
     public class DatabaseContext : IAsyncDisposable
     {
-        private const string DbName = "RF_Go3.db3";
+        private const string DbName = "RF_Go5.db3";
         private static string DbPath => Path.Combine(FileSystem.AppDataDirectory, DbName);
 
         private SQLiteAsyncConnection _connection;
@@ -27,7 +27,7 @@ namespace RF_Go.Data
 
         private async Task CreateTableIfNotExists<TTable>() where TTable : class, new()
         {
-            Console.WriteLine($"Creating table for {typeof(TTable).Name}");
+            Debug.WriteLine($"Creating table for {typeof(TTable).Name}");
             await Database.CreateTableAsync<TTable>();
         }
 
@@ -37,6 +37,7 @@ namespace RF_Go.Data
             await CreateTableIfNotExists<RFGroup>();
             await CreateTableIfNotExists<RFDevice>();
             await CreateTableIfNotExists<ExclusionChannel>();
+            await CreateTableIfNotExists<FrequencyData>();
             await InsertInitialGroups();
             await InsertInitialRFExclusionChannel();
             
@@ -59,15 +60,15 @@ namespace RF_Go.Data
             if (existingExclusions == 0)
             {
                 // Création des configurations de base pour chaque largeur de bande
-                await InsertGenericChannels(470.0, 6, "Generic-6MHz");
-                await InsertGenericChannels(470.0, 7, "Generic-7MHz");
-                await InsertGenericChannels(470.0, 8, "Generic-8MHz");
+                await InsertGenericChannels(470.0F, 6, "Generic-6MHz");
+                await InsertGenericChannels(470.0F, 7, "Generic-7MHz");
+                await InsertGenericChannels(470.0F, 8, "Generic-8MHz");
             }
         }
 
-        private async Task InsertGenericChannels(double startFrequency, int channelWidth, string type)
+        private async Task InsertGenericChannels(float startFrequency, int channelWidth, string type)
         {
-            double endFrequency = 862.0;
+            float endFrequency = 862.0F;
             int channelNumber = 21;
 
             while (startFrequency < endFrequency)
@@ -76,8 +77,8 @@ namespace RF_Go.Data
                 {
                     Country = type, 
                     ChannelNumber = channelNumber,
-                    StartFrequency = $"{startFrequency}",
-                    EndFrequency = $"{startFrequency + channelWidth}",
+                    StartFrequency = startFrequency,
+                    EndFrequency = startFrequency + channelWidth,
                     Type = type,
                     Exclude = false,
                     ChannelWidth = channelWidth

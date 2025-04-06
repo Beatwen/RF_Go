@@ -1,12 +1,20 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
-html, body, #app {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    height: 100vh;
+html, body {
+    height: 100%; 
     margin: 0;
     padding: 0;
 }
+html {
+    font-size: 14px; /* Définit une taille globale */
+}
+td .portal {
+    height: unset;
+}
+.header-th {
 
+
+}
 .mud-input-control .mud-select-input {
     margin-top: 0 !important;
 }
@@ -72,10 +80,18 @@ a, .btn-link {
 .status-bar-safe-area {
     display: none;
 }
-.mud-table-cell {
-    padding : 0px;
-}
+/*.mud-table-dense .mud-table-row .mud-table-cell {
+    padding: 4px 12px !important;*/ /* Ajustez les valeurs à votre convenance */
+/*}*/
 
+.chart-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 200px;
+    background-color: white; /* Optionnel : pour s'assurer que le fond est blanc */
+    z-index: 1000; /* Optionnel : pour s'assurer que le graphique est au-dessus des autres éléments */
+}
 @supports (-webkit-touch-callout: none) {
     .status-bar-safe-area {
         display: flex;

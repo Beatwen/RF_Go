@@ -1,0 +1,158 @@
+﻿@page "/login"
+@using RF_Go.Components
+@using RF_Go.Utils
+@using MudBlazor
+@using System.IO
+@using System
+@using System.Text.Json
+@using System.Text
+@using Microsoft.AspNetCore
+@using RF_Go.Data
+@using RF_Go.Models.Licensing
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using System.Diagnostics
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Small" Style="margin: auto; padding: 20px;">
+    <MudPaper Elevation="3" Class="pa-4">
+
+        <MudText Typo="Typo.h4" Class="mb-4">Login</MudText>
+
+        @if (ShowRegisterMessage)
+        {
+            <MudText Typo="Typo.body1" Class="mb-2" Color="Color.Success">
+                You just received an email. Please confirm your email and copy your license.
+            </MudText>
+        }
+
+        <MudTextField Label="Email" @bind-Value="Email" FullWidth="true" Required="true" />
+        <MudTextField @bind-Value="Password" Label="Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" OnAdornmentClick="PasswordVisibility" AdornmentIcon="@PasswordInputIcon" AdornmentAriaLabel="Show Password" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginUser" Class="mt-4" FullWidth="true">
+            Login
+        </MudButton>
+
+        <MudText Typo="Typo.body2" Class="mt-2">
+            Don't have an account? <MudLink Href="/register">Register here</MudLink>
+        </MudText>
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@Message</MudAlert>
+        }
+        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
+            For Debugging purpose, you can directly <MudLink Href="/index">go to the app</MudLink>
+        </MudText>
+
+
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string Email = "";
+    private string Password = "";
+    private string Message = "";
+    private bool ShowRegisterMessage = false;
+    bool showPW;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    private void PasswordVisibility()
+    {
+        @if (showPW)
+        {
+            showPW = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            showPW = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        if (queryParameters["from"] == "register")
+        {
+            ShowRegisterMessage = true;
+        }
+    }
+
+    private async Task LoginUser()
+    {
+        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+        {
+            Message = "Both email and password are required.";
+            return;
+        }
+
+        try
+        {
+            var client = new HttpClient();
+            var clientId = await TokenStorage.GetClientIdAsync();
+            var clientSecret = await TokenStorage.GetClientSecretAsync();
+            Email = Email.ToLower();
+            client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+            client.DefaultRequestHeaders.Add("X-DEVICE-ID", await GUID.GetOrCreateDeviceIdentifier());
+
+            var content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("email", Email),
+                new KeyValuePair<string, string>("password", Password),
+                new KeyValuePair<string, string>("username", Email),
+                new KeyValuePair<string, string>("client_id", clientId),
+                new KeyValuePair<string, string>("client_secret", clientSecret),
+                new KeyValuePair<string, string>("grant_type", "password")
+            });
+
+            var baseUrl = AppConfig.ApiBaseUrl;
+            var response = await client.PostAsync($"{baseUrl}/auth/login", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<LoginResponse>(responseContent);
+
+                if (result?.user != null)
+                {
+                    await SecureStorageUtils.SaveUserToSecureStorage(result.user);
+                    await SecureStorage.SetAsync("userKey", result.user.id.ToString());
+                    await TokenStorage.SaveAccessTokenAsync(result.token.accessToken);
+                    var token = await TokenStorage.GetAccessTokenAsync();
+                    await TokenStorage.SaveRefreshTokenAsync(result.token.refreshToken);
+                    var refreshToken = await TokenStorage.GetRefreshTokenAsync();
+                    NavigationManager.NavigateTo(result.redirectTo ?? "/license");
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Message = $"Login failed: {errorContent}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"An error occurred: {ex.Message}";
+        }
+    }
+
+    public class Token
+    {
+        public string accessToken { get; set; }
+        public string refreshToken { get; set; }
+        public int expiresIn { get; set; }
+        public string tokenType { get; set; }
+    }
+
+    public class LoginResponse
+    {
+        public string message { get; set; }
+        public User user { get; set; }
+        public string redirectTo { get; set; }
+        public Token token { get; set; }
+    }
+}

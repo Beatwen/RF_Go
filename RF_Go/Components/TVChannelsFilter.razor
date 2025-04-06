@@ -1,119 +1,147 @@
-﻿@using RF_Go.Models
-@using RF_Go.ViewModels
+﻿@using RF_Go.ViewModels
 @using System.Diagnostics
 @inject MudBlazor.ISnackbar Snackbar
 
-<h3>TV Channel Exclusion Groups</h3>
+<MudPaper Class="p-4 pt-2 pb-2 mb-4">
+    <div class="button-group">
+        <MudButton Class="tab-button" Color="@(IsActiveTab(0) ? Color.Primary : Color.Transparent)" Variant="Variant.Filled" OnClick='() => SetSelectedDivision("Generic-8MHz")'>8 MHz</MudButton>
+        <MudButton Class="tab-button" Color="@(IsActiveTab(1) ? Color.Primary : Color.Transparent)" Variant="Variant.Filled" OnClick='() => SetSelectedDivision("Generic-7MHz")'>7 MHz</MudButton>
+        <MudButton Class="tab-button" Color="@(IsActiveTab(2) ? Color.Primary : Color.Transparent)" Variant="Variant.Filled" OnClick='() => SetSelectedDivision("Generic-6MHz")'>6 MHz</MudButton>
+    </div>
+</MudPaper>
 
-<div class="filters">
+<MudGrid Spacing="3" Class="pl-6 pr-6">
+    <MudItem xs="12" md="6" Class="table-container">
+        <MudTable Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" FixedHeader="true" Bordered="true">
+            <HeaderContent>
+                <MudTh>
+                    <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAll(IsChecked)" />
+                </MudTh>
+                <MudTh>Frequency Range</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Style="max-width:50px;">
+                    <div class="d-flex align-center">
+                        <MudCheckBox Value="@context.Exclude" ValueChanged="async (bool isChecked) => await ToggleExclusion(context, isChecked)" />
+                        <span class="ml-2">@context.ChannelNumber</span>
+                    </div>
+                </MudTd>
+                <MudTd>@context.StartFrequency - @context.EndFrequency</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudItem>
 
-    <MudSelect T="string" Label="TV Channel" Value="ExclusionChannelViewModel.SelectedCountry" Variant="Variant.Filled" ValueChanged="@(async (string country) => await ApplyCountryFilters(country))">
-        <MudSelectItem Value="EightMhz">8Mhz</MudSelectItem>
-        <MudSelectItem Value="SevenMhz">7Mhz</MudSelectItem>
-        <MudSelectItem Value="SixMhz">6Mhz</MudSelectItem>
-    </MudSelect>
-
-
-    <MudTextField Label="Channel or frequency" @bind-Value="ExclusionChannelViewModel.SearchQuery"
-                  Variant="Variant.Filled" Clearable="true" Immediate="true" DebounceInterval="300" OnKeyUp="@(async _ => await ApplyFilters())" />
-</div>
-<MudTable Items="@ExclusionChannelViewModel.ExclusionChannels" FixedHeader="true" Height="400px" Hover="true" Dense="true" Bordered="true">
-  
-    <HeaderContent>
-        <MudTh>
-            <div>TV Channel</div>
-            <MudCheckBox ValueChanged="(bool isChecked) => SelectAll(isChecked)"></MudCheckBox>
-        </MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd>
-            <div class="d-flex align-items-center justify-content-center">
-
-                <MudText Class="d-flex align-self-center">
-                    <MudText Color="Color.Tertiary">@context.ChannelNumber</MudText>
-                    <MudText Class="pl-2">@context.StartFrequency-@context.EndFrequency</MudText>
-                </MudText>
-                        <MudCheckBox Value="context.Exclude"
-                                     ValueChanged="@(async (bool isChecked) => await ToggleExclusion(context, isChecked))"
-                             Class="align-self-center pl-2" Color="Color.Tertiary" />
-                        <MudButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteExclusionChannel(context)"
-                                       Class="align-self-center" />
-            
-            </div>
-        </MudTd>
-
-
-    </RowTemplate>
-</MudTable>
-
-<h1> Create your own exclusion frequencies </h1>
-<MudForm>
-    <MudTextField Label="Country" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.Country" />
-    <MudTextField Label="Channel" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.ChannelNumber" />
-    <MudTextField Label="Start Frequency" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.StartFrequency" />
-    <MudTextField Label="End Frequency" @bind-Value="ExclusionChannelViewModel.SelectedExclusionChannel.EndFrequency" />
-    <MudCheckBox @bind-Checked="ExclusionChannelViewModel.SelectedExclusionChannel.Exclude" Label="Exclude" />
-    <MudButton Color="Color.Primary" OnClick="@(async () => await SaveExclusionChannelAsync())">Save</MudButton>
-</MudForm>
+    <MudItem xs="12" md="6" Class="table-container">
+        <MudPaper Elevation="4" Class="p-4 mt-4">
+            <MudCard>
+                <MudCardContent>
+                    <h3>Add Frequency Range</h3>
+                    <div class="d-flex align-center">
+                        <MudTextField Label="Start Frequency (MHz)" @bind-Value="UserStartFrequency" Variant="Variant.Outlined" />
+                        <MudTextField Label="End Frequency (MHz)" @bind-Value="UserEndFrequency" Variant="Variant.Outlined" />
+                        <MudButton Color="Color.Primary" OnClick="@(async () => await AddExclusionChannel())">Save</MudButton>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudPaper>
+        <MudTable Items="@ExclusionChannelViewModel.UserAddedChannels" FixedHeader="true" Hover="true" Dense="true" Bordered="true">
+            <HeaderContent>
+                <MudTh>
+                    <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAllUserChan(IsChecked)" />
+                </MudTh>
+                <MudTh>Frequency Range</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudCheckBox Value="@context.Exclude" ValueChanged="(bool isChecked) => ToggleExclusionUserChannels(context, isChecked)" />
+                </MudTd>
+                <MudTd>
+                    <div class="d-flex align-center">
+                        @context.StartFrequency - @context.EndFrequency
+                    </div>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteExclusionChannel(context)" Size="Size.Small" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudItem>
+</MudGrid>
 
 @code {
     [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
-    bool onlyExcluded = false;
-    string EightMhz = "Generic-8MHz";
-    string SevenMhz = "Generic-7MHz";
-    string SixMhz = "Generic-6MHz";
+    private float UserStartFrequency { get; set; }
+    private float UserEndFrequency { get; set; }
+    private int activeTabIndex;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        // Charger les groupes d'exclusion au démarrage
-        await ExclusionChannelViewModel.LoadExclusionChannelsAsync();
+        activeTabIndex = LoadLastUsedTabIndex();
+        SetSelectedDivision(GetDivisionByTabIndex(activeTabIndex));
     }
 
-    private void EditExclusionChannel(ExclusionChannel group)
+    private int LoadLastUsedTabIndex()
     {
-        ExclusionChannelViewModel.SelectedExclusionChannel = group;
+        // A FAIRE : récupérer la dernière data user pour savoir dans tab il était et le réafficher
+        return 0;
     }
 
-    private async Task DeleteExclusionChannel(ExclusionChannel group)
+    private string GetDivisionByTabIndex(int tabIndex)
     {
-        ExclusionChannelViewModel.SelectedExclusionChannel = group;
-        await ExclusionChannelViewModel.DeleteExclusionChannelAsync();
-        Snackbar.Add("Exclusion group deleted successfully.", Severity.Success);
-    }
-
-    private async Task SaveExclusionChannelAsync()
-    {
-        await ExclusionChannelViewModel.SaveExclusionChannelAsync();
-        Snackbar.Add("Exclusion group saved successfully.", Severity.Success);
-    }
-
-    private async Task ApplyCountryFilters(string country)
-    {
-        ExclusionChannelViewModel.SelectedCountry = country;
-        Debug.Print("Apply filters");
-        await ExclusionChannelViewModel.ApplyFilters();
-        foreach (var d in ExclusionChannelViewModel.ExclusionChannels)
+        return tabIndex switch
         {
-            Debug.Print(d.ChannelNumber.ToString());
-        }
-        Debug.Print("Country : " + ExclusionChannelViewModel.SelectedCountry);
+            0 => "Generic-8MHz",
+            1 => "Generic-7MHz",
+            2 => "Generic-6MHz",
+            _ => "Generic-8MHz"
+        };
     }
-    private async Task ApplyFilters()
+
+    private bool IsActiveTab(int tabIndex)
     {
-        Debug.Print("Apply filters");
-        await ExclusionChannelViewModel.ApplyFilters();
-        foreach (var d in ExclusionChannelViewModel.ExclusionChannels)
+        return activeTabIndex == tabIndex;
+    }
+
+    private async void SetSelectedDivision(string division)
+    {
+        activeTabIndex = GetTabIndexByDivision(division);
+        ExclusionChannelViewModel.SelectedCountry = division;
+        await ExclusionChannelViewModel.ApplyFiltersCommand.ExecuteAsync(null);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private int GetTabIndexByDivision(string division)
+    {
+        return division switch
         {
-            Debug.Print(d.ChannelNumber.ToString());
-        }
+            "Generic-8MHz" => 0,
+            "Generic-7MHz" => 1,
+            "Generic-6MHz" => 2,
+            _ => 0
+        };
     }
     private async Task ToggleExclusion(ExclusionChannel channel, bool isExcluded)
     {
         channel.Exclude = isExcluded;
-        ExclusionChannelViewModel.SelectedExclusionChannel = channel;
+        if (ExclusionChannelViewModel.ExclusionChannels.Contains(channel))
+        {
+            ExclusionChannelViewModel.SelectedExclusionChannel = channel;
+        }
         await ExclusionChannelViewModel.SaveExclusionChannelAsync();
-        Snackbar.Add($"Channel {channel.ChannelNumber} exclusion status updated.", Severity.Success);
+        StateHasChanged();
     }
+    private async Task ToggleExclusionUserChannels(ExclusionChannel channel, bool isExcluded)
+    {
+        channel.Exclude = isExcluded;
+        if (ExclusionChannelViewModel.UserAddedChannels.Contains(channel))
+        {
+            ExclusionChannelViewModel.SelectedExclusionChannel = channel;
+        }
+        await ExclusionChannelViewModel.SaveExclusionChannelAsync();
+        StateHasChanged();
+    }
+
     private async Task SelectAll(bool isChecked)
     {
         for (int i = 0; i < ExclusionChannelViewModel.ExclusionChannels.Count; i++)
@@ -126,5 +154,63 @@
         }
     }
 
+    private async Task SelectAllUserChan(bool isChecked)
+    {
+        for (int i = 0; i < ExclusionChannelViewModel.UserAddedChannels.Count; i++)
+        {
+            var chan = ExclusionChannelViewModel.UserAddedChannels[i];
+            chan.Exclude = isChecked;
+            ExclusionChannelViewModel.SelectedExclusionChannel = chan;
+            await ExclusionChannelViewModel.SaveExclusionChannelAsync();
+            StateHasChanged();
+        }
+    }
+    private async Task AddExclusionChannel()
+    {
+        if (UserEndFrequency > UserStartFrequency)
+        {
+            ExclusionChannel userChan = new()
+                {
+                    StartFrequency = UserStartFrequency,
+                    EndFrequency = UserEndFrequency,
+                    Country = "User",
+                    Type = "User",
+                    ChannelWidth = UserEndFrequency - UserStartFrequency
+                };
+            await ExclusionChannelViewModel.SaveUserChannelAsync(userChan);
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            Snackbar.Add("Start frequency must be bigger than end frequency", Severity.Error);
+        }
+    }
+    private async Task DeleteExclusionChannel(ExclusionChannel channel)
+    {
+        ExclusionChannelViewModel.SelectedExclusionChannel = channel;
+        await ExclusionChannelViewModel.DeleteExclusionChannelCommand.ExecuteAsync(null);
+    }
 
 }
+
+<style>
+    .button-group {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .tab-button {
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.3s;
+    }
+
+    .tab-button:disabled {
+        border-bottom: 2px solid var(--mud-palette-primary);
+    }
+
+    .table-container {
+        max-height: calc(100vh - 130px);
+        overflow: auto;
+    }
+</style>

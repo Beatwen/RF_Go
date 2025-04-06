@@ -1,5 +1,6 @@
 ﻿
 using Newtonsoft.Json;
+using System.ComponentModel;
 using SQLite;
 using System;
 using System.Diagnostics;
@@ -13,10 +14,11 @@ namespace RF_Go.Models
     {
         public List<RFDevice> Devices { get; set; } = new List<RFDevice>();
     }
-    public class RFDevice
+    public class RFDevice : INotifyPropertyChanged
     {
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
+        public string SerialNumber { get; set; } = null;
         public bool Selected { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
@@ -39,6 +41,46 @@ namespace RF_Go.Models
         public string IpAddress { get; set; } = "0.0.0.0";
         public string Calendar { get; set; }
         public string Stage { get; set; }
+        private bool _isSynced;
+        public bool IsSynced
+        {
+            get => _isSynced;
+            set
+            {
+                if (_isSynced != value)
+                {
+                    _isSynced = value;
+                    OnPropertyChanged(nameof(IsSynced));
+                }
+            }
+        }
+        private bool _isOnline { get; set; }
+        public bool IsOnline
+        {
+            get => _isOnline;
+            set
+            {
+                if (_isOnline != value)
+                {
+                    _isOnline = value;
+                    OnPropertyChanged(nameof(IsOnline));
+                }
+            }
+        }
+
+        private bool _pendingSync;
+        public bool PendingSync
+        {
+            get => _pendingSync;
+            set
+            {
+                if (_pendingSync != value)
+                {
+                    _pendingSync = value;
+                    OnPropertyChanged(nameof(PendingSync));
+                }
+            }
+        }
         public int NumberOfChannels { get; set; }
         private int _groupID = 1;
         public int GroupID
@@ -62,6 +104,12 @@ namespace RF_Go.Models
             return (true, string.Empty);
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
 
-    }   
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            Debug.Print("property changed " + propertyName);
+        }
+    }
 }

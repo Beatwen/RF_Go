@@ -20,6 +20,9 @@ namespace RF_Go.ViewModels
         private ObservableCollection<ExclusionChannel> _exclusionChannels = new();
 
         [ObservableProperty]
+        private ObservableCollection<ExclusionChannel> _userAddedChannels = new();
+
+        [ObservableProperty]
         private string _selectedCountry = "Generic-8MHz";
         [ObservableProperty]
         private string _searchQuery;
@@ -31,11 +34,9 @@ namespace RF_Go.ViewModels
         {
             try
             {
-                // Récupère les données brutes depuis la base de données
                 var exclusionChannelsFromDb = await _context.GetAllAsync<ExclusionChannel>();
-
-                // Applique les filtres
                 FilterExclusionChannels(exclusionChannelsFromDb);
+                FilterUserAddedChannels(exclusionChannelsFromDb);
             }
             catch (Exception ex)
             {
@@ -43,19 +44,35 @@ namespace RF_Go.ViewModels
             }
         }
 
-        private void FilterExclusionChannels(IEnumerable<ExclusionChannel> exclusionChannels)
+        private void FilterUserAddedChannels(IEnumerable<ExclusionChannel> exclusionChannels)
         {
-            // Filtre par pays
             var filteredChannels = exclusionChannels
-                .Where(channel => string.IsNullOrEmpty(SelectedCountry) || channel.Country.Equals(SelectedCountry));
-
-            // Filtre par fréquence ou numéro de canal
+                .Where(channel => channel.Country.Equals("User"));
             if (!string.IsNullOrEmpty(SearchQuery))
             {
                 filteredChannels = filteredChannels.Where(channel =>
                     channel.ChannelNumber.ToString().Contains(SearchQuery) ||
-                    channel.StartFrequency.Contains(SearchQuery) ||
-                    channel.EndFrequency.Contains(SearchQuery));
+                    channel.StartFrequency.ToString().Contains(SearchQuery) ||
+                    channel.EndFrequency.ToString().Contains(SearchQuery));
+            }
+            UserAddedChannels.Clear();
+            foreach (var channel in filteredChannels)
+            {
+                UserAddedChannels.Add(channel);
+            }
+        }
+
+        private void FilterExclusionChannels(IEnumerable<ExclusionChannel> exclusionChannels)
+        {
+            var filteredChannels = exclusionChannels
+                .Where(channel => string.IsNullOrEmpty(SelectedCountry) || channel.Country.Equals(SelectedCountry));
+
+            if (!string.IsNullOrEmpty(SearchQuery))
+            {
+                filteredChannels = filteredChannels.Where(channel =>
+                    channel.ChannelNumber.ToString().Contains(SearchQuery) ||
+                    channel.StartFrequency.ToString().Contains(SearchQuery) ||
+                    channel.EndFrequency.ToString().Contains(SearchQuery));
             }
             ExclusionChannels.Clear();
             foreach (var channel in filteredChannels)
@@ -69,21 +86,21 @@ namespace RF_Go.ViewModels
         {
             await LoadExclusionChannelsAsync();
         }
+        [RelayCommand]
+        public async Task SaveUserChannelAsync(ExclusionChannel exclusionChannel)
+        {
+            UserAddedChannels.Add(exclusionChannel);
+            await _context.AddItemAsync<ExclusionChannel>(exclusionChannel);
+        }
 
         [RelayCommand]
         public async Task SaveExclusionChannelAsync()
         {
-            if (SelectedExclusionChannel.ID == 0)
-            {
-                await _context.AddItemAsync<ExclusionChannel>(SelectedExclusionChannel);
-            }
-            else
-            {
-                await _context.UpdateItemAsync<ExclusionChannel>(SelectedExclusionChannel);
-            }
 
+            await _context.UpdateItemAsync<ExclusionChannel>(SelectedExclusionChannel);
             await LoadExclusionChannelsAsync();
         }
+
         [RelayCommand]
         public async Task SaveByIDExclusionChannelAsync(ExclusionChannel chan)
         {

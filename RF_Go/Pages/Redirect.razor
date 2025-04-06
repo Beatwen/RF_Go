@@ -1,0 +1,100 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+@using Microsoft.Maui.Storage
+@using System.Diagnostics;
+@using System.Text.Json;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+@using RF_Go.Utils;
+@using MudBlazor;
+
+<MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column justify-center" style="height:100vh;">
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Loading @LoadingProgress%</MudText>
+    <MudProgressLinear Color="Color.Secondary" Striped="true" Size="Size.Medium" Value="@LoadingProgress" Class="w-50 my-7" />
+</MudContainer>
+
+@code {
+    private HttpClient client = new HttpClient();
+    private string deviceIdentifier = "";
+    private int LoadingProgress = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadingProgress = 30;
+        deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
+        LoadingProgress = 50;
+        Debug.WriteLine($"Device Identifier: {deviceIdentifier}");
+        var userKey = await SecureStorage.GetAsync("userKey");
+        var licenseKey = await SecureStorage.GetAsync("licenseKey");
+        var user = await SecureStorage.GetAsync("user");
+        var token = await SecureStorage.GetAsync("access_token");
+        LoadingProgress = 75;
+        Debug.WriteLine("user " + userKey);
+        Debug.Print("license" + licenseKey);
+        Debug.Print("user" + user);
+
+        if (string.IsNullOrEmpty(userKey))
+        {
+            NavigationManager.NavigateTo("/register");
+            return;
+        }
+        else if (string.IsNullOrEmpty(token))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        else if (string.IsNullOrEmpty(licenseKey))
+        {
+            Debug.WriteLine("userKey" + userKey);
+            NavigationManager.NavigateTo("/license");
+            return;
+        }
+
+        try
+        {
+            // Vérification du réseau et validation de la licence
+
+            client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+            client.DefaultRequestHeaders.Add("X-USER-KEY", userKey);
+            client.DefaultRequestHeaders.Add("X-DEVICE-ID", deviceIdentifier);
+            client.DefaultRequestHeaders.Add("X-LICENSE-KEY", licenseKey);
+
+            var response = await client.PostAsJsonAsync($"{AppConfig.ApiBaseUrl}/licenses/validate", new
+            {
+                licenseKey,
+                deviceId = deviceIdentifier
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<LicenseValidationResponse>(responseContent);
+
+                if (result.valid)
+                {
+                    NavigationManager.NavigateTo("/index");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/license");
+                }
+            }
+            else
+            {
+                Debug.Print(response.Content.ToString());
+                LoadingProgress = 100;
+                NavigationManager.NavigateTo("/index");
+            }
+        }
+        catch
+        {
+            NavigationManager.NavigateTo("/index");
+        }
+    }
+
+    public class LicenseValidationResponse
+    {
+        public bool valid { get; set; }
+        public string message { get; set; }
+    }
+}
