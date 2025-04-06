@@ -8,16 +8,19 @@ using System.Net.Http.Json;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components;
 
 namespace RF_Go.Utils
 {
     public class AuthService
     {
         private readonly HttpClient _httpClient;
+        private readonly NavigationManager _navigationManager;
 
-        public AuthService(HttpClient httpClient)
+        public AuthService(HttpClient httpClient, NavigationManager navigationManager)
         {
             _httpClient = httpClient;
+            _navigationManager = navigationManager;
         }
 
         public async Task<TokenResponse> LoginAsync(string email, string password)
@@ -83,11 +86,22 @@ namespace RF_Go.Utils
 
                 return tokenResponse.AccessToken;
             }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return await HandleExpiredRefreshTokenAsync();
+            }
             else
             {
                 throw new Exception("Token refresh failed");
             }
         }
+
+        private Task<string> HandleExpiredRefreshTokenAsync()
+        {
+            _navigationManager.NavigateTo("/login");
+            return null;
+        }
+    }
 
         public class TokenResponse
         {
@@ -96,4 +110,3 @@ namespace RF_Go.Utils
             public int ExpiresIn { get; set; }
         }
     }
-}

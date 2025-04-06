@@ -136,7 +136,9 @@
     {
         try
         {
+
             string userKey = await SecureStorage.GetAsync("userKey");
+            SecureStorage.Remove("userkey");
             if (!string.IsNullOrEmpty(userKey))
             {
                 // SecureStorage.RemoveAll(); // A supprimer en prod, on supprime que si le user est delete de la DB
@@ -153,6 +155,7 @@
                 else
                 {
                     var error = await response.Content.ReadAsStringAsync();
+                    Debug.Print(error);
                     Message = $"Error server: {response.StatusCode}. Details: {error}";
                 }
             }

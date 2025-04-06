@@ -77,10 +77,11 @@ else
     private HttpClient httpClient = new();
     private AuthService _authService;
     private bool loading = false;
+    @inject NavigationManager NavigationManager
 
     protected override void OnInitialized()
     {
-        _authService = new AuthService(httpClient);
+        _authService = new AuthService(httpClient, NavigationManager);
     }
     private void TogglePasswordVisibility(string field)
     {
