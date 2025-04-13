@@ -18,8 +18,8 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'rf-go', // Usually your GitHub org/user name.
-  projectName: 'rf-go-docs', // Usually your repo name.
+  organizationName: 'Beatwen', // Change to your GitHub username
+  projectName: 'RF_Go', // Change to your repository name
 
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
@@ -48,14 +48,14 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/rf-go/rf-go-docs/tree/main/',
+            'https://github.com/Beatwen/RF_Go/tree/main/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/rf-go/rf-go-docs/tree/main/',
+            'https://github.com/Beatwen/RF_Go/tree/main/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -84,7 +84,7 @@ const config = {
           },
           {to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://github.com/rf-go/rf-go',
+            href: 'https://github.com/Beatwen/rf_go',
             label: 'GitHub',
             position: 'right',
           },
@@ -128,7 +128,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/rf-go/rf-go',
+                href: 'https://github.com/Beatwen/rf_go',
               },
             ],
           },

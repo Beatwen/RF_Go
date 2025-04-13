@@ -10,8 +10,8 @@ export default {
   "url": "https://rf-go.com",
   "baseUrl": "/",
   "trailingSlash": true,
-  "organizationName": "rf-go",
-  "projectName": "rf-go-docs",
+  "organizationName": "Beatwen",
+  "projectName": "RF_Go",
   "onBrokenLinks": "warn",
   "onBrokenMarkdownLinks": "warn",
   "themes": [
@@ -35,11 +35,11 @@ export default {
       {
         "docs": {
           "sidebarPath": "C:\\Users\\c_bou\\source\\repos\\RF_Go\\docusaurus\\sidebars.js",
-          "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/"
+          "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/"
         },
         "blog": {
           "showReadingTime": true,
-          "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/"
+          "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/"
         },
         "theme": {
           "customCss": "C:\\Users\\c_bou\\source\\repos\\RF_Go\\docusaurus\\src\\css\\custom.css"
@@ -68,7 +68,7 @@ export default {
           "position": "left"
         },
         {
-          "href": "https://github.com/rf-go/rf-go",
+          "href": "https://github.com/Beatwen/rf_go",
           "label": "GitHub",
           "position": "right"
         }
@@ -113,7 +113,7 @@ export default {
             },
             {
               "label": "GitHub",
-              "href": "https://github.com/rf-go/rf-go"
+              "href": "https://github.com/Beatwen/rf_go"
             }
           ]
         }
@@ -324,6 +324,13 @@ export default {
         }
       ]
     },
+    "mermaid": {
+      "theme": {
+        "dark": "dark",
+        "light": "default"
+      },
+      "options": {}
+    },
     "colorMode": {
       "defaultMode": "light",
       "disableSwitch": false,
@@ -345,13 +352,6 @@ export default {
     "tableOfContents": {
       "minHeadingLevel": 2,
       "maxHeadingLevel": 3
-    },
-    "mermaid": {
-      "theme": {
-        "dark": "dark",
-        "light": "default"
-      },
-      "options": {}
     }
   },
   "baseUrlIssueBanner": true,
