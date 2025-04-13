@@ -13,12 +13,9 @@ RF Go est une application professionnelle de gestion de fréquences audio, conç
 ## Documentation
 
 Explorez notre documentation pour en savoir plus sur :
-- [Architecture](architecture/overview) : Structure technique de l'application
-- [Fonctionnalités](features/device-management) : Détails des fonctionnalités disponibles
-- [Protocoles](protocols/dns-discovery) : Protocoles supportés
-- [API](api/services) : Documentation de l'API interne
-- [Configuration](configuration/environment) : Guide de configuration
-- [Développement](development/setup) : Guide pour les contributeurs
+- [Architecture](architecture/class-diagram) : Structure technique de l'application
+- [Use Cases](architecture/use-cases) : Cas d'utilisation détaillés
+- [Getting Started](getting-started) : Guide de démarrage rapide
 
 ## Démarrage Rapide
 

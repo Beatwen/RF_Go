@@ -3,51 +3,16 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/__docusaurus/debug',
-    component: ComponentCreator('/__docusaurus/debug', '5ff'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/config',
-    component: ComponentCreator('/__docusaurus/debug/config', '5ba'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/content',
-    component: ComponentCreator('/__docusaurus/debug/content', 'a2b'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/globalData',
-    component: ComponentCreator('/__docusaurus/debug/globalData', 'c3c'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/metadata',
-    component: ComponentCreator('/__docusaurus/debug/metadata', '156'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/registry',
-    component: ComponentCreator('/__docusaurus/debug/registry', '88c'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/routes',
-    component: ComponentCreator('/__docusaurus/debug/routes', '000'),
-    exact: true
-  },
-  {
-    path: '/docs',
-    component: ComponentCreator('/docs', '642'),
+    path: '/docs/',
+    component: ComponentCreator('/docs/', '712'),
     routes: [
       {
-        path: '/docs',
-        component: ComponentCreator('/docs', '76d'),
+        path: '/docs/',
+        component: ComponentCreator('/docs/', 'd49'),
         routes: [
           {
-            path: '/docs',
-            component: ComponentCreator('/docs', 'b58'),
+            path: '/docs/',
+            component: ComponentCreator('/docs/', '83f'),
             routes: [
               {
                 path: '/docs/',
@@ -55,171 +20,171 @@ export default [
                 exact: true
               },
               {
-                path: '/docs/api/interfaces',
-                component: ComponentCreator('/docs/api/interfaces', '4a4'),
+                path: '/docs/api/interfaces/',
+                component: ComponentCreator('/docs/api/interfaces/', '815'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/api/models',
-                component: ComponentCreator('/docs/api/models', '902'),
+                path: '/docs/api/models/',
+                component: ComponentCreator('/docs/api/models/', '2e5'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/api/overview',
-                component: ComponentCreator('/docs/api/overview', '5d7'),
+                path: '/docs/api/overview/',
+                component: ComponentCreator('/docs/api/overview/', '128'),
                 exact: true
               },
               {
-                path: '/docs/api/services',
-                component: ComponentCreator('/docs/api/services', '1d2'),
+                path: '/docs/api/services/',
+                component: ComponentCreator('/docs/api/services/', '37d'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture',
-                component: ComponentCreator('/docs/architecture', '4b2'),
+                path: '/docs/architecture/',
+                component: ComponentCreator('/docs/architecture/', '3f2'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/class-diagram',
-                component: ComponentCreator('/docs/architecture/class-diagram', 'bdf'),
+                path: '/docs/architecture/class-diagram/',
+                component: ComponentCreator('/docs/architecture/class-diagram/', '967'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/components',
-                component: ComponentCreator('/docs/architecture/components', '44e'),
+                path: '/docs/architecture/components/',
+                component: ComponentCreator('/docs/architecture/components/', '3f4'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/data-flow',
-                component: ComponentCreator('/docs/architecture/data-flow', '6bc'),
+                path: '/docs/architecture/data-flow/',
+                component: ComponentCreator('/docs/architecture/data-flow/', 'af2'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/overview',
-                component: ComponentCreator('/docs/architecture/overview', '833'),
+                path: '/docs/architecture/overview/',
+                component: ComponentCreator('/docs/architecture/overview/', 'b3e'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/use-cases',
-                component: ComponentCreator('/docs/architecture/use-cases', '0eb'),
+                path: '/docs/architecture/use-cases/',
+                component: ComponentCreator('/docs/architecture/use-cases/', 'b67'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/configuration/database',
-                component: ComponentCreator('/docs/configuration/database', 'b4a'),
+                path: '/docs/configuration/database/',
+                component: ComponentCreator('/docs/configuration/database/', '263'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/configuration/environment',
-                component: ComponentCreator('/docs/configuration/environment', '08a'),
+                path: '/docs/configuration/environment/',
+                component: ComponentCreator('/docs/configuration/environment/', 'dfc'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/configuration/guide',
-                component: ComponentCreator('/docs/configuration/guide', '762'),
+                path: '/docs/configuration/guide/',
+                component: ComponentCreator('/docs/configuration/guide/', '912'),
                 exact: true
               },
               {
-                path: '/docs/configuration/licensing',
-                component: ComponentCreator('/docs/configuration/licensing', 'cd0'),
+                path: '/docs/configuration/licensing/',
+                component: ComponentCreator('/docs/configuration/licensing/', '5c8'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/development/contributing',
-                component: ComponentCreator('/docs/development/contributing', '98b'),
+                path: '/docs/development/contributing/',
+                component: ComponentCreator('/docs/development/contributing/', 'e22'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/development/guide',
-                component: ComponentCreator('/docs/development/guide', 'ae9'),
+                path: '/docs/development/guide/',
+                component: ComponentCreator('/docs/development/guide/', '161'),
                 exact: true
               },
               {
-                path: '/docs/development/setup',
-                component: ComponentCreator('/docs/development/setup', '375'),
+                path: '/docs/development/setup/',
+                component: ComponentCreator('/docs/development/setup/', '549'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/development/testing',
-                component: ComponentCreator('/docs/development/testing', 'cf3'),
+                path: '/docs/development/testing/',
+                component: ComponentCreator('/docs/development/testing/', '768'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/docs/architecture/overview',
-                component: ComponentCreator('/docs/docs/architecture/overview', 'ff0'),
+                path: '/docs/docs/architecture/overview/',
+                component: ComponentCreator('/docs/docs/architecture/overview/', '851'),
                 exact: true
               },
               {
-                path: '/docs/features/authentication',
-                component: ComponentCreator('/docs/features/authentication', 'cb4'),
+                path: '/docs/features/authentication/',
+                component: ComponentCreator('/docs/features/authentication/', 'e7b'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/device-management',
-                component: ComponentCreator('/docs/features/device-management', '91f'),
+                path: '/docs/features/device-management/',
+                component: ComponentCreator('/docs/features/device-management/', 'fc3'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/frequency-management',
-                component: ComponentCreator('/docs/features/frequency-management', '1b1'),
+                path: '/docs/features/frequency-management/',
+                component: ComponentCreator('/docs/features/frequency-management/', '162'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/licensing',
-                component: ComponentCreator('/docs/features/licensing', '5a9'),
+                path: '/docs/features/licensing/',
+                component: ComponentCreator('/docs/features/licensing/', 'ab0'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/workflows',
-                component: ComponentCreator('/docs/features/workflows', '635'),
+                path: '/docs/features/workflows/',
+                component: ComponentCreator('/docs/features/workflows/', '969'),
                 exact: true
               },
               {
-                path: '/docs/getting-started',
-                component: ComponentCreator('/docs/getting-started', '2a1'),
+                path: '/docs/getting-started/',
+                component: ComponentCreator('/docs/getting-started/', '526'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/intro',
-                component: ComponentCreator('/docs/intro', '61d'),
+                path: '/docs/intro/',
+                component: ComponentCreator('/docs/intro/', 'e44'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/protocols/device-specific',
-                component: ComponentCreator('/docs/protocols/device-specific', 'bdd'),
+                path: '/docs/protocols/device-specific/',
+                component: ComponentCreator('/docs/protocols/device-specific/', '6b9'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/protocols/dns-discovery',
-                component: ComponentCreator('/docs/protocols/dns-discovery', 'e5e'),
+                path: '/docs/protocols/dns-discovery/',
+                component: ComponentCreator('/docs/protocols/dns-discovery/', 'f30'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/protocols/udp-tcp',
-                component: ComponentCreator('/docs/protocols/udp-tcp', '0f9'),
+                path: '/docs/protocols/udp-tcp/',
+                component: ComponentCreator('/docs/protocols/udp-tcp/', '8e1'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               }

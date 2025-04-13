@@ -1,178 +1,135 @@
 {
-  "/__docusaurus/debug-5ff": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
+  "/docs/-712": {
+    "__comp": "5e95c892",
     "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
+      "plugin": "aba21aa0"
     }
   },
-  "/__docusaurus/debug/config-5ba": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
+  "/docs/-d49": {
+    "__comp": "a7bd4aaa",
+    "__props": "11b43341"
   },
-  "/__docusaurus/debug/content-a2b": {
-    "__comp": "__comp---theme-debug-contentba-8-ce7",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    },
-    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
-  },
-  "/__docusaurus/debug/globalData-c3c": {
-    "__comp": "__comp---theme-debug-global-dataede-0fa",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/metadata-156": {
-    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/registry-88c": {
-    "__comp": "__comp---theme-debug-registry-679-501",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/routes-000": {
-    "__comp": "__comp---theme-debug-routes-946-699",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/docs-642": {
-    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
-    "__context": {
-      "plugin": "plugin---docsaba-d7c"
-    }
-  },
-  "/docs-76d": {
-    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
-    "__props": "__props---docs-005-788"
-  },
-  "/docs-b58": {
-    "__comp": "__comp---theme-doc-roota-94-67a"
+  "/docs/-83f": {
+    "__comp": "a94703ab"
   },
   "/docs/-0ee": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-c-37-4d0"
+    "__comp": "17896441",
+    "content": "c377a04b"
   },
-  "/docs/api/interfaces-4a4": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-api-interfaces-7-d-1-4db"
+  "/docs/api/interfaces/-815": {
+    "__comp": "17896441",
+    "content": "7d1893c8"
   },
-  "/docs/api/models-902": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-api-models-4-e-6-a93"
+  "/docs/api/models/-2e5": {
+    "__comp": "17896441",
+    "content": "4e61bb45"
   },
-  "/docs/api/overview-5d7": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-api-overview-65-d-0e3"
+  "/docs/api/overview/-128": {
+    "__comp": "17896441",
+    "content": "65df3d35"
   },
-  "/docs/api/services-1d2": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-api-servicescb-9-082"
+  "/docs/api/services/-37d": {
+    "__comp": "17896441",
+    "content": "cb9ff28f"
   },
-  "/docs/architecture-4b2": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-architecture-528-86f"
+  "/docs/architecture/-3f2": {
+    "__comp": "17896441",
+    "content": "5281b7a2"
   },
-  "/docs/architecture/class-diagram-bdf": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-architecture-class-diagram-969-b77"
+  "/docs/architecture/class-diagram/-967": {
+    "__comp": "17896441",
+    "content": "9694401f"
   },
-  "/docs/architecture/components-44e": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-architecture-componentsb-47-28d"
+  "/docs/architecture/components/-3f4": {
+    "__comp": "17896441",
+    "content": "b4745a75"
   },
-  "/docs/architecture/data-flow-6bc": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-architecture-data-flow-9-ba-3c1"
+  "/docs/architecture/data-flow/-af2": {
+    "__comp": "17896441",
+    "content": "9ba7a03a"
   },
-  "/docs/architecture/overview-833": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-architecture-overview-0-b-1-a4c"
+  "/docs/architecture/overview/-b3e": {
+    "__comp": "17896441",
+    "content": "0b1ac180"
   },
-  "/docs/architecture/use-cases-0eb": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-architecture-use-cases-05-a-3d6"
+  "/docs/architecture/use-cases/-b67": {
+    "__comp": "17896441",
+    "content": "05ad5392"
   },
-  "/docs/configuration/database-b4a": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-configuration-database-766-ac8"
+  "/docs/configuration/database/-263": {
+    "__comp": "17896441",
+    "content": "76623718"
   },
-  "/docs/configuration/environment-08a": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-configuration-environment-7-ca-af2"
+  "/docs/configuration/environment/-dfc": {
+    "__comp": "17896441",
+    "content": "7cacc613"
   },
-  "/docs/configuration/guide-762": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-configuration-guidec-96-641"
+  "/docs/configuration/guide/-912": {
+    "__comp": "17896441",
+    "content": "c96dfdbc"
   },
-  "/docs/configuration/licensing-cd0": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-configuration-licensing-20-a-108"
+  "/docs/configuration/licensing/-5c8": {
+    "__comp": "17896441",
+    "content": "20a736d3"
   },
-  "/docs/development/contributing-98b": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-development-contributing-946-4f0"
+  "/docs/development/contributing/-e22": {
+    "__comp": "17896441",
+    "content": "9463d0c6"
   },
-  "/docs/development/guide-ae9": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-development-guide-066-fc5"
+  "/docs/development/guide/-161": {
+    "__comp": "17896441",
+    "content": "066ff229"
   },
-  "/docs/development/setup-375": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-development-setupe-62-b15"
+  "/docs/development/setup/-549": {
+    "__comp": "17896441",
+    "content": "e626e4d0"
   },
-  "/docs/development/testing-cf3": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-development-testinga-29-cfb"
+  "/docs/development/testing/-768": {
+    "__comp": "17896441",
+    "content": "a2999c7b"
   },
-  "/docs/docs/architecture/overview-ff0": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-docs-architecture-overview-513-51e"
+  "/docs/docs/architecture/overview/-851": {
+    "__comp": "17896441",
+    "content": "51355ad9"
   },
-  "/docs/features/authentication-cb4": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-features-authenticationcc-0-471"
+  "/docs/features/authentication/-e7b": {
+    "__comp": "17896441",
+    "content": "cc0a2bf3"
   },
-  "/docs/features/device-management-91f": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-features-device-managementbd-5-76c"
+  "/docs/features/device-management/-fc3": {
+    "__comp": "17896441",
+    "content": "bd5c9a6a"
   },
-  "/docs/features/frequency-management-1b1": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-features-frequency-managementc-3-e-f54"
+  "/docs/features/frequency-management/-162": {
+    "__comp": "17896441",
+    "content": "c3e2d6bc"
   },
-  "/docs/features/licensing-5a9": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-features-licensing-5-ee-d6e"
+  "/docs/features/licensing/-ab0": {
+    "__comp": "17896441",
+    "content": "5ee59155"
   },
-  "/docs/features/workflows-635": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-features-workflows-5-c-3-2c0"
+  "/docs/features/workflows/-969": {
+    "__comp": "17896441",
+    "content": "5c393c03"
   },
-  "/docs/getting-started-2a1": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-getting-startedd-58-f94"
+  "/docs/getting-started/-526": {
+    "__comp": "17896441",
+    "content": "d589d3a7"
   },
-  "/docs/intro-61d": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-intro-0-e-3-be1"
+  "/docs/intro/-e44": {
+    "__comp": "17896441",
+    "content": "0e384e19"
   },
-  "/docs/protocols/device-specific-bdd": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-protocols-device-specific-4-e-5-054"
+  "/docs/protocols/device-specific/-6b9": {
+    "__comp": "17896441",
+    "content": "4e56c786"
   },
-  "/docs/protocols/dns-discovery-e5e": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-protocols-dns-discovery-5-fe-33c"
+  "/docs/protocols/dns-discovery/-f30": {
+    "__comp": "17896441",
+    "content": "5fec1aca"
   },
-  "/docs/protocols/udp-tcp-0f9": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-protocols-udp-tcp-172-bc2"
+  "/docs/protocols/udp-tcp/-8e1": {
+    "__comp": "17896441",
+    "content": "1723e3a0"
   }
 }

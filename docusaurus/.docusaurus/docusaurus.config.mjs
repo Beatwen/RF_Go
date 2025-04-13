@@ -9,18 +9,11 @@ export default {
   "favicon": "img/favicon.ico",
   "url": "https://rf-go.com",
   "baseUrl": "/",
+  "trailingSlash": true,
   "organizationName": "rf-go",
   "projectName": "rf-go-docs",
-  "onBrokenLinks": "throw",
+  "onBrokenLinks": "warn",
   "onBrokenMarkdownLinks": "warn",
-  "i18n": {
-    "defaultLocale": "fr",
-    "locales": [
-      "fr"
-    ],
-    "path": "i18n",
-    "localeConfigs": {}
-  },
   "themes": [
     "@docusaurus/theme-mermaid"
   ],
@@ -331,13 +324,6 @@ export default {
         }
       ]
     },
-    "mermaid": {
-      "theme": {
-        "dark": "dark",
-        "light": "default"
-      },
-      "options": {}
-    },
     "colorMode": {
       "defaultMode": "light",
       "disableSwitch": false,
@@ -359,9 +345,24 @@ export default {
     "tableOfContents": {
       "minHeadingLevel": 2,
       "maxHeadingLevel": 3
+    },
+    "mermaid": {
+      "theme": {
+        "dark": "dark",
+        "light": "default"
+      },
+      "options": {}
     }
   },
   "baseUrlIssueBanner": true,
+  "i18n": {
+    "defaultLocale": "en",
+    "path": "i18n",
+    "locales": [
+      "en"
+    ],
+    "localeConfigs": {}
+  },
   "future": {
     "experimental_faster": {
       "swcJsLoader": false,
