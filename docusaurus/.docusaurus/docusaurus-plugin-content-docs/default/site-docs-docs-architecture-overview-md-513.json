@@ -1,0 +1,15 @@
+{
+  "id": "docs/architecture/overview",
+  "title": "Vue d'ensemble de l'Architecture",
+  "description": "Architecture Globale",
+  "source": "@site/docs/docs/architecture/overview.md",
+  "sourceDirName": "docs/architecture",
+  "slug": "/docs/architecture/overview",
+  "permalink": "/docs/docs/architecture/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/docs/architecture/overview.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

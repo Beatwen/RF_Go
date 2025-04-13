@@ -1,0 +1,24 @@
+{
+  "id": "architecture/overview",
+  "title": "Vue d'ensemble de l'Architecture",
+  "description": "Architecture Générale",
+  "source": "@site/docs/architecture/overview.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/overview",
+  "permalink": "/docs/architecture/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/architecture/overview.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Démarrage Rapide",
+    "permalink": "/docs/getting-started"
+  },
+  "next": {
+    "title": "Composants",
+    "permalink": "/docs/architecture/components"
+  }
+}

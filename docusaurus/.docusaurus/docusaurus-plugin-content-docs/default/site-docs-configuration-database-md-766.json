@@ -1,0 +1,24 @@
+{
+  "id": "configuration/database",
+  "title": "Configuration de la Base de Données",
+  "description": "Documentation de la configuration de la base de données de RF Go.",
+  "source": "@site/docs/configuration/database.md",
+  "sourceDirName": "configuration",
+  "slug": "/configuration/database",
+  "permalink": "/docs/configuration/database",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/configuration/database.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Configuration de l'Environnement",
+    "permalink": "/docs/configuration/environment"
+  },
+  "next": {
+    "title": "Configuration des Licences",
+    "permalink": "/docs/configuration/licensing"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "development/setup",
+  "title": "Configuration de l'Environnement de Développement",
+  "description": "Documentation pour la configuration de l'environnement de développement de RF Go.",
+  "source": "@site/docs/development/setup.md",
+  "sourceDirName": "development",
+  "slug": "/development/setup",
+  "permalink": "/docs/development/setup",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/development/setup.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Configuration des Licences",
+    "permalink": "/docs/configuration/licensing"
+  },
+  "next": {
+    "title": "Contribuer au Projet",
+    "permalink": "/docs/development/contributing"
+  }
+}

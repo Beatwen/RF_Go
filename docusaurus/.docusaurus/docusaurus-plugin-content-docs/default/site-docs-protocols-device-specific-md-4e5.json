@@ -1,0 +1,24 @@
+{
+  "id": "protocols/device-specific",
+  "title": "Protocoles Spécifiques aux Appareils",
+  "description": "Documentation des protocoles spécifiques aux différents appareils dans RF Go.",
+  "source": "@site/docs/protocols/device-specific.md",
+  "sourceDirName": "protocols",
+  "slug": "/protocols/device-specific",
+  "permalink": "/docs/protocols/device-specific",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/protocols/device-specific.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Protocoles UDP/TCP",
+    "permalink": "/docs/protocols/udp-tcp"
+  },
+  "next": {
+    "title": "API Interne - Services",
+    "permalink": "/docs/api/services"
+  }
+}

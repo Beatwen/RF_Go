@@ -1,0 +1,20 @@
+{
+  "id": "development/testing",
+  "title": "Tests",
+  "description": "Documentation sur les tests dans RF Go.",
+  "source": "@site/docs/development/testing.md",
+  "sourceDirName": "development",
+  "slug": "/development/testing",
+  "permalink": "/docs/development/testing",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/development/testing.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Contribuer au Projet",
+    "permalink": "/docs/development/contributing"
+  }
+}

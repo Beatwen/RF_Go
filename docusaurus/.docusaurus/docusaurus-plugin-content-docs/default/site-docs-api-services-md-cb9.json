@@ -1,0 +1,24 @@
+{
+  "id": "api/services",
+  "title": "API Interne - Services",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/api/services.md",
+  "sourceDirName": "api",
+  "slug": "/api/services",
+  "permalink": "/docs/api/services",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/api/services.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Protocoles Spécifiques aux Appareils",
+    "permalink": "/docs/protocols/device-specific"
+  },
+  "next": {
+    "title": "API Interne - Modèles",
+    "permalink": "/docs/api/models"
+  }
+}

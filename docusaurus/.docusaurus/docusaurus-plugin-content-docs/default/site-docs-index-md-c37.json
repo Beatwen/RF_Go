@@ -1,0 +1,15 @@
+{
+  "id": "index",
+  "title": "RF Go",
+  "description": "RF Go est une application professionnelle de gestion de fréquences audio, conçue pour simplifier et optimiser la gestion des systèmes sans fil dans les environnements de production audio.",
+  "source": "@site/docs/index.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/docs/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

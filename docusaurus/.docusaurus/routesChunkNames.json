@@ -1,0 +1,178 @@
+{
+  "/__docusaurus/debug-5ff": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/config-5ba": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/content-a2b": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    },
+    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
+  },
+  "/__docusaurus/debug/globalData-c3c": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/metadata-156": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/registry-88c": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/routes-000": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/docs-642": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---docsaba-d7c"
+    }
+  },
+  "/docs-76d": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---docs-005-788"
+  },
+  "/docs-b58": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/docs/-0ee": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-c-37-4d0"
+  },
+  "/docs/api/interfaces-4a4": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-api-interfaces-7-d-1-4db"
+  },
+  "/docs/api/models-902": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-api-models-4-e-6-a93"
+  },
+  "/docs/api/overview-5d7": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-api-overview-65-d-0e3"
+  },
+  "/docs/api/services-1d2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-api-servicescb-9-082"
+  },
+  "/docs/architecture-4b2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-architecture-528-86f"
+  },
+  "/docs/architecture/class-diagram-bdf": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-architecture-class-diagram-969-b77"
+  },
+  "/docs/architecture/components-44e": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-architecture-componentsb-47-28d"
+  },
+  "/docs/architecture/data-flow-6bc": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-architecture-data-flow-9-ba-3c1"
+  },
+  "/docs/architecture/overview-833": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-architecture-overview-0-b-1-a4c"
+  },
+  "/docs/architecture/use-cases-0eb": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-architecture-use-cases-05-a-3d6"
+  },
+  "/docs/configuration/database-b4a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-configuration-database-766-ac8"
+  },
+  "/docs/configuration/environment-08a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-configuration-environment-7-ca-af2"
+  },
+  "/docs/configuration/guide-762": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-configuration-guidec-96-641"
+  },
+  "/docs/configuration/licensing-cd0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-configuration-licensing-20-a-108"
+  },
+  "/docs/development/contributing-98b": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-development-contributing-946-4f0"
+  },
+  "/docs/development/guide-ae9": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-development-guide-066-fc5"
+  },
+  "/docs/development/setup-375": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-development-setupe-62-b15"
+  },
+  "/docs/development/testing-cf3": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-development-testinga-29-cfb"
+  },
+  "/docs/docs/architecture/overview-ff0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-docs-architecture-overview-513-51e"
+  },
+  "/docs/features/authentication-cb4": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-features-authenticationcc-0-471"
+  },
+  "/docs/features/device-management-91f": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-features-device-managementbd-5-76c"
+  },
+  "/docs/features/frequency-management-1b1": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-features-frequency-managementc-3-e-f54"
+  },
+  "/docs/features/licensing-5a9": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-features-licensing-5-ee-d6e"
+  },
+  "/docs/features/workflows-635": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-features-workflows-5-c-3-2c0"
+  },
+  "/docs/getting-started-2a1": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-getting-startedd-58-f94"
+  },
+  "/docs/intro-61d": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-intro-0-e-3-be1"
+  },
+  "/docs/protocols/device-specific-bdd": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-protocols-device-specific-4-e-5-054"
+  },
+  "/docs/protocols/dns-discovery-e5e": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-protocols-dns-discovery-5-fe-33c"
+  },
+  "/docs/protocols/udp-tcp-0f9": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-protocols-udp-tcp-172-bc2"
+  }
+}

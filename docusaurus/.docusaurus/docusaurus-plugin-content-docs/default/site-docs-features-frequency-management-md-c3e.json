@@ -1,0 +1,24 @@
+{
+  "id": "features/frequency-management",
+  "title": "Gestion des Fréquences",
+  "description": "Documentation de la gestion des fréquences dans RF Go.",
+  "source": "@site/docs/features/frequency-management.md",
+  "sourceDirName": "features",
+  "slug": "/features/frequency-management",
+  "permalink": "/docs/features/frequency-management",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/features/frequency-management.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Gestion des Appareils",
+    "permalink": "/docs/features/device-management"
+  },
+  "next": {
+    "title": "Système de Licence",
+    "permalink": "/docs/features/licensing"
+  }
+}

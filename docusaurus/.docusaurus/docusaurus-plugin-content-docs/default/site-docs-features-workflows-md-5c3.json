@@ -1,0 +1,15 @@
+{
+  "id": "features/workflows",
+  "title": "Workflows de l'Application",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/features/workflows.md",
+  "sourceDirName": "features",
+  "slug": "/features/workflows",
+  "permalink": "/docs/features/workflows",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/features/workflows.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

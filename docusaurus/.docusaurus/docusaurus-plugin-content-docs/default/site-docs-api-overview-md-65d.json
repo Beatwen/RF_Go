@@ -1,0 +1,15 @@
+{
+  "id": "api/overview",
+  "title": "API Documentation",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/api/overview.md",
+  "sourceDirName": "api",
+  "slug": "/api/overview",
+  "permalink": "/docs/api/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/api/overview.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

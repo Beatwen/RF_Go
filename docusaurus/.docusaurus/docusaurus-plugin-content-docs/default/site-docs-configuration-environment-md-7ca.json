@@ -1,0 +1,24 @@
+{
+  "id": "configuration/environment",
+  "title": "Configuration de l'Environnement",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/configuration/environment.md",
+  "sourceDirName": "configuration",
+  "slug": "/configuration/environment",
+  "permalink": "/docs/configuration/environment",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/configuration/environment.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "API Interne - Interfaces",
+    "permalink": "/docs/api/interfaces"
+  },
+  "next": {
+    "title": "Configuration de la Base de Données",
+    "permalink": "/docs/configuration/database"
+  }
+}

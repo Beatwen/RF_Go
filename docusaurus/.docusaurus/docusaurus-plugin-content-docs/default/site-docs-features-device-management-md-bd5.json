@@ -1,0 +1,24 @@
+{
+  "id": "features/device-management",
+  "title": "Gestion des Appareils",
+  "description": "Documentation de la gestion des appareils dans RF Go.",
+  "source": "@site/docs/features/device-management.md",
+  "sourceDirName": "features",
+  "slug": "/features/device-management",
+  "permalink": "/docs/features/device-management",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/features/device-management.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Use Cases",
+    "permalink": "/docs/architecture/use-cases"
+  },
+  "next": {
+    "title": "Gestion des Fréquences",
+    "permalink": "/docs/features/frequency-management"
+  }
+}

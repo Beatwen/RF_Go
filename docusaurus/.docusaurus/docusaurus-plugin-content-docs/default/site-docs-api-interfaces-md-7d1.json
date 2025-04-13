@@ -1,0 +1,24 @@
+{
+  "id": "api/interfaces",
+  "title": "API Interne - Interfaces",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/api/interfaces.md",
+  "sourceDirName": "api",
+  "slug": "/api/interfaces",
+  "permalink": "/docs/api/interfaces",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/api/interfaces.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "API Interne - Modèles",
+    "permalink": "/docs/api/models"
+  },
+  "next": {
+    "title": "Configuration de l'Environnement",
+    "permalink": "/docs/configuration/environment"
+  }
+}

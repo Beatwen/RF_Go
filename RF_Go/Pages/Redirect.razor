@@ -21,7 +21,9 @@
     protected override async Task OnInitializedAsync()
     {
         LoadingProgress = 30;
+        Debug.WriteLine("Initialisé !!!");
         deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
+        // deviceIdentifier = "TEST-MAC";
         LoadingProgress = 50;
         Debug.WriteLine($"Device Identifier: {deviceIdentifier}");
         var userKey = await SecureStorage.GetAsync("userKey");

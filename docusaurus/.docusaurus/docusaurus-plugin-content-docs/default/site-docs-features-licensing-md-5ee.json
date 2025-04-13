@@ -1,0 +1,24 @@
+{
+  "id": "features/licensing",
+  "title": "Système de Licence",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/features/licensing.md",
+  "sourceDirName": "features",
+  "slug": "/features/licensing",
+  "permalink": "/docs/features/licensing",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/features/licensing.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Gestion des Fréquences",
+    "permalink": "/docs/features/frequency-management"
+  },
+  "next": {
+    "title": "Authentification",
+    "permalink": "/docs/features/authentication"
+  }
+}

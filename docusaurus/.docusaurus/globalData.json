@@ -1,0 +1,172 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/docs",
+          "mainDocId": "index",
+          "docs": [
+            {
+              "id": "api/interfaces",
+              "path": "/docs/api/interfaces",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/models",
+              "path": "/docs/api/models",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "api/overview",
+              "path": "/docs/api/overview"
+            },
+            {
+              "id": "api/services",
+              "path": "/docs/api/services",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture",
+              "path": "/docs/architecture",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/class-diagram",
+              "path": "/docs/architecture/class-diagram",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/components",
+              "path": "/docs/architecture/components",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/data-flow",
+              "path": "/docs/architecture/data-flow",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/overview",
+              "path": "/docs/architecture/overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/use-cases",
+              "path": "/docs/architecture/use-cases",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "configuration/database",
+              "path": "/docs/configuration/database",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "configuration/environment",
+              "path": "/docs/configuration/environment",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "configuration/guide",
+              "path": "/docs/configuration/guide"
+            },
+            {
+              "id": "configuration/licensing",
+              "path": "/docs/configuration/licensing",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "development/contributing",
+              "path": "/docs/development/contributing",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "development/guide",
+              "path": "/docs/development/guide"
+            },
+            {
+              "id": "development/setup",
+              "path": "/docs/development/setup",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "development/testing",
+              "path": "/docs/development/testing",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "docs/architecture/overview",
+              "path": "/docs/docs/architecture/overview"
+            },
+            {
+              "id": "features/authentication",
+              "path": "/docs/features/authentication",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "features/device-management",
+              "path": "/docs/features/device-management",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "features/frequency-management",
+              "path": "/docs/features/frequency-management",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "features/licensing",
+              "path": "/docs/features/licensing",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "features/workflows",
+              "path": "/docs/features/workflows"
+            },
+            {
+              "id": "getting-started",
+              "path": "/docs/getting-started",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "index",
+              "path": "/docs/"
+            },
+            {
+              "id": "intro",
+              "path": "/docs/intro",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "protocols/device-specific",
+              "path": "/docs/protocols/device-specific",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "protocols/dns-discovery",
+              "path": "/docs/protocols/dns-discovery",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "protocols/udp-tcp",
+              "path": "/docs/protocols/udp-tcp",
+              "sidebar": "tutorialSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "tutorialSidebar": {
+              "link": {
+                "path": "/docs/intro",
+                "label": "intro"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

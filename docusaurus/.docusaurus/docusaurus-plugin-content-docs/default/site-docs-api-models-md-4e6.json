@@ -1,0 +1,24 @@
+{
+  "id": "api/models",
+  "title": "API Interne - Modèles",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/api/models.md",
+  "sourceDirName": "api",
+  "slug": "/api/models",
+  "permalink": "/docs/api/models",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/api/models.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "API Interne - Services",
+    "permalink": "/docs/api/services"
+  },
+  "next": {
+    "title": "API Interne - Interfaces",
+    "permalink": "/docs/api/interfaces"
+  }
+}

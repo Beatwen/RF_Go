@@ -1,0 +1,24 @@
+{
+  "id": "features/authentication",
+  "title": "Authentification",
+  "description": "Documentation du système d'authentification de RF Go.",
+  "source": "@site/docs/features/authentication.md",
+  "sourceDirName": "features",
+  "slug": "/features/authentication",
+  "permalink": "/docs/features/authentication",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/features/authentication.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Système de Licence",
+    "permalink": "/docs/features/licensing"
+  },
+  "next": {
+    "title": "Protocoles DNS et Découverte",
+    "permalink": "/docs/protocols/dns-discovery"
+  }
+}

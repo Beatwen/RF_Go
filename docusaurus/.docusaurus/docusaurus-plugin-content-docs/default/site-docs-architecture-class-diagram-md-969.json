@@ -1,0 +1,24 @@
+{
+  "id": "architecture/class-diagram",
+  "title": "Diagramme de Classes",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/architecture/class-diagram.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/class-diagram",
+  "permalink": "/docs/architecture/class-diagram",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/architecture/class-diagram.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Flux de Données",
+    "permalink": "/docs/architecture/data-flow"
+  },
+  "next": {
+    "title": "Use Cases",
+    "permalink": "/docs/architecture/use-cases"
+  }
+}

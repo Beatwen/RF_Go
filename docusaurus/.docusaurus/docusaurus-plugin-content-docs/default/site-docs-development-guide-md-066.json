@@ -1,0 +1,15 @@
+{
+  "id": "development/guide",
+  "title": "Guide de Développement",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/development/guide.md",
+  "sourceDirName": "development",
+  "slug": "/development/guide",
+  "permalink": "/docs/development/guide",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/development/guide.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

@@ -1,0 +1,24 @@
+{
+  "id": "architecture/data-flow",
+  "title": "Flux de Données",
+  "description": "Documentation du flux de données dans RF Go.",
+  "source": "@site/docs/architecture/data-flow.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/data-flow",
+  "permalink": "/docs/architecture/data-flow",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/architecture/data-flow.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Composants",
+    "permalink": "/docs/architecture/components"
+  },
+  "next": {
+    "title": "Diagramme de Classes",
+    "permalink": "/docs/architecture/class-diagram"
+  }
+}

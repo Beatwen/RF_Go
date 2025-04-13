@@ -1,0 +1,15 @@
+{
+  "id": "configuration/guide",
+  "title": "Guide de Configuration",
+  "description": "Vue d'ensemble",
+  "source": "@site/docs/configuration/guide.md",
+  "sourceDirName": "configuration",
+  "slug": "/configuration/guide",
+  "permalink": "/docs/configuration/guide",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/configuration/guide.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

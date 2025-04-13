@@ -1,0 +1,24 @@
+{
+  "id": "architecture",
+  "title": "Architecture",
+  "description": "RF Go est conçu avec une architecture modulaire et extensible, permettant une gestion efficace des fréquences audio et des appareils. Cette documentation technique s'adresse aux développeurs souhaitant comprendre et contribuer au projet.",
+  "source": "@site/docs/architecture.md",
+  "sourceDirName": ".",
+  "slug": "/architecture",
+  "permalink": "/docs/architecture",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/rf-go/rf-go-docs/tree/main/docs/architecture.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Introduction",
+    "permalink": "/docs/intro"
+  },
+  "next": {
+    "title": "Démarrage Rapide",
+    "permalink": "/docs/getting-started"
+  }
+}
