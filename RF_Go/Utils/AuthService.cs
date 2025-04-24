@@ -15,12 +15,10 @@ namespace RF_Go.Utils
     public class AuthService
     {
         private readonly HttpClient _httpClient;
-        private readonly NavigationManager _navigationManager;
 
-        public AuthService(HttpClient httpClient, NavigationManager navigationManager)
+        public AuthService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _navigationManager = navigationManager;
         }
 
         public async Task<TokenResponse> LoginAsync(string email, string password)
@@ -43,14 +41,14 @@ namespace RF_Go.Utils
             }
         }
 
-        public async Task<string> GetValidAccessTokenAsync()
+        public async Task<string> GetValidAccessTokenAsync(NavigationManager navigationManager = null)
         {
             var accessToken = await TokenStorage.GetAccessTokenAsync();
             var refreshToken = await TokenStorage.GetRefreshTokenAsync();
 
             if (IsTokenExpired(accessToken))
             {
-                accessToken = await RefreshAccessTokenAsync(refreshToken);
+                accessToken = await RefreshAccessTokenAsync(refreshToken, navigationManager);
             }
             else
             {
@@ -67,7 +65,7 @@ namespace RF_Go.Utils
             return jwtToken.ValidTo < DateTime.UtcNow;
         }
 
-        private async Task<string> RefreshAccessTokenAsync(string refreshToken)
+        private async Task<string> RefreshAccessTokenAsync(string refreshToken, NavigationManager navigationManager)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, $"{AppConfig.ApiBaseUrl}/auth/refresh")
             {
@@ -88,7 +86,7 @@ namespace RF_Go.Utils
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
-                return await HandleExpiredRefreshTokenAsync();
+                return await HandleExpiredRefreshTokenAsync(navigationManager);
             }
             else
             {
@@ -96,11 +94,11 @@ namespace RF_Go.Utils
             }
         }
 
-        private Task<string> HandleExpiredRefreshTokenAsync()
+        private Task<string> HandleExpiredRefreshTokenAsync(NavigationManager navigationManager)
         {
-            if (_navigationManager != null)
+            if (navigationManager != null)
             {
-                _navigationManager.NavigateTo("/login");
+                navigationManager.NavigateTo("/login");
             }
             else
             {

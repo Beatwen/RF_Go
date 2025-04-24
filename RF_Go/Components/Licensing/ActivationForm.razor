@@ -29,7 +29,7 @@
         try
         {
             var httpClient = new HttpClient();
-            var accessToken = await AuthService.GetValidAccessTokenAsync();
+            var accessToken = await AuthService.GetValidAccessTokenAsync(NavigationManager);
             Debug.Print("Access Token found : " + accessToken);
             if (string.IsNullOrEmpty(accessToken))
             {

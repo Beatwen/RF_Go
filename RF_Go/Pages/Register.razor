@@ -81,7 +81,7 @@ else
 
     protected override void OnInitialized()
     {
-        _authService = new AuthService(httpClient, NavigationManager);
+        _authService = new AuthService(httpClient);
     }
     private void TogglePasswordVisibility(string field)
     {
