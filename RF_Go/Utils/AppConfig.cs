@@ -10,6 +10,8 @@ namespace RF_Go.Utils
     {
         public const string ApiKey = "123456789987654321";
         public static string ApiBaseUrl { get; } = "https://api.licensing.noobastudio.be";
+        //public static string ApiBaseUrl { get; } = "http://localhost:3000";
+
         public static string AppBaseUrl { get; } = "https://licensing.noobastudio.be";
 
     }

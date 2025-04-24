@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
+@inject RF_Go.Utils.AuthService AuthService
 @using Microsoft.Maui.Storage
 @using System.Diagnostics;
 @using System.Text.Json;
@@ -53,11 +54,12 @@
         try
         {
             // Vérification du réseau et validation de la licence
-
+            var accessToken = await AuthService.GetValidAccessTokenAsync(NavigationManager);
             client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
             client.DefaultRequestHeaders.Add("X-USER-KEY", userKey);
             client.DefaultRequestHeaders.Add("X-DEVICE-ID", deviceIdentifier);
             client.DefaultRequestHeaders.Add("X-LICENSE-KEY", licenseKey);
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
             var response = await client.PostAsJsonAsync($"{AppConfig.ApiBaseUrl}/licenses/validate", new
             {
