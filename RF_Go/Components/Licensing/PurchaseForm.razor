@@ -8,61 +8,60 @@
 
 <MudCard Class="pa-4">
     <MudText Typo="Typo.h6" Align="Align.Center">Acheter une Licence</MudText>
-    <MudSelect T="string" Label="Type de Licence" @bind-Value="SelectedLicenseType" FullWidth="true">
+    <MudSelect T="string" @bind-Value="SelectedLicenseType" FullWidth="true">
         <MudSelectItem Value="@("Standard")">Standard</MudSelectItem>
         <MudSelectItem Value="@("Premium")">Premium</MudSelectItem>
-        <MudSelectItem Value="@("Free")">Free</MudSelectItem>
     </MudSelect>
-    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="SubmitPurchase" Class="mt-3">
-        Confirmer l'Achat
-    </MudButton>
+    <MudLink Class="full-width-link mt-3" Underline="Underline.None" Color="Color.Inherit" Href="@BaseURL">
+        <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true">
+            Buy
+        </MudButton>
+    </MudLink>
+
     <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mt-2">@Message</MudText>
 </MudCard>
 
 @code {
     private string Email = "";
-    private string SelectedLicenseType = "Free";
+    private string SelectedLicenseType = "Standard";
     private string Message = "";
+    private string BaseURL = AppConfig.AppBaseUrl + "/login";
 
     private async Task SubmitPurchase()
     {
-        if (string.IsNullOrEmpty(SelectedLicenseType))
-        {
-            Message = "Fill the license type please";
-            return;
-        }
         string UserKey = await SecureStorage.GetAsync("userKey");
         Debug.WriteLine(UserKey);
-        try
-        {
-            var payload = new
-            {
-                licenseType = SelectedLicenseType,
-                userID = UserKey
-            };
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-USER-KEY", await SecureStorage.GetAsync("userKey"));
-            client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+        // try
+        // {
+        //     var payload = new
+        //     {
+        //         licenseType = SelectedLicenseType,
+        //         userID = UserKey
+        //     };
 
-            var response = await client.PostAsJsonAsync($"{AppConfig.ApiBaseUrl}/licenses/buy", payload);
+        //     using var client = new HttpClient();
+        //     client.DefaultRequestHeaders.Add("X-USER-KEY", await SecureStorage.GetAsync("userKey"));
+        //     client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<LicenseResponse>(responseContent);
-                Message = "Votre achat a été confirmé ! Merci. Votre licence a été envoyée par mail";
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Message = $"Erreur : {response.StatusCode}. Détails : {errorContent}";
-            }
-        }
-        catch (Exception ex)
-        {
-            Message = $"Une erreur est survenue : {ex.Message}";
-        }
+        //     var response = await client.PostAsJsonAsync($"{AppConfig.ApiBaseUrl}/licenses/buy", payload);
+
+        //     if (response.IsSuccessStatusCode)
+        //     {
+        //         var responseContent = await response.Content.ReadAsStringAsync();
+        //         var result = JsonSerializer.Deserialize<LicenseResponse>(responseContent);
+        //         Message = "Votre achat a été confirmé ! Merci. Votre licence a été envoyée par mail";
+        //     }
+        //     else
+        //     {
+        //         var errorContent = await response.Content.ReadAsStringAsync();
+        //         Message = $"Erreur : {response.StatusCode}. Détails : {errorContent}";
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     Message = $"Une erreur est survenue : {ex.Message}";
+        // }
     }
     public class LicenseResponse 
     {

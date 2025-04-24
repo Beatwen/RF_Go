@@ -5,7 +5,7 @@
   "source": "@site/docs/features/device-management.md",
   "sourceDirName": "features",
   "slug": "/features/device-management",
-  "permalink": "/docs/features/device-management",
+  "permalink": "/RF_Go/docs/features/device-management",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/device-management.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Use Cases",
-    "permalink": "/docs/architecture/use-cases"
+    "permalink": "/RF_Go/docs/architecture/use-cases"
   },
   "next": {
     "title": "Gestion des Fréquences",
-    "permalink": "/docs/features/frequency-management"
+    "permalink": "/RF_Go/docs/features/frequency-management"
   }
 }

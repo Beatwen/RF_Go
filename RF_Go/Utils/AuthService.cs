@@ -86,7 +86,7 @@ namespace RF_Go.Utils
 
                 return tokenResponse.AccessToken;
             }
-            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
                 return await HandleExpiredRefreshTokenAsync();
             }
@@ -98,8 +98,17 @@ namespace RF_Go.Utils
 
         private Task<string> HandleExpiredRefreshTokenAsync()
         {
-            _navigationManager.NavigateTo("/login");
-            return null;
+            if (_navigationManager != null)
+            {
+                _navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                Debug.WriteLine("NavigationManager is not initialized. Delaying navigation.");
+                // Optionally, you can queue the navigation to be executed later.
+            }
+
+            return Task.FromResult<string>(null);
         }
     }
 

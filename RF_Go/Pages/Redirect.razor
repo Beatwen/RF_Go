@@ -21,7 +21,6 @@
     protected override async Task OnInitializedAsync()
     {
         LoadingProgress = 30;
-        Debug.WriteLine("Initialisé !!!");
         deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
         // deviceIdentifier = "TEST-MAC";
         LoadingProgress = 50;
@@ -51,7 +50,6 @@
             NavigationManager.NavigateTo("/license");
             return;
         }
-
         try
         {
             // Vérification du réseau et validation de la licence
@@ -85,7 +83,7 @@
             {
                 Debug.Print(response.Content.ToString());
                 LoadingProgress = 100;
-                NavigationManager.NavigateTo("/index");
+                NavigationManager.NavigateTo("/license");
             }
         }
         catch

@@ -5,7 +5,7 @@
   "source": "@site/docs/architecture/use-cases.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/use-cases",
-  "permalink": "/docs/architecture/use-cases",
+  "permalink": "/RF_Go/docs/architecture/use-cases",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/architecture/use-cases.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Diagramme de Classes",
-    "permalink": "/docs/architecture/class-diagram"
+    "permalink": "/RF_Go/docs/architecture/class-diagram"
   },
   "next": {
     "title": "Gestion des Appareils",
-    "permalink": "/docs/features/device-management"
+    "permalink": "/RF_Go/docs/features/device-management"
   }
 }

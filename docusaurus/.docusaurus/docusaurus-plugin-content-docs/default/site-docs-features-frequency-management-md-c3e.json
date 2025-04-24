@@ -5,7 +5,7 @@
   "source": "@site/docs/features/frequency-management.md",
   "sourceDirName": "features",
   "slug": "/features/frequency-management",
-  "permalink": "/docs/features/frequency-management",
+  "permalink": "/RF_Go/docs/features/frequency-management",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/frequency-management.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Gestion des Appareils",
-    "permalink": "/docs/features/device-management"
+    "permalink": "/RF_Go/docs/features/device-management"
   },
   "next": {
     "title": "Système de Licence",
-    "permalink": "/docs/features/licensing"
+    "permalink": "/RF_Go/docs/features/licensing"
   }
 }

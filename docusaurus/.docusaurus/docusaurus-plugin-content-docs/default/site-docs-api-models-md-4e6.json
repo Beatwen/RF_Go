@@ -5,7 +5,7 @@
   "source": "@site/docs/api/models.md",
   "sourceDirName": "api",
   "slug": "/api/models",
-  "permalink": "/docs/api/models",
+  "permalink": "/RF_Go/docs/api/models",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/api/models.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "API Interne - Services",
-    "permalink": "/docs/api/services"
+    "permalink": "/RF_Go/docs/api/services"
   },
   "next": {
     "title": "API Interne - Interfaces",
-    "permalink": "/docs/api/interfaces"
+    "permalink": "/RF_Go/docs/api/interfaces"
   }
 }

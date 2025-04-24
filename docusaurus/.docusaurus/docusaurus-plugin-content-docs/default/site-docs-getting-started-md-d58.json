@@ -5,7 +5,7 @@
   "source": "@site/docs/getting-started.md",
   "sourceDirName": ".",
   "slug": "/getting-started",
-  "permalink": "/docs/getting-started",
+  "permalink": "/RF_Go/docs/getting-started",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/getting-started.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Architecture",
-    "permalink": "/docs/architecture"
+    "permalink": "/RF_Go/docs/architecture"
   },
   "next": {
     "title": "Vue d'ensemble de l'Architecture",
-    "permalink": "/docs/architecture/overview"
+    "permalink": "/RF_Go/docs/architecture/overview"
   }
 }

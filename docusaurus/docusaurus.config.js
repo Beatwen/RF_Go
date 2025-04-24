@@ -10,16 +10,16 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://rf-go.com',
+  url: 'https://beatwen.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: '/RF_Go/',
   trailingSlash: true,
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'Beatwen', // Change to your GitHub username
-  projectName: 'RF_Go', // Change to your repository name
+  organizationName: 'Beatwen', // Usually your GitHub org/user name.
+  projectName: 'RF_Go', // Usually your repo name.
 
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',

@@ -5,7 +5,7 @@
   "source": "@site/docs/development/contributing.md",
   "sourceDirName": "development",
   "slug": "/development/contributing",
-  "permalink": "/docs/development/contributing",
+  "permalink": "/RF_Go/docs/development/contributing",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/development/contributing.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Configuration de l'Environnement de Développement",
-    "permalink": "/docs/development/setup"
+    "permalink": "/RF_Go/docs/development/setup"
   },
   "next": {
     "title": "Tests",
-    "permalink": "/docs/development/testing"
+    "permalink": "/RF_Go/docs/development/testing"
   }
 }

@@ -5,7 +5,7 @@
   "source": "@site/docs/architecture/components.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/components",
-  "permalink": "/docs/architecture/components",
+  "permalink": "/RF_Go/docs/architecture/components",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/architecture/components.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Vue d'ensemble de l'Architecture",
-    "permalink": "/docs/architecture/overview"
+    "permalink": "/RF_Go/docs/architecture/overview"
   },
   "next": {
     "title": "Flux de Données",
-    "permalink": "/docs/architecture/data-flow"
+    "permalink": "/RF_Go/docs/architecture/data-flow"
   }
 }

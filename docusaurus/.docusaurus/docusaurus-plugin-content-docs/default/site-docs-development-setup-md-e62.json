@@ -5,7 +5,7 @@
   "source": "@site/docs/development/setup.md",
   "sourceDirName": "development",
   "slug": "/development/setup",
-  "permalink": "/docs/development/setup",
+  "permalink": "/RF_Go/docs/development/setup",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/development/setup.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Configuration des Licences",
-    "permalink": "/docs/configuration/licensing"
+    "permalink": "/RF_Go/docs/configuration/licensing"
   },
   "next": {
     "title": "Contribuer au Projet",
-    "permalink": "/docs/development/contributing"
+    "permalink": "/RF_Go/docs/development/contributing"
   }
 }

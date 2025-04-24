@@ -5,7 +5,7 @@
   "source": "@site/docs/protocols/udp-tcp.md",
   "sourceDirName": "protocols",
   "slug": "/protocols/udp-tcp",
-  "permalink": "/docs/protocols/udp-tcp",
+  "permalink": "/RF_Go/docs/protocols/udp-tcp",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/protocols/udp-tcp.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Protocoles DNS et Découverte",
-    "permalink": "/docs/protocols/dns-discovery"
+    "permalink": "/RF_Go/docs/protocols/dns-discovery"
   },
   "next": {
     "title": "Protocoles Spécifiques aux Appareils",
-    "permalink": "/docs/protocols/device-specific"
+    "permalink": "/RF_Go/docs/protocols/device-specific"
   }
 }

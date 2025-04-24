@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Text;
@@ -12,15 +13,23 @@ namespace RF_Go.Utils
         public static async Task<string> GetOrCreateDeviceIdentifier()
         {
             const string key = "deviceIdentifier";
-            var identifier = await SecureStorage.GetAsync(key);
-            if (string.IsNullOrEmpty(identifier))
+            try
             {
-                identifier = Guid.NewGuid().ToString();
-                await SecureStorage.SetAsync(key, identifier);
+                var identifier = await SecureStorage.GetAsync(key);
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    identifier = Guid.NewGuid().ToString();
+                    await SecureStorage.SetAsync(key, identifier);
+                }
+                return identifier;
             }
-
-            return identifier;
-     }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SecureStorage error: {ex.Message}");
+                // Retournez une valeur par défaut ou gérez l'erreur
+                return Guid.NewGuid().ToString();
+            }
+        }
     }
     public class DeviceService
     {

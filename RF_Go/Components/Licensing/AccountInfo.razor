@@ -49,9 +49,6 @@
 
         <MudDivider Class="mt-4 mb-4" />
 
-        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="ConfirmUserDeletion">
-            Delete my account
-        </MudButton>
         <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="LogOut">
             Log Out
         </MudButton>
@@ -59,20 +56,20 @@
     </MudPaper>
 </MudContainer>
 
-<MudDialog @bind-Visible="IsDeleteDialogOpen" MaxWidth="MaxWidth.Small" Style="padding: 20px;">
-    <DialogContent>Confirm deletion</DialogContent>
-    <DialogContent>
-        <MudText Typo="Typo.body1">Are you sure to delete your account ? This action is irreversible.</MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => IsDeleteDialogOpen = false">
-            Cancel
-        </MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteUser">
-            Delete
-        </MudButton>
-    </DialogActions>
-</MudDialog>
+@* <MudDialog @bind-Visible="IsDeleteDialogOpen" MaxWidth="MaxWidth.Small" Style="padding: 20px;"> *@
+@*     <DialogContent>Confirm deletion</DialogContent> *@
+@*     <DialogContent> *@
+@*         <MudText Typo="Typo.body1">Are you sure to delete your account ? This action is irreversible.</MudText> *@
+@*     </DialogContent> *@
+@*     <DialogActions> *@
+@*         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => IsDeleteDialogOpen = false"> *@
+@*             Cancel *@
+@*         </MudButton> *@
+@*         <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteUser"> *@
+@*             Delete *@
+@*         </MudButton> *@
+@*     </DialogActions> *@
+@* </MudDialog> *@
 
 @code {
     private User User = null;
@@ -84,11 +81,6 @@
     protected override async Task OnInitializedAsync()
     {
         User = await SecureStorageUtils.GetUserFromSecureStorage();
-    }
-
-    private void ConfirmUserDeletion()
-    {
-        IsDeleteDialogOpen = true;
     }
     private async Task LogOut()
     {
@@ -132,41 +124,42 @@
             Message = $"Error: {ex.Message}";
         }
     }
-    private async Task DeleteUser()
-    {
-        try
-        {
+    // Function deleted to avoid user delete itself. User has to go through the website to delete his accound now.
+    // private async Task DeleteUser()
+    // {
+    //     try
+    //     {
 
-            string userKey = await SecureStorage.GetAsync("userKey");
-            SecureStorage.Remove("userkey");
-            if (!string.IsNullOrEmpty(userKey))
-            {
-                // SecureStorage.RemoveAll(); // A supprimer en prod, on supprime que si le user est delete de la DB
-                client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
-                string accessToken = await AuthService.GetValidAccessTokenAsync();
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-                string baseUrl = AppConfig.ApiBaseUrl;
-                var response = await client.DeleteAsync($"{baseUrl}/users/{userKey}");
-                if (response.IsSuccessStatusCode)
-                {
-                    SecureStorage.RemoveAll();
-                    NavigationManager.NavigateTo("/register");
-                }
-                else
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    Debug.Print(error);
-                    Message = $"Error server: {response.StatusCode}. Details: {error}";
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Message = $"Erreur : {ex.Message}";
-        }
-        finally
-        {
-            IsDeleteDialogOpen = false;
-        }
-    }
+    //         string userKey = await SecureStorage.GetAsync("userKey");
+    //         SecureStorage.Remove("userkey");
+    //         if (!string.IsNullOrEmpty(userKey))
+    //         {
+    //             SecureStorage.RemoveAll(); A supprimer en prod, on supprime que si le user est delete de la DB
+    //             client.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+    //             string accessToken = await AuthService.GetValidAccessTokenAsync();
+    //             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+    //             string baseUrl = AppConfig.ApiBaseUrl;
+    //             var response = await client.DeleteAsync($"{baseUrl}/users/{userKey}");
+    //             if (response.IsSuccessStatusCode)
+    //             {
+    //                 SecureStorage.RemoveAll();
+    //                 NavigationManager.NavigateTo("/register");
+    //             }
+    //             else
+    //             {
+    //                 var error = await response.Content.ReadAsStringAsync();
+    //                 Debug.Print(error);
+    //                 Message = $"Error server: {response.StatusCode}. Details: {error}";
+    //             }
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Message = $"Erreur : {ex.Message}";
+    //     }
+    //     finally
+    //     {
+    //         IsDeleteDialogOpen = false;
+    //     }
+    // }
 }

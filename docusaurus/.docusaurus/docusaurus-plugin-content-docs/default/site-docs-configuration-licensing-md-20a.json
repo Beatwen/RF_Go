@@ -5,7 +5,7 @@
   "source": "@site/docs/configuration/licensing.md",
   "sourceDirName": "configuration",
   "slug": "/configuration/licensing",
-  "permalink": "/docs/configuration/licensing",
+  "permalink": "/RF_Go/docs/configuration/licensing",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/configuration/licensing.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Configuration de la Base de Données",
-    "permalink": "/docs/configuration/database"
+    "permalink": "/RF_Go/docs/configuration/database"
   },
   "next": {
     "title": "Configuration de l'Environnement de Développement",
-    "permalink": "/docs/development/setup"
+    "permalink": "/RF_Go/docs/development/setup"
   }
 }

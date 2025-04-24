@@ -1,157 +1,157 @@
 {
   "docusaurus-plugin-content-docs": {
     "default": {
-      "path": "/docs",
+      "path": "/RF_Go/docs",
       "versions": [
         {
           "name": "current",
           "label": "Next",
           "isLast": true,
-          "path": "/docs",
+          "path": "/RF_Go/docs",
           "mainDocId": "index",
           "docs": [
             {
               "id": "api/interfaces",
-              "path": "/docs/api/interfaces",
+              "path": "/RF_Go/docs/api/interfaces",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "api/models",
-              "path": "/docs/api/models",
+              "path": "/RF_Go/docs/api/models",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "api/overview",
-              "path": "/docs/api/overview"
+              "path": "/RF_Go/docs/api/overview"
             },
             {
               "id": "api/services",
-              "path": "/docs/api/services",
+              "path": "/RF_Go/docs/api/services",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "architecture",
-              "path": "/docs/architecture",
+              "path": "/RF_Go/docs/architecture",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "architecture/class-diagram",
-              "path": "/docs/architecture/class-diagram",
+              "path": "/RF_Go/docs/architecture/class-diagram",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "architecture/components",
-              "path": "/docs/architecture/components",
+              "path": "/RF_Go/docs/architecture/components",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "architecture/data-flow",
-              "path": "/docs/architecture/data-flow",
+              "path": "/RF_Go/docs/architecture/data-flow",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "architecture/overview",
-              "path": "/docs/architecture/overview",
+              "path": "/RF_Go/docs/architecture/overview",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "architecture/use-cases",
-              "path": "/docs/architecture/use-cases",
+              "path": "/RF_Go/docs/architecture/use-cases",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "configuration/database",
-              "path": "/docs/configuration/database",
+              "path": "/RF_Go/docs/configuration/database",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "configuration/environment",
-              "path": "/docs/configuration/environment",
+              "path": "/RF_Go/docs/configuration/environment",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "configuration/guide",
-              "path": "/docs/configuration/guide"
+              "path": "/RF_Go/docs/configuration/guide"
             },
             {
               "id": "configuration/licensing",
-              "path": "/docs/configuration/licensing",
+              "path": "/RF_Go/docs/configuration/licensing",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "development/contributing",
-              "path": "/docs/development/contributing",
+              "path": "/RF_Go/docs/development/contributing",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "development/guide",
-              "path": "/docs/development/guide"
+              "path": "/RF_Go/docs/development/guide"
             },
             {
               "id": "development/setup",
-              "path": "/docs/development/setup",
+              "path": "/RF_Go/docs/development/setup",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "development/testing",
-              "path": "/docs/development/testing",
+              "path": "/RF_Go/docs/development/testing",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "docs/architecture/overview",
-              "path": "/docs/docs/architecture/overview"
+              "path": "/RF_Go/docs/docs/architecture/overview"
             },
             {
               "id": "features/authentication",
-              "path": "/docs/features/authentication",
+              "path": "/RF_Go/docs/features/authentication",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "features/device-management",
-              "path": "/docs/features/device-management",
+              "path": "/RF_Go/docs/features/device-management",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "features/frequency-management",
-              "path": "/docs/features/frequency-management",
+              "path": "/RF_Go/docs/features/frequency-management",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "features/licensing",
-              "path": "/docs/features/licensing",
+              "path": "/RF_Go/docs/features/licensing",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "features/workflows",
-              "path": "/docs/features/workflows"
+              "path": "/RF_Go/docs/features/workflows"
             },
             {
               "id": "getting-started",
-              "path": "/docs/getting-started",
+              "path": "/RF_Go/docs/getting-started",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "index",
-              "path": "/docs/"
+              "path": "/RF_Go/docs/"
             },
             {
               "id": "intro",
-              "path": "/docs/intro",
+              "path": "/RF_Go/docs/intro",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "protocols/device-specific",
-              "path": "/docs/protocols/device-specific",
+              "path": "/RF_Go/docs/protocols/device-specific",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "protocols/dns-discovery",
-              "path": "/docs/protocols/dns-discovery",
+              "path": "/RF_Go/docs/protocols/dns-discovery",
               "sidebar": "tutorialSidebar"
             },
             {
               "id": "protocols/udp-tcp",
-              "path": "/docs/protocols/udp-tcp",
+              "path": "/RF_Go/docs/protocols/udp-tcp",
               "sidebar": "tutorialSidebar"
             }
           ],
@@ -159,7 +159,7 @@
           "sidebars": {
             "tutorialSidebar": {
               "link": {
-                "path": "/docs/intro",
+                "path": "/RF_Go/docs/intro",
                 "label": "intro"
               }
             }

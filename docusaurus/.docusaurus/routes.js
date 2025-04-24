@@ -3,188 +3,223 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/docs/',
-    component: ComponentCreator('/docs/', '712'),
+    path: '/RF_Go/__docusaurus/debug/',
+    component: ComponentCreator('/RF_Go/__docusaurus/debug/', '981'),
+    exact: true
+  },
+  {
+    path: '/RF_Go/__docusaurus/debug/config/',
+    component: ComponentCreator('/RF_Go/__docusaurus/debug/config/', 'e40'),
+    exact: true
+  },
+  {
+    path: '/RF_Go/__docusaurus/debug/content/',
+    component: ComponentCreator('/RF_Go/__docusaurus/debug/content/', '432'),
+    exact: true
+  },
+  {
+    path: '/RF_Go/__docusaurus/debug/globalData/',
+    component: ComponentCreator('/RF_Go/__docusaurus/debug/globalData/', '27e'),
+    exact: true
+  },
+  {
+    path: '/RF_Go/__docusaurus/debug/metadata/',
+    component: ComponentCreator('/RF_Go/__docusaurus/debug/metadata/', 'f35'),
+    exact: true
+  },
+  {
+    path: '/RF_Go/__docusaurus/debug/registry/',
+    component: ComponentCreator('/RF_Go/__docusaurus/debug/registry/', '708'),
+    exact: true
+  },
+  {
+    path: '/RF_Go/__docusaurus/debug/routes/',
+    component: ComponentCreator('/RF_Go/__docusaurus/debug/routes/', 'fef'),
+    exact: true
+  },
+  {
+    path: '/RF_Go/docs/',
+    component: ComponentCreator('/RF_Go/docs/', 'b01'),
     routes: [
       {
-        path: '/docs/',
-        component: ComponentCreator('/docs/', 'd49'),
+        path: '/RF_Go/docs/',
+        component: ComponentCreator('/RF_Go/docs/', '614'),
         routes: [
           {
-            path: '/docs/',
-            component: ComponentCreator('/docs/', '83f'),
+            path: '/RF_Go/docs/',
+            component: ComponentCreator('/RF_Go/docs/', '795'),
             routes: [
               {
-                path: '/docs/',
-                component: ComponentCreator('/docs/', '0ee'),
+                path: '/RF_Go/docs/',
+                component: ComponentCreator('/RF_Go/docs/', 'a15'),
                 exact: true
               },
               {
-                path: '/docs/api/interfaces/',
-                component: ComponentCreator('/docs/api/interfaces/', '815'),
+                path: '/RF_Go/docs/api/interfaces/',
+                component: ComponentCreator('/RF_Go/docs/api/interfaces/', '160'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/api/models/',
-                component: ComponentCreator('/docs/api/models/', '2e5'),
+                path: '/RF_Go/docs/api/models/',
+                component: ComponentCreator('/RF_Go/docs/api/models/', '218'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/api/overview/',
-                component: ComponentCreator('/docs/api/overview/', '128'),
+                path: '/RF_Go/docs/api/overview/',
+                component: ComponentCreator('/RF_Go/docs/api/overview/', '7c9'),
                 exact: true
               },
               {
-                path: '/docs/api/services/',
-                component: ComponentCreator('/docs/api/services/', '37d'),
+                path: '/RF_Go/docs/api/services/',
+                component: ComponentCreator('/RF_Go/docs/api/services/', 'bd9'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/',
-                component: ComponentCreator('/docs/architecture/', '3f2'),
+                path: '/RF_Go/docs/architecture/',
+                component: ComponentCreator('/RF_Go/docs/architecture/', '00e'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/class-diagram/',
-                component: ComponentCreator('/docs/architecture/class-diagram/', '967'),
+                path: '/RF_Go/docs/architecture/class-diagram/',
+                component: ComponentCreator('/RF_Go/docs/architecture/class-diagram/', '048'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/components/',
-                component: ComponentCreator('/docs/architecture/components/', '3f4'),
+                path: '/RF_Go/docs/architecture/components/',
+                component: ComponentCreator('/RF_Go/docs/architecture/components/', '321'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/data-flow/',
-                component: ComponentCreator('/docs/architecture/data-flow/', 'af2'),
+                path: '/RF_Go/docs/architecture/data-flow/',
+                component: ComponentCreator('/RF_Go/docs/architecture/data-flow/', '554'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/overview/',
-                component: ComponentCreator('/docs/architecture/overview/', 'b3e'),
+                path: '/RF_Go/docs/architecture/overview/',
+                component: ComponentCreator('/RF_Go/docs/architecture/overview/', 'a30'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/architecture/use-cases/',
-                component: ComponentCreator('/docs/architecture/use-cases/', 'b67'),
+                path: '/RF_Go/docs/architecture/use-cases/',
+                component: ComponentCreator('/RF_Go/docs/architecture/use-cases/', '290'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/configuration/database/',
-                component: ComponentCreator('/docs/configuration/database/', '263'),
+                path: '/RF_Go/docs/configuration/database/',
+                component: ComponentCreator('/RF_Go/docs/configuration/database/', '62c'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/configuration/environment/',
-                component: ComponentCreator('/docs/configuration/environment/', 'dfc'),
+                path: '/RF_Go/docs/configuration/environment/',
+                component: ComponentCreator('/RF_Go/docs/configuration/environment/', 'a5a'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/configuration/guide/',
-                component: ComponentCreator('/docs/configuration/guide/', '912'),
+                path: '/RF_Go/docs/configuration/guide/',
+                component: ComponentCreator('/RF_Go/docs/configuration/guide/', '4ed'),
                 exact: true
               },
               {
-                path: '/docs/configuration/licensing/',
-                component: ComponentCreator('/docs/configuration/licensing/', '5c8'),
+                path: '/RF_Go/docs/configuration/licensing/',
+                component: ComponentCreator('/RF_Go/docs/configuration/licensing/', '8e6'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/development/contributing/',
-                component: ComponentCreator('/docs/development/contributing/', 'e22'),
+                path: '/RF_Go/docs/development/contributing/',
+                component: ComponentCreator('/RF_Go/docs/development/contributing/', 'bbb'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/development/guide/',
-                component: ComponentCreator('/docs/development/guide/', '161'),
+                path: '/RF_Go/docs/development/guide/',
+                component: ComponentCreator('/RF_Go/docs/development/guide/', '5b0'),
                 exact: true
               },
               {
-                path: '/docs/development/setup/',
-                component: ComponentCreator('/docs/development/setup/', '549'),
+                path: '/RF_Go/docs/development/setup/',
+                component: ComponentCreator('/RF_Go/docs/development/setup/', '881'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/development/testing/',
-                component: ComponentCreator('/docs/development/testing/', '768'),
+                path: '/RF_Go/docs/development/testing/',
+                component: ComponentCreator('/RF_Go/docs/development/testing/', '624'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/docs/architecture/overview/',
-                component: ComponentCreator('/docs/docs/architecture/overview/', '851'),
+                path: '/RF_Go/docs/docs/architecture/overview/',
+                component: ComponentCreator('/RF_Go/docs/docs/architecture/overview/', '6cc'),
                 exact: true
               },
               {
-                path: '/docs/features/authentication/',
-                component: ComponentCreator('/docs/features/authentication/', 'e7b'),
+                path: '/RF_Go/docs/features/authentication/',
+                component: ComponentCreator('/RF_Go/docs/features/authentication/', 'f25'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/device-management/',
-                component: ComponentCreator('/docs/features/device-management/', 'fc3'),
+                path: '/RF_Go/docs/features/device-management/',
+                component: ComponentCreator('/RF_Go/docs/features/device-management/', '3bc'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/frequency-management/',
-                component: ComponentCreator('/docs/features/frequency-management/', '162'),
+                path: '/RF_Go/docs/features/frequency-management/',
+                component: ComponentCreator('/RF_Go/docs/features/frequency-management/', '157'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/licensing/',
-                component: ComponentCreator('/docs/features/licensing/', 'ab0'),
+                path: '/RF_Go/docs/features/licensing/',
+                component: ComponentCreator('/RF_Go/docs/features/licensing/', '00a'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/features/workflows/',
-                component: ComponentCreator('/docs/features/workflows/', '969'),
+                path: '/RF_Go/docs/features/workflows/',
+                component: ComponentCreator('/RF_Go/docs/features/workflows/', 'a26'),
                 exact: true
               },
               {
-                path: '/docs/getting-started/',
-                component: ComponentCreator('/docs/getting-started/', '526'),
+                path: '/RF_Go/docs/getting-started/',
+                component: ComponentCreator('/RF_Go/docs/getting-started/', '354'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/intro/',
-                component: ComponentCreator('/docs/intro/', 'e44'),
+                path: '/RF_Go/docs/intro/',
+                component: ComponentCreator('/RF_Go/docs/intro/', 'f07'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/protocols/device-specific/',
-                component: ComponentCreator('/docs/protocols/device-specific/', '6b9'),
+                path: '/RF_Go/docs/protocols/device-specific/',
+                component: ComponentCreator('/RF_Go/docs/protocols/device-specific/', '656'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/protocols/dns-discovery/',
-                component: ComponentCreator('/docs/protocols/dns-discovery/', 'f30'),
+                path: '/RF_Go/docs/protocols/dns-discovery/',
+                component: ComponentCreator('/RF_Go/docs/protocols/dns-discovery/', '38d'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/docs/protocols/udp-tcp/',
-                component: ComponentCreator('/docs/protocols/udp-tcp/', '8e1'),
+                path: '/RF_Go/docs/protocols/udp-tcp/',
+                component: ComponentCreator('/RF_Go/docs/protocols/udp-tcp/', '008'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               }

@@ -12,15 +12,15 @@
             Your device isn't registered yet. Redeem a licence to get started. You received a free license by email.
         </MudText>
 
-        <MudStack Row="true" AlignItems="AlignItems.Center" JustifyContent="Center" Spacing="2">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center" Spacing="2">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowPurchaseForm">
                 Buy a license
             </MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="ShowActivationForm">
-                Activate a license
+                Buy a license
             </MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="DeleteUser">
-                Delete user Data (to restart registration)
+                Delete user Data
             </MudButton>
         </MudStack>
 
@@ -55,7 +55,7 @@
         ShowPurchase = false;
         ShowActivation = true;
     }
-    private async Task DeleteUser()
+    private void DeleteUser()
     {
         SecureStorage.RemoveAll();
 
