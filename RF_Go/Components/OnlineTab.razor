@@ -30,11 +30,11 @@
 else
 {
     <MudTable Items="@DiscoveryService.DiscoveredDevices"
-              Bordered="true"
-              Hover="true"
-              Striped="true"
-              Dense="true"
-              Style="margin: auto; overflow: auto; height: calc(100vh - 150px);">
+    Bordered="true"
+    Hover="true"
+    Striped="true"
+    Dense="true"
+    Style="margin: auto; overflow: auto; height: calc(100vh - 150px);">
         <HeaderContent>
             <MudTh>Brand</MudTh>
             <MudTh>Type</MudTh>
@@ -68,12 +68,15 @@ else
 }
 
 @code {
+
+
+
     private List<RFDevice> MatchingOfflineDevices = new();
 
     protected override void OnInitialized()
     {
         DiscoveryService.DeviceDiscovered += OnDeviceDiscovered; // S'abonner à l'événement
-       
+
     }
 
     private void OnDeviceDiscovered(object sender, DeviceDiscoveredEventArgs e)
@@ -92,6 +95,19 @@ else
         MatchingOfflineDevices = DevicesViewModel.Devices
             .Where(d => d.Brand == device.Brand && d.Model == device.Type && d.Frequency == device.Frequency && !d.IsSynced)
             .ToList();
+        var brandMatches = DevicesViewModel.Devices.Where(d => d.Brand == device.Brand).ToList();
+        var modelMatches = brandMatches.Where(d => d.Model == device.Type).ToList();
+        var freqMatches = modelMatches.Where(d => d.Frequency == device.Frequency).ToList();
+        var finalMatches = freqMatches.Where(d => !d.IsSynced).ToList();
+
+        // Vérifier chaque étape
+        Debug.Print($"Brand matches: {brandMatches.Count}");
+        Debug.Print($"Model matches: {modelMatches.Count}");
+        Debug.Print($"Frequency matches: {freqMatches.Count}");
+        Debug.Print($"Final matches: {finalMatches.Count}");
+
+
+        var de = DevicesViewModel.Devices.Where(d => d.Brand == device.Brand && d.Model == device.Type && d.Frequency == device.Frequency && !d.IsSynced);
 
         if (MatchingOfflineDevices.Any())
         {

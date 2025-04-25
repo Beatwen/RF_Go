@@ -56,11 +56,8 @@ namespace RF_Go.Services.NetworkProtocols
         private async void OnServiceInstanceDiscovered(object sender, ServiceInstanceDiscoveryEventArgs e)
         {
             Debug.WriteLine($"Service instance discovered: {e.ServiceInstanceName}");
+            var addressIPV4 = e.RemoteEndPoint.Address;
 
-            var addressIPV4 = e.Message.Answers
-                .OfType<AddressRecord>()
-                .Select(record => record.Address)
-                .FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork); // IPv4 uniquement
 
             if (addressIPV4 == null)
             {

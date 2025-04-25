@@ -33,84 +33,227 @@
 }
 else
 {
-
-    <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
-        <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
-        <div class="d-flex">
-            <MudIconButton Icon="@Icons.Material.Filled.Calculate" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul"/>
-            <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" Color="Color.Primary" Variant="Variant.Filled">
-                <MudMenuItem Class="mx-2" @onclick="OpenDialogOnlineDevice" Icon="@Icons.Material.Filled.Map">Map</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("FromDevices")'>Sync From</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("ToDevices")'>Sync To</MudMenuItem>
-            </MudMenu>
+    <!-- Desktop/Tablet View -->
+    <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+        <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
+            <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
+            <div class="d-flex">
+                <MudIconButton Icon="@Icons.Material.Filled.Calculate" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul"/>
+                <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" Color="Color.Primary" Variant="Variant.Filled">
+                    <MudMenuItem Class="mx-2" @onclick="OpenDialogOnlineDevice" Icon="@Icons.Material.Filled.Map">Map</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("FromDevices")'>Sync From</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("ToDevices")'>Sync To</MudMenuItem>
+                </MudMenu>
+            </div>
         </div>
-    </div>
 
-    <MudTable Hover="true" Dense="true" Bordered="false" Striped="false" HorizontalScrollbar="true" @bind-Items="DevicesViewModel.Devices" @ref="mudTable"
-    RowClass="cursor-pointer" RowClassFunc="@SelectedRowClassFunc" Style="margin: auto; overflow: auto; max-height: calc(100vh - 310px);">
-        <HeaderContent>
-            <MudTh Style="min-width: 200px;">Device</MudTh>
-            <MudTh Class="">
-                <div class="d-flex align-center justify-space-between">
-                    <span>Set Frequencies</span>
-                    <div>
-                        <MudIconButton><MudCheckBox @bind-Value="lockAll" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Lock" UncheckedIcon="@Icons.Material.Filled.LockOpen" @onclick="LockAll" /></MudIconButton>
+
+        <MudTable Breakpoint="Breakpoint.None" Hover="true" Dense="true" Bordered="false" Striped="false"
+        HorizontalScrollbar="true" 
+        @bind-Items="DevicesViewModel.Devices" 
+        @ref="mudTable"
+        RowClass="cursor-pointer" 
+        RowClassFunc="@SelectedRowClassFunc" 
+        Style="margin: auto; overflow: auto; max-height: calc(100vh - 310px);"
+        >
+            <HeaderContent>
+                <MudTh Style="min-width: 200px;">Device</MudTh>
+                <MudTh Class="">
+                    <div class="d-flex align-center justify-space-between">
+                        <span>Set Frequencies</span>
+                        <div>
+                            <MudIconButton>
+                                <MudCheckBox @bind-Value="lockAll" 
+                                Color="Color.Secondary" 
+                                CheckedIcon="@Icons.Material.Filled.Lock" 
+                                UncheckedIcon="@Icons.Material.Filled.LockOpen" 
+                                Dense="true" @onclick="LockAll"
+                                Class="pr-1" />
+                            </MudIconButton>
+                        </div>
                     </div>
-                </div>
-            </MudTh>
-            <MudTh Class="d-flex align-center justify-space-between">
-                <span>Group</span>
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="DeleteAll" />
-            </MudTh>
-        </HeaderContent>
+                </MudTh>
+                <MudTh Class="d-flex align-center justify-space-between">
+                    <span>Group</span>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="DeleteAll" />
+                </MudTh>
+            </HeaderContent>
 
-        <RowTemplate>
-            <MudTd>
-                <MudTable @bind-Items="@context.Channels" Hover="true" Style="min-width:70px;">
-                    <RowTemplate Context="chan">
-                        <MudTd Class="d-flex align-center mt-0">
-                            <MudTextField Typo="Typo.caption" Label="@GetBrandAndModel(context)" @bind-Value="@chan.ChannelName" Class="mt-0" Margin="Margin.Dense" Variant="Variant.Outlined"
-                            @onblur="() => SaveDeviceAsync(context)" />
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudTd>
-            <MudTd>
-                <MudTable @bind-Items="@context.Channels" Hover="true" Style="min-width:70px;">
-                    <RowTemplate Context="chan">
-                        <MudTd Class="d-flex align-center mt-0">
-                            <MudNumericField @bind-Value="chan.Frequency" Min="@chan.Range[0]" Max="@chan.Range[1]" Step="@chan.Step" Style="@CalculateStyle(chan)" Class="mt-0" Label="@GetRange(chan)" Variant="Variant.Outlined" Margin="Margin.Dense" @onblur="() => SaveDeviceAsync(context)" />
-                            <MudCheckBox @bind-Value="chan.IsLocked" Dense="true" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Lock" UncheckedIcon="@Icons.Material.Filled.LockOpen" Class="pl-3"></MudCheckBox>
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudTd>
-            <MudTd>
-                <div class="d-flex justify-content-between">
-                    <MudSelect T="int" Value="context.GroupID" ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(context, newGroupId)">
-                        @foreach (var group in GroupsViewModel.Groups)
+            <RowTemplate>
+                <MudTd>
+                    <MudTable @bind-Items="@context.Channels" Hover="true" Style="min-width:70px;">
+                        <RowTemplate Context="chan">
+                            <MudTd Class="d-flex align-center mt-0">
+                                <MudTextField Typo="Typo.caption" 
+                                Label='@($"Channel {context.Channels.IndexOf(chan) + 1}")' @bind-Value="@chan.ChannelName" 
+                                Class="mt-0" 
+                                Margin="Margin.Dense" 
+                                Variant="Variant.Outlined"
+                                @onblur="() => SaveDeviceAsync(context)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTd>
+                <MudTd>
+                    <MudTable @bind-Items="@context.Channels" Hover="true" Style="min-width:180px;">
+                        <RowTemplate Context="chan">
+                            <MudTd Class="d-flex align-center mt-0">
+                                <MudNumericField @bind-Value="chan.Frequency" 
+                                Min="@chan.Range[0]" 
+                                Max="@chan.Range[1]" 
+                                Step="@chan.Step" 
+                                Style="@CalculateStyle(chan)" 
+                                Class="mt-0" 
+                                Label="@GetRange(chan)" 
+                                Variant="Variant.Outlined" 
+                                Margin="Margin.Dense" 
+                                FullWidth="true"
+                                @onblur="() => SaveDeviceAsync(context)" 
+                                />
+                                <MudCheckBox @bind-Value="chan.IsLocked" 
+                                Dense="true" 
+                                Color="Color.Secondary" 
+                                CheckedIcon="@Icons.Material.Filled.Lock" 
+                                UncheckedIcon="@Icons.Material.Filled.LockOpen" 
+                                Class="pl-3">
+                                </MudCheckBox>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTd>
+                <MudTd>
+                    <div class="d-flex justify-content-between">
+                        <MudSelect T="int" Value="context.GroupID" ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(context, newGroupId)">
+                            @foreach (var group in GroupsViewModel.Groups)
+                            {
+                                <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @if (context.IsSynced)
                         {
-                            <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
+                            <MudIconButton Icon="@Icons.Material.Filled.Link" @onclick="() => DesyncDevice(context)" aria-label="desync" />
                         }
-                    </MudSelect>
-                    @if (context.IsSynced)
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.Link" @onclick="() => DesyncDevice(context)" aria-label="desync" />
-                    }
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="() => DeleteDevice(context)" aria-label="delete" />
-                </div>
-                <div class="d-flex justify-content-between">
-                    <MudTextField Typo="Typo.caption" Style="margin:0;" @bind-Value="@context.IpAddress" Placeholder="IP Address" @onblur="() => SaveDeviceAsync(context)" Class="custom-textfield" />
-                    <MudIconButton @onclick="() => OpenQuickSyncModal(context)" Icon="@GetSyncIcon(context)" Color="@GetSyncColor(context)" Size="Size.Small" />
-                </div>
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" @onclick="() => DeleteDevice(context)" aria-label="delete" />
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <MudTextField Typo="Typo.caption" Style="margin:0;" @bind-Value="@context.IpAddress" Placeholder="IP Address" @onblur="() => SaveDeviceAsync(context)" Class="custom-textfield" />
+                        <MudIconButton @onclick="() => OpenQuickSyncModal(context)" Icon="@GetSyncIcon(context)" Color="@GetSyncColor(context)" />
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </MudHidden>
 
+    <!-- Mobile View -->
+    <MudHidden Breakpoint="Breakpoint.SmAndUp">
+        <div class="d-flex pl-1 pr-1 w-100 align-center justify-space-between pt-2">
+            <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
+            <div class="d-flex">
+                <MudIconButton Icon="@Icons.Material.Filled.Calculate" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul" />
+                <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" Color="Color.Primary" Variant="Variant.Filled">
+                    <MudMenuItem Class="mx-2" @onclick="OpenDialogOnlineDevice" Icon="@Icons.Material.Filled.Map">Map</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("FromDevices")'>Sync From</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("ToDevices")'>Sync To</MudMenuItem>
+                </MudMenu>
+            </div>
+        </div>
+            @foreach (var device in DevicesViewModel.Devices)
+            {
+                    <MudCard Elevation="6" Outlined="true" Class="mt-2">
+                        <MudCardContent>
+                            <!-- Device Name and Frequencies Section -->
+                            <div class="mb-4">
+                                <MudText Typo="Typo.h6">@GetBrandAndModel(device)</MudText>
+                                <MudTable Breakpoint="Breakpoint.None" @bind-Items="@device.Channels" Hover="true">
+                                    <RowTemplate Context="chan">
+                                        <MudTd>
+                                            <div class="d-flex flex-column">
+                                                <MudTextField Typo="Typo.caption" 
+                                                    Label='@($"Channel {device.Channels.IndexOf(chan) + 1}")' 
+                                                    @bind-Value="@chan.ChannelName" 
+                                                    Class="mt-0" 
+                                                    Margin="Margin.Dense" 
+                                                    Variant="Variant.Outlined"
+                                                    @onblur="() => SaveDeviceAsync(device)" />
+                                                <div class="d-flex align-center mt-2">
+                                                    <MudNumericField @bind-Value="chan.Frequency" 
+                                                        Min="@chan.Range[0]" 
+                                                        Max="@chan.Range[1]" 
+                                                        Step="@chan.Step" 
+                                                        Style="@CalculateStyle(chan)" 
+                                                        Label="@GetRange(chan)" 
+                                                        Variant="Variant.Outlined" 
+                                                        Margin="Margin.Dense" 
+                                                        FullWidth="true"
+                                                        @onblur="() => SaveDeviceAsync(device)" />
+                                                    <MudCheckBox @bind-Value="chan.IsLocked" 
+                                                        Color="Color.Secondary" 
+                                                        CheckedIcon="@Icons.Material.Filled.Lock" 
+                                                        UncheckedIcon="@Icons.Material.Filled.LockOpen" 
+                                                        Class="pl-3" />
+                                                </div>
+                                            </div>
+                                        </MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+                            </div>
+
+                            <!-- Group and Actions Section -->
+                            <div class="mb-4">
+                                <MudText Typo="Typo.subtitle1">Group & Actions</MudText>
+                                <div class="d-flex flex-column">
+                                    <MudSelect T="int" 
+                                        Value="device.GroupID" 
+                                        ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(device, newGroupId)"
+                                        Class="mb-2">
+                                        @foreach (var group in GroupsViewModel.Groups)
+                                        {
+                                            <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                    <div class="d-flex justify-space-between mb-2">
+                                        <MudTextField Typo="Typo.caption" 
+                                            @bind-Value="@device.IpAddress" 
+                                            Placeholder="IP Address" 
+                                            @onblur="() => SaveDeviceAsync(device)" 
+                                            Class="custom-textfield" />
+                                        <MudIconButton @onclick="() => OpenQuickSyncModal(device)" 
+                                            Icon="@GetSyncIcon(device)" 
+                                            Color="@GetSyncColor(device)" 
+                                         />
+                                    </div>
+
+                                    <div class="d-flex justify-end">
+                                        @if (device.IsSynced)
+                                        {
+                                            <MudButton StartIcon="@Icons.Material.Filled.Link"
+                                               FullWidth=true
+                                                @onclick="() => DesyncDevice(device)" 
+                                                aria-label="desync"
+                                                IconColor="Color.Primary"
+                                                Class="mr-2" />
+                                        }
+                                        <MudButton StartIcon="@Icons.Material.Filled.Delete"
+                                           FullWidth=true
+                                            @onclick="() => DeleteDevice(device)" 
+                                            IconColor="Color.Error"
+                                            aria-label="delete" />
+                                    </div>
+                                </div>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+            }
+    </MudHidden>
 }
+
+<div class="chart-container d-none d-md-block">
+    <div id="sciChartDiv" class="" style="width: 100%; height: 200px;"></div>
+</div>
 
 @code
 {
@@ -120,7 +263,6 @@ else
     [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
     [Parameter] public EventCallback OnDeviceSaved { get; set; }
     [Parameter] public FrequencyDataViewModel FrequencyDataViewModel { get; set; }
-    [Parameter] public EventCallback OnCalculationCompleted { get; set; }
 
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
@@ -138,7 +280,7 @@ else
     private string CalculateStyle(RFChannel chan)
     {
         string color = chan.Checked ? "lightgreen" : "red";
-        return "color:" + color + "; align-self: center; ";
+        return "color:" + color + "; ";
     }
     private string IsChanLocked(RFChannel chan, bool e)
     {
@@ -293,7 +435,6 @@ else
             await DevicesViewModel.SaveAllDevicesAsync();
             await FrequencyDataViewModel.SaveFrequencyDataAsync();
             await OnDeviceSaved.InvokeAsync();
-            await OnCalculationCompleted.InvokeAsync();
         }
     }
     private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
@@ -483,6 +624,26 @@ else
             return Color.Warning;
         }
         return device.IsSynced ? Color.Success : Color.Error;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
+    }
+    private async void HandleCalculationCompleted()
+    {
+        StateHasChanged();
+
+        Debug.Print("State Has Changed !");
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error calling JavaScript: {ex.Message}");
+            // A FAIRE Gérer l'erreur ici en cas de bug du tableau
+        }
     }
 }
 

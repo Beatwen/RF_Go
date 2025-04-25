@@ -5,6 +5,7 @@ using RF_Go.Services.Mapping;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection; 
 using Microsoft.EntityFrameworkCore;
 using RF_Go.Services.Commands;
 using RF_Go.Models;
@@ -13,6 +14,7 @@ using RF_Go.Services.DeviceHandlers;
 using RF_Go.Services.NetworkProtocols;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using RF_Go.Utils;
+using RF_Go.Services.Api;
 
 
 namespace RF_Go
@@ -47,6 +49,8 @@ namespace RF_Go
             builder.Services.AddSingleton<DevicesViewModel>();
             builder.Services.AddTransient<GroupsViewModel>();
             builder.Services.AddTransient<ExclusionChannelViewModel>();
+            builder.Services.AddHttpClient<ApiService>();
+            builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<MainPage>();
             builder.Services.AddSingleton<FrequencyDataViewModel>();
 

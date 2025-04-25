@@ -39,17 +39,17 @@
         Elevation="4"
         Centered="true"
         Rounded="false"
+        MinimumTabWidth="20%"
         AlwaysShowScrollButtons="true">
             <MudTabPanel Text="Devices" ID='"devices_tab"' Class="">
-                <MudGrid Spacing="1" Class="display-6 pl-6 pr-6">
-                    <MudItem xs="12" md="10" Style="min-width: 600px;">
+                <MudGrid Spacing="1" Class="display-6">
+                    <MudItem xs="12" md="10">
                         <MudPaper Class="mt-4">
                             <OfflineTab DeviceData="deviceData"
                             ExclusionChannelViewModel="ExclusionChannelViewModel"
                             DevicesViewModel="DevicesViewModel"
                             GroupsViewModel="GroupsViewModel"
-                            FrequencyDataViewModel="FrequencyDataViewModel" 
-                            OnCalculationCompleted="HandleCalculationCompleted"/>
+                            FrequencyDataViewModel="FrequencyDataViewModel"/>
                         </MudPaper>
                     </MudItem>
                     <MudItem xs="12" md="2">
@@ -62,21 +62,16 @@
                 </MudGrid>
             </MudTabPanel>
             <MudTabPanel Text="TV Channels" ID='"exclusion_tab"'>
-                <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
+                <MudPaper Class="mt-4">
+                    <TVChannelsFilter ExclusionChannelViewModel="ExclusionChannelViewModel" />
+                </MudPaper>
             </MudTabPanel>
             <MudTabPanel Text="Groups" ID='"groups"'>
-                <MudPaper>
+                <MudPaper Class="mt-4">
                     <RFGroupsLayout DeviceData="deviceData"
                     DevicesViewModel="DevicesViewModel"
                     GroupsViewModel="GroupsViewModel" />
                 </MudPaper>
-            </MudTabPanel>
-            <MudTabPanel Text="Remote" ID='"remote_tab"'>
-                <MudText>
-                    @* <RemoteTab DeviceData="deviceData" *@
-                    @*            DevicesViewModel="DevicesViewModel" *@
-                    @*            GroupsViewModel="GroupsViewModel" /> *@
-                </MudText>
             </MudTabPanel>
             <MudTabPanel Icon="@Icons.Material.Filled.AccountCircle" ID='"account_tab"' DisableRipple="true">
                 <MudText Typo="Typo.h6" Align="Align.Center">
@@ -87,9 +82,7 @@
     }
 </MudContainer>
 
-<div class="chart-container">
-    <div id="sciChartDiv" style="width: 100%; height: 200px;"></div>
-</div>
+
 @code
 {
 
@@ -145,24 +138,5 @@
     {
         DiscoveryService.StopDiscovery();
     }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
-    }
-    private async void HandleCalculationCompleted()
-    {
-        StateHasChanged();
 
-        Debug.Print("State Has Changed !");
-
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error calling JavaScript: {ex.Message}");
-            // A FAIRE Gérer l'erreur ici en cas de bug du tableau
-        }
-    }
 }

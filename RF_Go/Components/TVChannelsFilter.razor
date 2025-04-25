@@ -12,7 +12,7 @@
 
 <MudGrid Spacing="3" Class="pl-6 pr-6">
     <MudItem xs="12" md="6" Class="table-container">
-        <MudTable Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" FixedHeader="true" Bordered="true">
+        <MudTable Breakpoint="Breakpoint.None" Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" Height="75vh" FixedHeader="true" Bordered="true">
             <HeaderContent>
                 <MudTh>
                     <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAll(IsChecked)" />
@@ -32,19 +32,20 @@
     </MudItem>
 
     <MudItem xs="12" md="6" Class="table-container">
-        <MudPaper Elevation="4" Class="p-4 mt-4">
-            <MudCard>
-                <MudCardContent>
-                    <h3>Add Frequency Range</h3>
+                    <h3>Add Custom Frequency Range</h3>
                     <div class="d-flex align-center">
                         <MudTextField Label="Start Frequency (MHz)" @bind-Value="UserStartFrequency" Variant="Variant.Outlined" />
                         <MudTextField Label="End Frequency (MHz)" @bind-Value="UserEndFrequency" Variant="Variant.Outlined" />
                         <MudButton Color="Color.Primary" OnClick="@(async () => await AddExclusionChannel())">Save</MudButton>
                     </div>
-                </MudCardContent>
-            </MudCard>
-        </MudPaper>
-        <MudTable Items="@ExclusionChannelViewModel.UserAddedChannels" FixedHeader="true" Hover="true" Dense="true" Bordered="true">
+
+        <MudTable Items="@ExclusionChannelViewModel.UserAddedChannels" 
+            FixedHeader="true" 
+            Hover="true" 
+            Bordered="true" 
+            Dense="true" 
+            Breakpoint="Breakpoint.None"
+            Height="50vh">
             <HeaderContent>
                 <MudTh>
                     <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAllUserChan(IsChecked)" />

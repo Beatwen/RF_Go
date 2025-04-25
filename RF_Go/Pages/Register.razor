@@ -8,6 +8,7 @@
 @using RF_Go.Utils
 @using RF_Go.Models.Licensing
 @inject NavigationManager NavigationManager
+@inject AuthService AuthService
 <MudContainer MaxWidth="MaxWidth.Small" Style="margin: auto; padding: 40px;">
 @if (loading)
 {
@@ -74,15 +75,10 @@ else
     private InputType ConfirmPasswordInput = InputType.Password;
     private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
     private string ConfirmPasswordInputIcon = Icons.Material.Filled.VisibilityOff;
-    private HttpClient httpClient = new();
-    private AuthService _authService;
     private bool loading = false;
     @inject NavigationManager NavigationManager
 
-    protected override void OnInitialized()
-    {
-        _authService = new AuthService(httpClient);
-    }
+
     private void TogglePasswordVisibility(string field)
     {
         if (field == "password")
@@ -106,35 +102,23 @@ else
 
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{AppConfig.ApiBaseUrl}/auth/register")
-                {
-                    Content = JsonContent.Create(registrationModel)
-                };
-            request.Headers.Add("X-API-KEY", AppConfig.ApiKey);
             loading = true;
-            var response = await httpClient.SendAsync(request);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var registrationResponse = JsonSerializer.Deserialize<RegistrationResponse>(responseContent);
+            // Use AuthService to register the user
+            var registrationResponse = await AuthService.RegisterAsync(registrationModel);
 
-                // Stocker les informations du client OAuth
-                await TokenStorage.SaveClientIdAsync(registrationResponse.Client.ClientId);
-                await TokenStorage.SaveClientSecretAsync(registrationResponse.Client.ClientSecret);
+            // Store the client information
+            await TokenStorage.SaveClientIdAsync(registrationResponse.Client.ClientId);
+            await TokenStorage.SaveClientSecretAsync(registrationResponse.Client.ClientSecret);
 
-                NavigationManager.NavigateTo("/login?from=register");
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                errors = new[] { $"{errorContent}" };
-            }
-            loading = false;
+            NavigationManager.NavigateTo("/login?from=register");
         }
         catch (Exception ex)
         {
             errors = new[] { $"Unexpected error: {ex.Message}" };
+        }
+        finally
+        {
             loading = false;
         }
     }
@@ -153,71 +137,6 @@ else
         return pwField1?.Value != arg ? "Passwords don't match" : null;
     }
 
-    public class RegistrationModel
-    {
-        [Required] public string FirstName { get; set; } = string.Empty;
-        [Required] public string LastName { get; set; } = string.Empty;
-        private string email;
-        [Required, EmailAddress]
-        public string Email
-        {
-            get => email;
-            set => email = value.ToLower();
-        }
-        [Required] public string Password { get; set; } = string.Empty;
-        [Required] public bool AcceptedTerms { get; set; } = false;
-    }
-    public class RegistrationResponse
-    {
-        [JsonPropertyName("message")]
-        public string Message { get; set; }
 
-        [JsonPropertyName("user")]
-        public UserInfo User { get; set; }
 
-        [JsonPropertyName("client")]
-        public ClientInfo Client { get; set; }
-    }
-
-    public class UserInfo
-    {
-        [JsonPropertyName("emailConfirmed")]
-        public bool EmailConfirmed { get; set; }
-
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
-
-        [JsonPropertyName("userName")]
-        public string UserName { get; set; }
-
-        [JsonPropertyName("firstName")]
-        public string FirstName { get; set; }
-
-        [JsonPropertyName("lastName")]
-        public string LastName { get; set; }
-
-        [JsonPropertyName("email")]
-        public string Email { get; set; }
-
-        [JsonPropertyName("password")]
-        public string Password { get; set; }
-
-        [JsonPropertyName("confirmationToken")]
-        public string ConfirmationToken { get; set; }
-
-        [JsonPropertyName("updatedAt")]
-        public DateTime UpdatedAt { get; set; }
-
-        [JsonPropertyName("createdAt")]
-        public DateTime CreatedAt { get; set; }
-    }
-
-    public class ClientInfo
-    {
-        [JsonPropertyName("clientId")]
-        public string ClientId { get; set; }
-
-        [JsonPropertyName("clientSecret")]
-        public string ClientSecret { get; set; }
-    }
 }

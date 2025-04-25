@@ -9,65 +9,80 @@
 @using RF_Go.Components
 @using System.Diagnostics
 
-<h1>Groups Schedule</h1>
+<div class="d-flex flex-column align-center mt-4">
+    <div class="d-flex align-center mb-4 mt-4">
+        <MudTextField Label="New Group Name" @bind-Value="newGroupName" Class="mr-2"></MudTextField>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SaveNewGroup())">Add Group</MudButton>
+    </div>
 
-<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SaveNewGroup())">Add Group</MudButton>
-<MudTextField Label="New Group Name" @bind-Value="newGroupName"></MudTextField>
-
-@foreach (var group in GroupsViewModel.Groups)
-{
-    <MudCard>
-        <MudCardContent>
-            @if (temporaryGroupID == group.ID)
-            {
-                <MudTextField @bind-Value="temporaryGroupName"
-                              Immediate="true"
-                              Label="Group Name"
-                              Adornment="Adornment.End"
-                              AdornmentIcon="@Icons.Material.Filled.Check"
-                              AdornmentColor="Color.Primary"
-                              OnAdornmentClick="@(() => UpdateGroup(group))"
-                              OnKeyDown="@((args) => HandleKeyDown(args, () => UpdateGroup(group)))" />
-
-                @foreach (var time in group.TimePeriods)
+    @foreach (var group in GroupsViewModel.Groups)
+    {
+        <MudCard Class="mb-4" Style="width: 100%; max-width: 600px;">
+            <MudCardContent Class="d-flex flex-column align-center">
+                @if (temporaryGroupID == group.ID)
                 {
-                    <MudStack>
-                        <MudDateRangePicker @bind-DateRange="time.Range"
-                                            MinDate="_minDate"
-                                            Margin="Margin.Dense"
-                                            HelperText="Select the date on which the RF devices in this group will be used." />
+                    <MudTextField @bind-Value="temporaryGroupName"
+                                  Immediate="true"
+                                  Label="Group Name"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Check"
+                                  AdornmentColor="Color.Primary"
+                                  OnAdornmentClick="@(() => UpdateGroup(group))"
+                                  OnKeyDown="@((args) => HandleKeyDown(args, () => UpdateGroup(group)))" 
+                                  Class="mb-4" />
 
-                        <!-- Start Time Picker -->
-                        <MudTimePicker Label="Start Time"
-                                       AmPm="true"
-                                       @bind-Time="time.StartTimeSpan" />
-
-                        <!-- End Time Picker -->
-                        <MudTimePicker Label="End Time"
-                                       AmPm="true"
-                                       @bind-Time="time.EndTimeSpan" />
-                    </MudStack>
-                }
-            }
-            else
-            {
-                <MudText>@group.Name</MudText>
-                @foreach (var time in group.TimePeriods)
+                    @foreach (var time in group.TimePeriods)
                     {
-                        <MudText>
+                        <MudStack Class="mb-4">
+                            <MudDateRangePicker @bind-DateRange="time.Range"
+                                                MinDate="_minDate"
+                                                Margin="Margin.Dense"
+                                                HelperText="Select the date on which the RF devices in this group will be used." />
+
+                            <!-- Start Time Picker -->
+                            <MudTimePicker Label="Start Time"
+                                           AmPm="true"
+                                           @bind-Time="time.StartTimeSpan" />
+
+                            <!-- End Time Picker -->
+                            <MudTimePicker Label="End Time"
+                                           AmPm="true"
+                                           @bind-Time="time.EndTimeSpan" />
+                        </MudStack>
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.h6" Class="mb-4">@group.Name</MudText>
+                    @foreach (var time in group.TimePeriods)
+                    {
+                        <MudText Class="mb-2">
                             @time.Range.Start?.ToShortDateString() - @time.Range.End?.ToShortDateString() |
                             @time.StartTime.ToShortTimeString() - @time.EndTime.ToShortTimeString()
                         </MudText>
-                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="() => DeleteGroup(time, group)">Delete Time Periods</MudButton>
+                        <MudButton Variant="Variant.Filled" 
+                                 Color="Color.Secondary" 
+                                 OnClick="() => DeleteGroup(time, group)"
+                                 Class="mb-2">Delete Time Periods</MudButton>
                     }
-
-            }
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => AddTimePeriod(group)">Add Time Period</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditGroup(group)">Edit</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => GroupsViewModel.DeleteGroupAsync(group)">Delete</MudButton>
-        </MudCardContent>
-    </MudCard>
-}
+                }
+                <div class="d-flex justify-center mt-4">
+                    <MudButton Variant="Variant.Filled" 
+                             Color="Color.Primary" 
+                             OnClick="() => AddTimePeriod(group)"
+                             Class="mr-2">Add Time Period</MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                             Color="Color.Primary" 
+                             OnClick="() => EditGroup(group)"
+                             Class="mr-2">Edit</MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                             Color="Color.Primary" 
+                             OnClick="() => GroupsViewModel.DeleteGroupAsync(group)">Delete</MudButton>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    }
+</div>
 
 @code {
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
