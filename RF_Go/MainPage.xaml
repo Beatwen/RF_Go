@@ -2,6 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:RF_Go"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:Page.UseSafeArea="True"
+             ios:Page.PrefersStatusBarHidden="False"
+             ios:Page.PreferredStatusBarUpdateAnimation="Fade"
              x:Class="RF_Go.MainPage"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 

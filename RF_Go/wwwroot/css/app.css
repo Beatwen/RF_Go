@@ -81,7 +81,7 @@ a, .btn-link {
     display: none;
 }
 /*.mud-table-dense .mud-table-row .mud-table-cell {
-    padding: 4px 12px !important;*/ /* Ajustez les valeurs à votre convenance */
+    padding: 4px 12px !important;*/ 
 /*}*/
 
 .chart-container {
@@ -89,8 +89,7 @@ a, .btn-link {
     bottom: 0;
     width: 100%;
     height: 200px;
-    background-color: white; /* Optionnel : pour s'assurer que le fond est blanc */
-    z-index: 1000; /* Optionnel : pour s'assurer que le graphique est au-dessus des autres éléments */
+    z-index: 1000; 
 }
 @supports (-webkit-touch-callout: none) {
     .status-bar-safe-area {
@@ -108,4 +107,22 @@ a, .btn-link {
     }
 
 
+}
+/* Pour iOS 15+ qui utilise des zones de sécurité variables */
+@supports (padding-top: env(safe-area-inset-top)) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-top: constant(safe-area-inset-top); /* Anciennes versions */
+        background-color: black !important;
+    }
+
+    .status-bar {
+        background-color: black;
+        height: env(safe-area-inset-top);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+    }
 }

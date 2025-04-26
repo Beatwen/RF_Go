@@ -5,11 +5,19 @@
              x:Class="RF_Go.App">
     <Application.Resources>
         <ResourceDictionary>
-
-            <Color x:Key="PageBackgroundColor">#512bdf</Color>
+            <Color x:Key="PageBackgroundColor">#1a1a27</Color>
             <Color x:Key="PrimaryTextColor">White</Color>
+
+            <Style TargetType="Page">
+                <Setter Property="BackgroundColor" Value="{StaticResource PageBackgroundColor}" />
+            </Style>
+
+            <Style TargetType="NavigationPage">
+                <Setter Property="BarBackgroundColor" Value="{StaticResource PageBackgroundColor}" />
+                <Setter Property="BarTextColor" Value="{StaticResource PrimaryTextColor}" />
+            </Style>
+
             <Style TargetType="Label">
-                <Setter Property="Background" Value="#1a1a27" />
                 <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
                 <Setter Property="FontFamily" Value="OpenSansRegular" />
             </Style>

@@ -24,6 +24,7 @@ namespace RF_Go
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+            
             builder
                 .UseSkiaSharp()
                 .UseMauiApp<App>()
