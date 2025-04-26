@@ -113,11 +113,11 @@ a, .btn-link {
     body {
         padding-top: env(safe-area-inset-top);
         padding-top: constant(safe-area-inset-top); /* Anciennes versions */
-        background-color: black !important;
+        background-color: #1a1a27 !important;
     }
 
     .status-bar {
-        background-color: black;
+        background-color: #1a1a27;
         height: env(safe-area-inset-top);
         position: fixed;
         top: 0;

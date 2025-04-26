@@ -9,6 +9,7 @@
             <Color x:Key="PrimaryTextColor">White</Color>
 
             <Style TargetType="Page">
+                <Setter Property="Background" Value="#1a1a27" />
                 <Setter Property="BackgroundColor" Value="{StaticResource PageBackgroundColor}" />
             </Style>
 
