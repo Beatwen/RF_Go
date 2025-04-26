@@ -1,0 +1,6 @@
+﻿<resources>
+	<style name="Maui.MainTheme" parent="Theme.Material3.DayNight.NoActionBar">
+		<item name="android:statusBarColor">@color/colorBackground</item>
+		<item name="android:windowLightStatusBar">false</item>
+	</style>
+</resources>
