@@ -1,0 +1,5 @@
+﻿Android Debugging Utility
+Go to 
+cd C:\Users\c_bou\AppData\Local\Android\Sdk\platform-tools\
+
+adb devices (Check if the device is connected)

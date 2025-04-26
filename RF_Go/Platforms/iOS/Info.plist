@@ -36,7 +36,13 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
-
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>This app needs local network access to discover Sennheiser devices</string>
+		<key>NSBonjourServices</key>
+		<array>
+			<string>_ssc._tcp</string>
+			<string>_ssc._udp</string>
+		</array>
 		<key>XSAppIconAssets</key>
 		<string>Assets.xcassets/appicon.appiconset</string>
 		<key>MinimumOSVersion</key>
