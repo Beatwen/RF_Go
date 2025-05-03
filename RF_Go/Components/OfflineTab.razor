@@ -9,14 +9,16 @@
 @using System.Diagnostics
 @using System.ComponentModel
 @using RF_Go.Services.Mapping
+@using RF_Go.Services
 
 @inject IDialogService Dialog
 @inject MudBlazor.ISnackbar Snackbar
 @inject DeviceMappingService DeviceMappingService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-
-
+@inject DatabaseImportExportService DatabaseImportExportService
+@inject ScansViewModel ScansViewModel
+@inject ScanImportExportService ScanImportExportService
 
 @if (DevicesViewModel.Devices.Count == 0)
 {
@@ -25,9 +27,10 @@
             <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
                 No devices found. Start by adding a device.
             </MudAlert>
-            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">
-                Add Device
-            </MudFab>
+            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => OpenDialogToImportDatabaseAsync())" Title="Import Database"/>
+            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())" Title="Add Device"/>
+            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" OnClick="@(() => OpenDialogToExportDatabaseAsync())" Title="Export Database"/>
+
         </MudPaper>
     </MudContainer>
 }
@@ -35,6 +38,9 @@ else
 {
     <!-- Desktop/Tablet View -->
     <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => OpenDialogToImportDatabaseAsync())" Title="Import Database"/>
+        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())" Title="Add Device"/>
+        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" OnClick="@(() => OpenDialogToExportDatabaseAsync())" Title="Export Database"/>
         <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
             <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
             <div class="d-flex">
@@ -160,99 +166,99 @@ else
                 </MudMenu>
             </div>
         </div>
-            @foreach (var device in DevicesViewModel.Devices)
-            {
-                    <MudCard Elevation="6" Outlined="true" Class="mt-2">
-                        <MudCardContent>
-                            <!-- Device Name and Frequencies Section -->
-                            <div class="mb-4">
-                                <MudText Typo="Typo.h6">@GetBrandAndModel(device)</MudText>
-                                <MudTable Breakpoint="Breakpoint.None" @bind-Items="@device.Channels" Hover="true">
-                                    <RowTemplate Context="chan">
-                                        <MudTd>
-                                            <div class="d-flex flex-column">
-                                                <MudTextField Typo="Typo.caption" 
-                                                    Label='@($"Channel {device.Channels.IndexOf(chan) + 1}")' 
-                                                    @bind-Value="@chan.ChannelName" 
-                                                    Class="mt-0" 
-                                                    Margin="Margin.Dense" 
-                                                    Variant="Variant.Outlined"
-                                                    @onblur="() => SaveDeviceAsync(device)" />
-                                                <div class="d-flex align-center mt-2">
-                                                    <MudNumericField @bind-Value="chan.Frequency" 
-                                                        Min="@chan.Range[0]" 
-                                                        Max="@chan.Range[1]" 
-                                                        Step="@chan.Step" 
-                                                        Style="@CalculateStyle(chan)" 
-                                                        Label="@GetRange(chan)" 
-                                                        Variant="Variant.Outlined" 
-                                                        Margin="Margin.Dense" 
-                                                        FullWidth="true"
-                                                        @onblur="() => SaveDeviceAsync(device)" />
-                                                    <MudCheckBox @bind-Value="chan.IsLocked" 
-                                                        Color="Color.Secondary" 
-                                                        CheckedIcon="@Icons.Material.Filled.Lock" 
-                                                        UncheckedIcon="@Icons.Material.Filled.LockOpen" 
-                                                        Class="pl-3" />
-                                                </div>
-                                            </div>
-                                        </MudTd>
-                                    </RowTemplate>
-                                </MudTable>
-                            </div>
-
-                            <!-- Group and Actions Section -->
-                            <div class="mb-4">
-                                <MudText Typo="Typo.subtitle1">Group & Actions</MudText>
-                                <div class="d-flex flex-column">
-                                    <MudSelect T="int" 
-                                        Value="device.GroupID" 
-                                        ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(device, newGroupId)"
-                                        Class="mb-2">
-                                        @foreach (var group in GroupsViewModel.Groups)
-                                        {
-                                            <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
-                                        }
-                                    </MudSelect>
-
-                                    <div class="d-flex justify-space-between mb-2">
+        @foreach (var device in DevicesViewModel.Devices)
+        {
+            <MudCard Elevation="6" Outlined="true" Class="mt-2">
+                <MudCardContent>
+                    <!-- Device Name and Frequencies Section -->
+                    <div class="mb-4">
+                        <MudText Typo="Typo.h6">@GetBrandAndModel(device)</MudText>
+                        <MudTable Breakpoint="Breakpoint.None" @bind-Items="@device.Channels" Hover="true">
+                            <RowTemplate Context="chan">
+                                <MudTd>
+                                    <div class="d-flex flex-column">
                                         <MudTextField Typo="Typo.caption" 
-                                            @bind-Value="@device.IpAddress" 
-                                            Placeholder="IP Address" 
-                                            @onblur="() => SaveDeviceAsync(device)" 
-                                            Class="custom-textfield" />
-                                        <MudIconButton @onclick="() => OpenQuickSyncModal(device)" 
-                                            Icon="@GetSyncIcon(device)" 
-                                            Color="@GetSyncColor(device)" 
-                                         />
+                                        Label='@($"Channel {device.Channels.IndexOf(chan) + 1}")' 
+                                        @bind-Value="@chan.ChannelName" 
+                                        Class="mt-0" 
+                                        Margin="Margin.Dense" 
+                                        Variant="Variant.Outlined"
+                                        @onblur="() => SaveDeviceAsync(device)" />
+                                        <div class="d-flex align-center mt-2">
+                                            <MudNumericField @bind-Value="chan.Frequency" 
+                                            Min="@chan.Range[0]" 
+                                            Max="@chan.Range[1]" 
+                                            Step="@chan.Step" 
+                                            Style="@CalculateStyle(chan)" 
+                                            Label="@GetRange(chan)" 
+                                            Variant="Variant.Outlined" 
+                                            Margin="Margin.Dense" 
+                                            FullWidth="true"
+                                            @onblur="() => SaveDeviceAsync(device)" />
+                                            <MudCheckBox @bind-Value="chan.IsLocked" 
+                                            Color="Color.Secondary" 
+                                            CheckedIcon="@Icons.Material.Filled.Lock" 
+                                            UncheckedIcon="@Icons.Material.Filled.LockOpen" 
+                                            Class="pl-3" />
+                                        </div>
                                     </div>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </div>
 
-                                    <div class="d-flex justify-end">
-                                        @if (device.IsSynced)
-                                        {
-                                            <MudButton StartIcon="@Icons.Material.Filled.Link"
-                                               FullWidth=true
-                                                @onclick="() => DesyncDevice(device)" 
-                                                aria-label="desync"
-                                                IconColor="Color.Primary"
-                                                Class="mr-2" />
-                                        }
-                                        <MudButton StartIcon="@Icons.Material.Filled.Delete"
-                                           FullWidth=true
-                                            @onclick="() => DeleteDevice(device)" 
-                                            IconColor="Color.Error"
-                                            aria-label="delete" />
-                                    </div>
-                                </div>
+                    <!-- Group and Actions Section -->
+                    <div class="mb-4">
+                        <MudText Typo="Typo.subtitle1">Group & Actions</MudText>
+                        <div class="d-flex flex-column">
+                            <MudSelect T="int" 
+                            Value="device.GroupID" 
+                            ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(device, newGroupId)"
+                            Class="mb-2">
+                                @foreach (var group in GroupsViewModel.Groups)
+                                {
+                                    <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <div class="d-flex justify-space-between mb-2">
+                                <MudTextField Typo="Typo.caption" 
+                                @bind-Value="@device.IpAddress" 
+                                Placeholder="IP Address" 
+                                @onblur="() => SaveDeviceAsync(device)" 
+                                Class="custom-textfield" />
+                                <MudIconButton @onclick="() => OpenQuickSyncModal(device)" 
+                                Icon="@GetSyncIcon(device)" 
+                                Color="@GetSyncColor(device)" 
+                                />
                             </div>
-                        </MudCardContent>
-                    </MudCard>
-            }
+
+                            <div class="d-flex justify-end">
+                                @if (device.IsSynced)
+                                {
+                                    <MudButton StartIcon="@Icons.Material.Filled.Link"
+                                    FullWidth=true
+                                    @onclick="() => DesyncDevice(device)" 
+                                    aria-label="desync"
+                                    IconColor="Color.Primary"
+                                    Class="mr-2" />
+                                }
+                                <MudButton StartIcon="@Icons.Material.Filled.Delete"
+                                FullWidth=true
+                                @onclick="() => DeleteDevice(device)" 
+                                IconColor="Color.Error"
+                                aria-label="delete" />
+                            </div>
+                        </div>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        }
     </MudHidden>
 }
-
 <div class="chart-container d-none d-md-block">
     <div id="sciChartDiv" class="" style="width: 100%; height: 200px;"></div>
+    
 </div>
 
 @code
@@ -417,8 +423,6 @@ else
                     chan.Checked = false;
                     if (chan.IsLocked)
                     {
-                        Debug.WriteLine("found one locked chan ! ");
-                        Debug.WriteLine("We are checking: " + chan.Frequency);
                         chan.SetRandomFrequency(FrequencyDataViewModel.FrequencyData.UsedFrequencies, FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder, FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder, excludedRanges);
                     }
                 }
@@ -435,6 +439,7 @@ else
             await DevicesViewModel.SaveAllDevicesAsync();
             await FrequencyDataViewModel.SaveFrequencyDataAsync();
             await OnDeviceSaved.InvokeAsync();
+            HandleCalculationCompleted();
         }
     }
     private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
@@ -627,22 +632,92 @@ else
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
+        if (firstRender)
+        {
+            await ScansViewModel.LoadScansAsync();
+            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", 
+                FrequencyDataViewModel.FrequencyData,
+                ScansViewModel.Scans.Select(s => new { 
+                    frequenciesJson = s.FrequenciesJson,
+                    valuesJson = s.ValuesJson,
+                    isVisible = ScansViewModel.IsScanVisible(s)
+                }).ToList());
+        }
     }
     private async void HandleCalculationCompleted()
     {
         StateHasChanged();
 
-        Debug.Print("State Has Changed !");
-
         try
         {
-            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", FrequencyDataViewModel.FrequencyData);
+            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", 
+                FrequencyDataViewModel.FrequencyData,
+                ScansViewModel.Scans.Select(s => new { 
+                    frequenciesJson = s.FrequenciesJson,
+                    valuesJson = s.ValuesJson,
+                    isVisible = ScansViewModel.IsScanVisible(s)
+                }).ToList());
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error calling JavaScript: {ex.Message}");
-            // A FAIRE Gérer l'erreur ici en cas de bug du tableau
+            Debug.Print($"Error calling JavaScript: {ex.Message}");
+        }
+    }
+    private async Task OpenDialogToImportDatabaseAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Import Database" },
+            { "Message", "Are you sure you want to import a database? This will replace your current data." },
+            { "ConfirmText", "Import" },
+            { "CancelText", "Cancel" }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = Dialog.Show<ConfirmationDialog>("Import Database", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var success = await DatabaseImportExportService.ImportDatabaseAsync();
+            if (success)
+            {
+                Snackbar.Add("Database imported successfully", Severity.Success);
+                // Refresh the data
+                await DevicesViewModel.LoadDevicesAsync();
+                await GroupsViewModel.LoadGroupsAsync();
+            }
+            else
+            {
+                Snackbar.Add("Failed to import database", Severity.Error);
+            }
+        }
+    }
+    private async Task OpenDialogToExportDatabaseAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Export Database" },
+            { "Message", "Are you sure you want to export your current database?" },
+            { "ConfirmText", "Export" },
+            { "CancelText", "Cancel" }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = Dialog.Show<ConfirmationDialog>("Export Database", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var success = await DatabaseImportExportService.ExportDatabaseAsync();
+            if (success)
+            {
+                Snackbar.Add("Database exported successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to export database", Severity.Error);
+            }
         }
     }
 }

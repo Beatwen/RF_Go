@@ -1,8 +1,11 @@
 ﻿@using RF_Go.ViewModels
+@using RF_Go.Models
 @using System.Diagnostics
 @inject MudBlazor.ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject ScansViewModel ScansViewModel
 
-<MudPaper Class="p-4 pt-2 pb-2 mb-4">
+<MudPaper Elevation="0" Class="p-4 pt-2 pb-2 mb-4">
     <div class="button-group">
         <MudButton Class="tab-button" Color="@(IsActiveTab(0) ? Color.Primary : Color.Transparent)" Variant="Variant.Filled" OnClick='() => SetSelectedDivision("Generic-8MHz")'>8 MHz</MudButton>
         <MudButton Class="tab-button" Color="@(IsActiveTab(1) ? Color.Primary : Color.Transparent)" Variant="Variant.Filled" OnClick='() => SetSelectedDivision("Generic-7MHz")'>7 MHz</MudButton>
@@ -10,7 +13,7 @@
     </div>
 </MudPaper>
 
-<MudGrid Spacing="3" Class="pl-6 pr-6">
+<MudGrid Spacing="3" Class="pl-6 pr-6 pb-6">
     <MudItem xs="12" md="6" Class="table-container">
         <MudTable Breakpoint="Breakpoint.None" Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" Height="75vh" FixedHeader="true" Bordered="true">
             <HeaderContent>
@@ -32,41 +35,51 @@
     </MudItem>
 
     <MudItem xs="12" md="6" Class="table-container">
-                    <h3>Add Custom Frequency Range</h3>
-                    <div class="d-flex align-center">
-                        <MudTextField Label="Start Frequency (MHz)" @bind-Value="UserStartFrequency" Variant="Variant.Outlined" />
-                        <MudTextField Label="End Frequency (MHz)" @bind-Value="UserEndFrequency" Variant="Variant.Outlined" />
-                        <MudButton Color="Color.Primary" OnClick="@(async () => await AddExclusionChannel())">Save</MudButton>
-                    </div>
-
-        <MudTable Items="@ExclusionChannelViewModel.UserAddedChannels" 
-            FixedHeader="true" 
-            Hover="true" 
-            Bordered="true" 
-            Dense="true" 
-            Breakpoint="Breakpoint.None"
-            Height="50vh">
-            <HeaderContent>
-                <MudTh>
-                    <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAllUserChan(IsChecked)" />
-                </MudTh>
-                <MudTh>Frequency Range</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>
-                    <MudCheckBox Value="@context.Exclude" ValueChanged="(bool isChecked) => ToggleExclusionUserChannels(context, isChecked)" />
-                </MudTd>
-                <MudTd>
-                    <div class="d-flex align-center">
-                        @context.StartFrequency - @context.EndFrequency
-                    </div>
-                </MudTd>
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteExclusionChannel(context)" Size="Size.Small" />
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
+        <MudCard Elevation="0">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">TV Channels Filter</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <div class="d-flex align-center gap-2">
+                        <MudTextField Label="Start Frequency (MHz)" Style="max-width:90px;" @bind-Value="UserStartFrequency" Variant="Variant.Outlined" />
+                        <MudTextField Label="End Frequency (MHz)" Style="max-width:90px;" @bind-Value="UserEndFrequency" Variant="Variant.Outlined" />
+                    <MudButton Color="Color.Primary" OnClick="@(async () => await AddExclusionChannel())">Save</MudButton>
+                </div>
+            </CardHeaderActions>
+        </MudCardHeader>
+    <MudCardContent>
+                <MudTable Elevation="0" Items="@ExclusionChannelViewModel.UserAddedChannels"
+                          FixedHeader="true"
+                          Hover="true"
+                          Bordered="true"
+                          Dense="true"
+                          Breakpoint="Breakpoint.None"
+                          Height="20vh">
+                    <HeaderContent>
+                        <MudTh>
+                            <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAllUserChan(IsChecked)" />
+                        </MudTh>
+                        <MudTh>Frequency Range</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <MudCheckBox Value="@context.Exclude" ValueChanged="(bool isChecked) => ToggleExclusionUserChannels(context, isChecked)" />
+                        </MudTd>
+                        <MudTd>
+                            <div class="d-flex align-center">
+                                @context.StartFrequency - @context.EndFrequency
+                            </div>
+                        </MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteExclusionChannel(context)" Size="Size.Small" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+        </MudCardContent>
+        </MudCard>
+        <ScanManager OnScanVisibilityChanged="HandleScanVisibilityChanged" OnScanDeleted="HandleScanDeleted" />
     </MudItem>
 </MudGrid>
 
@@ -122,6 +135,7 @@
             _ => 0
         };
     }
+
     private async Task ToggleExclusion(ExclusionChannel channel, bool isExcluded)
     {
         channel.Exclude = isExcluded;
@@ -132,6 +146,7 @@
         await ExclusionChannelViewModel.SaveExclusionChannelAsync();
         StateHasChanged();
     }
+
     private async Task ToggleExclusionUserChannels(ExclusionChannel channel, bool isExcluded)
     {
         channel.Exclude = isExcluded;
@@ -166,18 +181,19 @@
             StateHasChanged();
         }
     }
+
     private async Task AddExclusionChannel()
     {
         if (UserEndFrequency > UserStartFrequency)
         {
             ExclusionChannel userChan = new()
-                {
-                    StartFrequency = UserStartFrequency,
-                    EndFrequency = UserEndFrequency,
-                    Country = "User",
-                    Type = "User",
-                    ChannelWidth = UserEndFrequency - UserStartFrequency
-                };
+            {
+                StartFrequency = UserStartFrequency,
+                EndFrequency = UserEndFrequency,
+                Country = "User",
+                Type = "User",
+                ChannelWidth = UserEndFrequency - UserStartFrequency
+            };
             await ExclusionChannelViewModel.SaveUserChannelAsync(userChan);
             await InvokeAsync(StateHasChanged);
         }
@@ -186,12 +202,23 @@
             Snackbar.Add("Start frequency must be bigger than end frequency", Severity.Error);
         }
     }
+
     private async Task DeleteExclusionChannel(ExclusionChannel channel)
     {
         ExclusionChannelViewModel.SelectedExclusionChannel = channel;
         await ExclusionChannelViewModel.DeleteExclusionChannelCommand.ExecuteAsync(null);
     }
 
+    private async Task HandleScanVisibilityChanged(ScanData scan)
+    {
+        await JSRuntime.InvokeVoidAsync("scichartInterop.updateScans", "sciChartDiv", 
+            ScansViewModel.Scans.Where(s => ScansViewModel.VisibleScans.Contains(s.ID)).ToList());
+    }
+
+    private async Task HandleScanDeleted(ScanData scan)
+    {
+        await HandleScanVisibilityChanged(scan);
+    }
 }
 
 <style>

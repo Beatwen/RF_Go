@@ -1,0 +1,124 @@
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using RF_Go.Services
+@using RF_Go.Components.Modal
+@using MudBlazor
+@inject IDialogService Dialog
+@inject MudBlazor.ISnackbar Snackbar
+@inject ScansViewModel ScansViewModel
+@inject ScanImportExportService ScanImportExportService
+
+<MudCard Elevation="0">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Scans</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Upload" OnClick="OpenDialogToImportScanAsync" Title="Import Scan"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="OpenDialogToExportScanAsync" Title="Export Scan"/>
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTable Items="@ScansViewModel.Scans" Dense="true" Hover="true" Bordered="true">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Date</MudTh>
+                <MudTh>Visible</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Name</MudTd>
+                <MudTd>@context.ImportDate.ToString("g")</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@(ScansViewModel.IsScanVisible(context) ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)" 
+                                  Color="Color.Primary" 
+                                  OnClick="@(() => ToggleScanVisibility(context))"
+                                  Title="@(ScansViewModel.IsScanVisible(context) ? "Hide Scan" : "Show Scan")" />
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                  OnClick="@(() => HandleDelete(context))" 
+                                  Color="Color.Error" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public EventCallback<ScanData> OnScanVisibilityChanged { get; set; }
+    [Parameter] public EventCallback<ScanData> OnScanDeleted { get; set; }
+
+    private async Task ToggleScanVisibility(ScanData scan)
+    {
+        ScansViewModel.ToggleScanVisibility(scan);
+        await OnScanVisibilityChanged.InvokeAsync(scan);
+    }
+
+    private async Task HandleDelete(ScanData scan)
+    {
+        await ScansViewModel.DeleteScanAsync(scan);
+        await OnScanDeleted.InvokeAsync(scan);
+    }
+
+    private async Task OpenDialogToImportScanAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Import Scan" },
+            { "Message", "Select a scan file to import" },
+            { "ConfirmText", "Import" },
+            { "CancelText", "Cancel" }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = Dialog.Show<FilePickerDialog>("Import Scan", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var filePath = (string)result.Data;
+            var (success, message) = await ScanImportExportService.ImportScanAsync(filePath);
+            
+            if (success)
+            {
+                Snackbar.Add(message, Severity.Success);
+                await ScansViewModel.LoadScansAsync();
+            }
+            else
+            {
+                Snackbar.Add(message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenDialogToExportScanAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Export Scan" },
+            { "Message", "Select a scan to export" },
+            { "ConfirmText", "Export" },
+            { "CancelText", "Cancel" },
+            { "Scans", ScansViewModel.Scans }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = Dialog.Show<ScanExportDialog>("Export Scan", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var (scan, filePath) = ((ScanData, string))result.Data;
+            var success = await ScanImportExportService.ExportScanAsync(scan, filePath);
+            if (success)
+            {
+                Snackbar.Add("Scan exported successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to export scan", Severity.Error);
+            }
+        }
+    }
+} 

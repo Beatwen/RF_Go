@@ -1,0 +1,47 @@
+@using System.Collections.ObjectModel
+@using RF_Go.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Class="mb-4">@Message</MudText>
+        <MudSelect T="ScanData" @bind-Value="SelectedScan" Label="Select Scan">
+            @foreach (var scan in Scans)
+            {
+                <MudSelectItem Value="@scan">@scan.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTextField @bind-Value="ExportPath" Label="Export Path" Class="mt-4" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!CanSubmit)">@ConfirmText</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">@CancelText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Message { get; set; }
+    [Parameter] public string ConfirmText { get; set; }
+    [Parameter] public string CancelText { get; set; }
+    [Parameter] public ObservableCollection<ScanData> Scans { get; set; }
+
+    private ScanData SelectedScan { get; set; }
+    private string ExportPath { get; set; }
+
+    private bool CanSubmit => SelectedScan != null && !string.IsNullOrEmpty(ExportPath);
+
+    private void Submit()
+    {
+        if (CanSubmit)
+        {
+            MudDialog.Close(DialogResult.Ok((SelectedScan, ExportPath)));
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+} 

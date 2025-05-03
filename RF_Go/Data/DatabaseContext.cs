@@ -6,13 +6,14 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using RF_Go.Models;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 
 namespace RF_Go.Data
 {
     public class DatabaseContext : IAsyncDisposable
     {
         private const string DbName = "RF_Go5.db3";
-        private static string DbPath => Path.Combine(FileSystem.AppDataDirectory, DbName);
+        public static string DbPath => Path.Combine(FileSystem.AppDataDirectory, DbName);
 
         private SQLiteAsyncConnection _connection;
         private SQLiteAsyncConnection Database =>
@@ -38,6 +39,7 @@ namespace RF_Go.Data
             await CreateTableIfNotExists<RFDevice>();
             await CreateTableIfNotExists<ExclusionChannel>();
             await CreateTableIfNotExists<FrequencyData>();
+            await CreateTableIfNotExists<ScanData>();
             await InsertInitialGroups();
             await InsertInitialRFExclusionChannel();
             
@@ -164,6 +166,12 @@ Après :
         {
             return await Execute<TTable, bool>(async () => await Database.DeleteAsync<TTable>(primaryKey) > 0);
         }
+
+        public async Task<bool> DeleteAllAsync<TTable>() where TTable : class, new()
+        {
+            return await Execute<TTable, bool>(async () => await Database.DeleteAllAsync<TTable>() > 0);
+        }
+
         public async Task<RFGroup> GetGroupById(int groupId)
         {
             return await Database.Table<RFGroup>().FirstOrDefaultAsync(g => g.ID == groupId);
@@ -175,5 +183,14 @@ Après :
                 await _connection.CloseAsync();
             }
         }
+
+        public async Task InitializeAsync()
+        {
+            await CreateTablesAsync();
+        }
+
+        public DbSet<RFDevice> Devices { get; set; }
+        public DbSet<RFGroup> Groups { get; set; }
+        public DbSet<ScanData> Scans { get; set; }
     }
 }

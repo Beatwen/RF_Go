@@ -15,7 +15,8 @@ using RF_Go.Services.NetworkProtocols;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using RF_Go.Utils;
 using RF_Go.Services.Api;
-
+using RF_Go.Services;
+using CommunityToolkit.Maui;
 
 namespace RF_Go
 {
@@ -28,6 +29,7 @@ namespace RF_Go
             builder
                 .UseSkiaSharp()
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -35,6 +37,7 @@ namespace RF_Go
             builder.Services.AddMudServices();
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddSingleton<DatabaseImportExportService>();
 
 #if DEBUG
             builder.Logging.AddDebug();
@@ -54,8 +57,8 @@ namespace RF_Go
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<MainPage>();
             builder.Services.AddSingleton<FrequencyDataViewModel>();
-
-
+            builder.Services.AddScoped<ScansViewModel>();
+            builder.Services.AddScoped<ScanImportExportService>();
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(AppConfig.ApiBaseUrl) });
             builder.Services.AddSingleton<AuthService>();

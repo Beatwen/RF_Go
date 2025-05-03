@@ -1,5 +1,5 @@
 ﻿window.scichartInterop = {
-    initSciChart: async function (elementId, frequencyData) {
+    initSciChart: async function (elementId, frequencyData, scans) {
         const {
             SciChartSurface,
             NumericAxis,
@@ -46,7 +46,7 @@
             axisTitle: "Level (dB)",
             axisTitleStyle: { fontSize: 10, color: "White" },
             growBy: new NumberRange(0, 0),
-            visibleRange: new NumberRange(-100, 0),
+            visibleRange: new NumberRange(-130, 0),
             backgroundColor: "Transparent",
             axisBandsFill: "Transparent",
             majorGridLineStyle: { color: "Transparent" },
@@ -81,7 +81,7 @@
             const dataSeries = new XyDataSeries(wasmContext);
             if (Array.isArray(frequencies) && frequencies.length > 0) {
                 frequencies.forEach(freq => {
-                    dataSeries.append(freq, -100);
+                    dataSeries.append(freq, -130);
                     dataSeries.append(freq, dBLevel);
                     dataSeries.append(NaN, NaN);
                 });
@@ -96,11 +96,11 @@
                 dataSeries: dataSeries,
                 stroke: color,
                 strokeThickness: 2,
-                xAxisId: "xAxis",  // Associer la série à l'axe X
-                yAxisId: "yAxis"   // Associer la série à l'axe Y
+                xAxisId: "xAxis",
+                yAxisId: "yAxis"
             });
         };
-        console.log(frequencyData.usedFrequencies);
+
         // Création des séries de données avec les IDs d'axes spécifiés
         const seriesData = [
             { data: frequencyData.usedFrequencies, level: 0, color: "Green" },
@@ -117,5 +117,60 @@
             const lineSeries = createLineSeries(dataSeries, series.color);
             sciChartSurface.renderableSeries.add(lineSeries);
         });
+
+        // Ajout des scans visibles
+        if (scans && scans.length > 0) {
+            scans.forEach(scan => {
+                if (scan.isVisible) {
+                    const frequencies = JSON.parse(scan.frequenciesJson);
+                    const values = JSON.parse(scan.valuesJson);
+                    const scanSeries = new FastLineRenderableSeries(wasmContext, {
+                        dataSeries: new XyDataSeries(wasmContext, {
+                            xValues: frequencies,
+                            yValues: values
+                        }),
+                        stroke: "#808080",
+                        strokeThickness: 1,
+                        opacity: 0.5,
+                        xAxisId: "xAxis",
+                        yAxisId: "yAxis"
+                    });
+                    sciChartSurface.renderableSeries.add(scanSeries);
+                }
+            });
+        }
+
+        sciChartSurface.zoomExtents();
+    },
+    updateScans: function (chartDivId, scans) {
+        const sciChartSurface = document.getElementById(chartDivId).sciChartSurface;
+        console.log("sciii" , sciChartSurface);
+        if (!sciChartSurface) return;
+
+        // Remove existing scan series
+        const existingScanSeries = sciChartSurface.renderableSeries.filter(rs => rs.isScanSeries);
+        existingScanSeries.forEach(rs => sciChartSurface.renderableSeries.remove(rs));
+        
+        // Add new scan series
+        scans.forEach(scan => {
+            const frequencies = JSON.parse(scan.frequenciesJson);
+            console.log(frequencies)
+            const values = JSON.parse(scan.valuesJson);
+            console.log("Values ", values)
+            const scanSeries = new SciChart.Charting.Visuals.RenderableSeries.FastLineRenderableSeries({
+                stroke: "#808080", // Grey color for scans
+                strokeThickness: 1,
+                opacity: 0.5,
+                isScanSeries: true,
+                dataSeries: new SciChart.Charting.Model.DataSeries.XyDataSeries({
+                    xValues: frequencies,
+                    yValues: values
+                })
+            });
+
+            sciChartSurface.renderableSeries.add(scanSeries);
+        });
+
+        sciChartSurface.zoomExtents();
     }
 };
