@@ -14,8 +14,8 @@
             <MudText Typo="Typo.h6">Scans</MudText>
         </CardHeaderContent>
         <CardHeaderActions>
-            <MudIconButton Icon="@Icons.Material.Filled.Upload" OnClick="OpenDialogToImportScanAsync" Title="Import Scan"/>
-            <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="OpenDialogToExportScanAsync" Title="Export Scan"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="OpenDialogToImportScanAsync" Title="Import Scan"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Upload" OnClick="OpenDialogToExportScanAsync" Title="Export Scan" />
         </CardHeaderActions>
     </MudCardHeader>
     <MudCardContent>
@@ -30,10 +30,10 @@
                 <MudTd>@context.Name</MudTd>
                 <MudTd>@context.ImportDate.ToString("g")</MudTd>
                 <MudTd>
-                    <MudIconButton Icon="@(ScansViewModel.IsScanVisible(context) ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)" 
+                    <MudIconButton Icon="@(context.IsVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)" 
                                   Color="Color.Primary" 
                                   OnClick="@(() => ToggleScanVisibility(context))"
-                                  Title="@(ScansViewModel.IsScanVisible(context) ? "Hide Scan" : "Show Scan")" />
+                                  Title="@(context.IsVisible ? "Hide Scan" : "Show Scan")" />
                 </MudTd>
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" 
@@ -51,7 +51,7 @@
 
     private async Task ToggleScanVisibility(ScanData scan)
     {
-        ScansViewModel.ToggleScanVisibility(scan);
+        await ScansViewModel.ToggleScanVisibility(scan);
         await OnScanVisibilityChanged.InvokeAsync(scan);
     }
 

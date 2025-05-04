@@ -6,53 +6,59 @@
 @inject NavigationManager NavigationManager
 @inject RF_Go.Utils.AuthService AuthService
 
-<MudContainer MaxWidth="MaxWidth.Medium" Style="margin: auto; padding: 20px;">
-    <MudPaper Elevation="2" Class="pa-4">
-        <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Mon Compte</MudText>
-
+<MudContainer MaxWidth="MaxWidth.Small" Style="margin: auto; padding: 20px;">
+    <MudPaper Elevation="3" Class="pa-4">
         @if (User != null)
         {
-            <MudCard Class="pa-2 mb-2">
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">Nom d'utilisateur</MudText>
-                    <MudText Typo="Typo.subtitle2">@User.userName</MudText>
-                </MudCardContent>
-            </MudCard>
+            <MudStack Spacing="4">
+                <MudAvatar Size="Size.Large" Color="Color.Primary" Class="mx-auto">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Large" />
+                </MudAvatar>
 
-            <MudCard Class="pa-2 mb-2">
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">Prénom</MudText>
-                    <MudText Typo="Typo.subtitle2">@User.firstName</MudText>
-                </MudCardContent>
-            </MudCard>
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-2">
+                    @User.firstName @User.lastName
+                </MudText>
 
-            <MudCard Class="pa-2 mb-2">
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">Nom</MudText>
-                    <MudText Typo="Typo.subtitle2">@User.lastName</MudText>
-                </MudCardContent>
-            </MudCard>
+                <MudDivider Class="my-2" />
 
-            <MudCard Class="pa-2 mb-2">
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">Email</MudText>
-                    <MudText Typo="Typo.subtitle2">@User.email</MudText>
-                </MudCardContent>
-            </MudCard>
+                <MudStack Spacing="2">
+                    <MudItem>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Username</MudText>
+                        <MudText Typo="Typo.body1">@User.userName</MudText>
+                    </MudItem>
+
+                    <MudItem>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Email</MudText>
+                        <MudText Typo="Typo.body1">@User.email</MudText>
+                    </MudItem>
+                </MudStack>
+
+                <MudDivider Class="my-2" />
+
+                <MudStack Row="true" Justify="Justify.Center" Spacing="2">
+                    <MudButton Variant="Variant.Outlined" 
+                              Color="Color.Error" 
+                              OnClick="LogOut" 
+                              StartIcon="@Icons.Material.Filled.Logout"
+                              Class="mt-2">
+                        Log Out
+                    </MudButton>
+                </MudStack>
+            </MudStack>
         }
         else
         {
-            <MudText Typo="Typo.subtitle1" Align="Align.Center" Color="Color.Error">
-                Impossible de charger les informations de votre compte.
-            </MudText>
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mt-4">
+                <MudText>Can't load your data.</MudText>
+            </MudAlert>
         }
 
-        <MudDivider Class="mt-4 mb-4" />
-
-        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="LogOut">
-            Log Out
-        </MudButton>
-        <MudText>@Message</MudText>
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mt-4">
+                <MudText>@Message</MudText>
+            </MudAlert>
+        }
     </MudPaper>
 </MudContainer>
 
@@ -77,14 +83,13 @@
     private string Message = "";
     private HttpClient client = new HttpClient();
 
-
     protected override async Task OnInitializedAsync()
     {
         User = await SecureStorageUtils.GetUserFromSecureStorage();
     }
+
     private async Task LogOut()
     {
-
         try
         {
             string accessToken = await AuthService.GetValidAccessTokenAsync();
@@ -124,7 +129,7 @@
             Message = $"Error: {ex.Message}";
         }
     }
-    // Function deleted to avoid user delete itself. User has to go through the website to delete his accound now.
+    // Function deleted to avoid user delete himself. User has to go through the website to delete his accound now.
     // private async Task DeleteUser()
     // {
     //     try

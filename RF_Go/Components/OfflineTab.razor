@@ -25,12 +25,11 @@
     <MudContainer MaxWidth="MaxWidth.Medium" Style="display: flex; justify-content: center; align-items: center;">
         <MudPaper Class="pa-6" Elevation="3" Style="text-align: center; max-width: 400px;">
             <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
-                No devices found. Start by adding a device.
+                No devices found. Start by adding a device or import a session.
             </MudAlert>
             <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => OpenDialogToImportDatabaseAsync())" Title="Import Database"/>
             <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())" Title="Add Device"/>
             <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" OnClick="@(() => OpenDialogToExportDatabaseAsync())" Title="Export Database"/>
-
         </MudPaper>
     </MudContainer>
 }
@@ -38,13 +37,14 @@ else
 {
     <!-- Desktop/Tablet View -->
     <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
-        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => OpenDialogToImportDatabaseAsync())" Title="Import Database"/>
-        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())" Title="Add Device"/>
-        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" OnClick="@(() => OpenDialogToExportDatabaseAsync())" Title="Export Database"/>
         <div class="d-flex pl-6 pr-6 w-100 align-center justify-space-between pt-2">
-            <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
             <div class="d-flex">
-                <MudIconButton Icon="@Icons.Material.Filled.Calculate" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul"/>
+                <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())" Title="Add device to inventory">Open</MudIconButton>
+                <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Download" OnClick="@(() => OpenDialogToImportDatabaseAsync())" Title="Import Database" />
+                <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Upload" OnClick="@(() => OpenDialogToExportDatabaseAsync())" Title="Export Database" />
+            </div>
+            <div class="d-flex">
+                <MudIconButton Icon="@Icons.Material.Filled.Calculate" title="RF Calcul" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul"/>
                 <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" Color="Color.Primary" Variant="Variant.Filled">
                     <MudMenuItem Class="mx-2" @onclick="OpenDialogOnlineDevice" Icon="@Icons.Material.Filled.Map">Map</MudMenuItem>
                     <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" @onclick='() => MagicSync("FromDevices")'>Sync From</MudMenuItem>

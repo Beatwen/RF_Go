@@ -42,8 +42,8 @@
             </CardHeaderContent>
             <CardHeaderActions>
                 <div class="d-flex align-center gap-2">
-                        <MudTextField Label="Start Frequency (MHz)" Style="max-width:90px;" @bind-Value="UserStartFrequency" Variant="Variant.Outlined" />
-                        <MudTextField Label="End Frequency (MHz)" Style="max-width:90px;" @bind-Value="UserEndFrequency" Variant="Variant.Outlined" />
+                        <MudTextField Label="From (MHz)" Style="max-width:90px;" @bind-Value="UserStartFrequency" Variant="Variant.Outlined" />
+                        <MudTextField Label="To (MHz)" Style="max-width:90px;" @bind-Value="UserEndFrequency" Variant="Variant.Outlined" />
                     <MudButton Color="Color.Primary" OnClick="@(async () => await AddExclusionChannel())">Save</MudButton>
                 </div>
             </CardHeaderActions>
@@ -212,7 +212,7 @@
     private async Task HandleScanVisibilityChanged(ScanData scan)
     {
         await JSRuntime.InvokeVoidAsync("scichartInterop.updateScans", "sciChartDiv", 
-            ScansViewModel.Scans.Where(s => ScansViewModel.VisibleScans.Contains(s.ID)).ToList());
+            ScansViewModel.Scans.Where(s => s.IsVisible).ToList());
     }
 
     private async Task HandleScanDeleted(ScanData scan)

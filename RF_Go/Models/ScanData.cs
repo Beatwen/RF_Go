@@ -22,5 +22,6 @@ namespace RF_Go.Models
         public double MaxFrequency { get; set; }
         public double MinValue { get; set; }
         public double MaxValue { get; set; }
+        public bool IsVisible { get; set; }
     }
 } 

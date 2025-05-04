@@ -134,6 +134,7 @@ namespace RF_Go.Services
 
                     scanData.FrequenciesJson = JsonSerializer.Serialize(frequencies);
                     scanData.ValuesJson = JsonSerializer.Serialize(values);
+                    scanData.IsVisible = true;
 
                     if (frequencies.Any() && values.Any())
                     {
@@ -248,6 +249,7 @@ namespace RF_Go.Services
 
                 scanData.FrequenciesJson = JsonSerializer.Serialize(freqs);
                 scanData.ValuesJson = JsonSerializer.Serialize(values);
+                scanData.IsVisible = true;
 
                 if (freqs.Any() && values.Any())
                 {

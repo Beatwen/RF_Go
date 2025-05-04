@@ -24,9 +24,6 @@ namespace RF_Go.ViewModels
         [ObservableProperty]
         private string _busyText;
 
-        [ObservableProperty]
-        private HashSet<int> _visibleScans = new();
-
         public ScansViewModel(DatabaseContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -79,7 +76,6 @@ namespace RF_Go.ViewModels
 
                 await _context.DeleteItemAsync(scan);
                 Scans.Remove(scan);
-                VisibleScans.Remove(scan.ID);
             }
             catch (Exception ex)
             {
@@ -109,24 +105,18 @@ namespace RF_Go.ViewModels
             }
         }
 
-        public void ToggleScanVisibility(ScanData scan)
+        public async Task ToggleScanVisibility(ScanData scan)
         {
             if (scan == null)
                 return;
 
-            if (VisibleScans.Contains(scan.ID))
-            {
-                VisibleScans.Remove(scan.ID);
-            }
-            else
-            {
-                VisibleScans.Add(scan.ID);
-            }
+            scan.IsVisible = !scan.IsVisible;
+            await _context.UpdateItemAsync(scan);
         }
 
         public bool IsScanVisible(ScanData scan)
         {
-            return scan != null && VisibleScans.Contains(scan.ID);
+            return scan != null && scan.IsVisible;
         }
 
         [RelayCommand]

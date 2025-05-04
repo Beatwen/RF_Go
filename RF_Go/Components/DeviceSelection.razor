@@ -71,11 +71,11 @@
 </div>
 @code
 {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
     [Parameter] public EventCallback OnDeviceSaved { get; set; }
-
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private string searchString1 = "";
@@ -97,8 +97,6 @@
     {
         DevicesViewModel.SaveDataDevicesInfo(device);
         DevicesViewModel.SaveDataChannelsInfo(device);
-        // SaveDataDevicesInfo(device);
-        // SaveDataChannelsInfo(device);
 
         for (int i = 0; i < selectedQuantity; i++)
         {
@@ -112,46 +110,16 @@
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error saving device {i + 1}: {ex.Message}");
-                break; // Stop the loop if there's an error
+                break;
             }
         }
 
-        // Recharger les devices après avoir sauvegardé
         await DevicesViewModel.LoadDevicesAsync();
         await OnDeviceSaved.InvokeAsync();
         Snackbar.Add("Device(s) added", Severity.Success);
+        MudDialog.Close();
     }
 
-    // private void SaveDataDevicesInfo(RFDevice device)
-    // {
-    //     Debug.WriteLine("SaveDataDevice is called");
-    //     device.Range = DeviceData.Brands[device.Brand][device.Model][device.Frequency];
-    //     device.Step = (int)DeviceData.Brands[device.Brand][device.Model][device.Frequency][3];
-    //     device.NumberOfChannels = (int)DeviceData.Brands[device.Brand][device.Model][device.Frequency][2];
-    //     Debug.WriteLine(device.NumberOfChannels);
-    //     device.Channels = new List<RFChannel>();
-    //     for (int i = 0; i < device.NumberOfChannels; i++)
-    //     {
-    //         device.Channels.Add(new RFChannel());
-    //     }
-    // }
-    // private void SaveDataChannelsInfo(RFDevice device)
-    // {
-    //     var freq = DeviceData.Brands[device.Brand][device.Model][device.Frequency];
-    //     int count = 1;
-    //     foreach (RFChannel chan in device.Channels)
-    //     {
-    //         chan.Range = device.Range;
-    //         chan.Step = device.Step;
-    //         chan.chanNumber = count;
-    //         chan.SelfSpacing = freq[4];
-    //         chan.ThirdOrderSpacing = freq[5];
-    //         chan.FifthOrderSpacing = freq[6];
-    //         chan.SeventhOrderSpacing = freq[7];
-    //         chan.ThirdOrderSpacing3Tx = freq[8];
-    //         count++;
-    //     }
-    // }
     private void OnBrandChanged(string e)
     {
         Debug.WriteLine("Brand changed");
@@ -166,5 +134,4 @@
         Device.Frequency = string.Empty;
         StateHasChanged();
     }
-
 }
