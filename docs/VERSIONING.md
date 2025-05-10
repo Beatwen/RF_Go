@@ -21,6 +21,7 @@ Le projet utilise [Semantic Versioning 2.0.0](https://semver.org/), avec une str
 ### 2. Création de la Release GitHub
 
 1. Créer une nouvelle tag Git correspondant à la version:
+
    ```
    git tag -a vX.Y.Z -m "Version X.Y.Z"
    git push origin vX.Y.Z
@@ -51,4 +52,4 @@ Le projet utilise [Semantic Versioning 2.0.0](https://semver.org/), avec une str
 3. Créer une branche `release/X.Y.Z` à partir de `develop`
 4. Tester et finaliser la release sur cette branche
 5. Fusionner la branche de release dans `main` et `develop`
-6. Créer la tag et la release GitHub 
+6. Créer la tag et la release GitHub
