@@ -10,6 +10,7 @@ using Microsoft.JSInterop;
 using RF_Go.Models;
 using RF_Go.ViewModels;
 using System.Text;
+using System.Diagnostics;
 
 namespace RF_Go.Services
 {
@@ -56,10 +57,10 @@ namespace RF_Go.Services
                     switch (fileExtension)
                     {
                         case ".sdb2":
-                            scanData = await ImportSdb2FileAsync(filePath);
+                            scanData = ImportSdb2FileAsync(filePath);
                             break;
                         case ".sdb3":
-                            scanData = await ImportSdb3FileAsync(filePath);
+                            scanData = ImportSdb3File(filePath);
                             break;
                     }
 
@@ -79,10 +80,12 @@ namespace RF_Go.Services
                 }
                 catch (XmlException ex)
                 {
+                    Debug.Print(ex.ToString());
                     return (false, "Invalid XML format in scan file");
                 }
                 catch (JsonException ex)
                 {
+                    Debug.Print(ex.ToString());
                     return (false, "Error processing scan data");
                 }
             }
@@ -93,7 +96,7 @@ namespace RF_Go.Services
             }
         }
 
-        private async Task<ScanData> ImportSdb2FileAsync(string filePath)
+        private static ScanData ImportSdb2FileAsync(string filePath)
         {
             try
             {
@@ -136,7 +139,7 @@ namespace RF_Go.Services
                     scanData.ValuesJson = JsonSerializer.Serialize(values);
                     scanData.IsVisible = true;
 
-                    if (frequencies.Any() && values.Any())
+                    if (frequencies.Count > 0 && values.Count > 0)
                     {
                         scanData.MinFrequency = frequencies.Min();
                         scanData.MaxFrequency = frequencies.Max();
@@ -154,7 +157,7 @@ namespace RF_Go.Services
             }
         }
 
-        private async Task<ScanData> ImportSdb3FileAsync(string filePath)
+        private static ScanData ImportSdb3File(string filePath)
         {
             try
             {
@@ -251,7 +254,7 @@ namespace RF_Go.Services
                 scanData.ValuesJson = JsonSerializer.Serialize(values);
                 scanData.IsVisible = true;
 
-                if (freqs.Any() && values.Any())
+                if (freqs.Count() > 0 && values.Count() > 0)
                 {
                     scanData.MinFrequency = freqs.Min();
                     scanData.MaxFrequency = freqs.Max();
@@ -307,7 +310,7 @@ namespace RF_Go.Services
             public float StepFreq { get; set; }
         }
 
-        public async Task<bool> ExportScanAsync(ScanData scan, string filePath)
+        public bool ExportScan(ScanData scan, string filePath)
         {
             try
             {

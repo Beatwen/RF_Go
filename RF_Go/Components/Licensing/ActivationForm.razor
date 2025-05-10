@@ -7,8 +7,8 @@
 @inject RF_Go.Utils.AuthService AuthService
 
 <MudCard Class="pa-4">
-    <MudText Typo="Typo.h6" Align="Align.Center">Activer une Licence</MudText>
-    <MudTextField Label="Clé de Licence" @bind-Value="LicenseKey" FullWidth="true" Required="true" Class="mb-3" />
+    <MudText Typo="Typo.h6" Align="Align.Center">Activate a license</MudText>
+    <MudTextField Label="License key" @bind-Value="LicenseKey" FullWidth="true" Required="true" Class="mb-3" />
     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitActivation" Class="mt-3">
         Activate
     </MudButton>

@@ -1,5 +1,4 @@
-﻿@using Newtonsoft.Json
-@using System.IO
+﻿@using System.IO
 @using System
 @using RF_Go.Data
 @using RF_Go.Models
@@ -19,6 +18,7 @@
 @inject DatabaseImportExportService DatabaseImportExportService
 @inject ScansViewModel ScansViewModel
 @inject ScanImportExportService ScanImportExportService
+@inject BackupFrequenciesViewModel BackupFrequenciesViewModel
 
 @if (DevicesViewModel.Devices.Count == 0)
 {
@@ -105,17 +105,16 @@ else
                         <RowTemplate Context="chan">
                             <MudTd Class="d-flex align-center mt-0">
                                 <MudNumericField @bind-Value="chan.Frequency" 
+                                @bind-Value:after="() => { chan.Checked = false; StateHasChanged(); }"
                                 Min="@chan.Range[0]" 
                                 Max="@chan.Range[1]" 
                                 Step="@chan.Step" 
                                 Style="@CalculateStyle(chan)" 
-                                Class="mt-0" 
                                 Label="@GetRange(chan)" 
                                 Variant="Variant.Outlined" 
                                 Margin="Margin.Dense" 
                                 FullWidth="true"
-                                @onblur="() => SaveDeviceAsync(context)" 
-                                />
+                                @onblur="() => SaveDeviceAsync(context)" />
                                 <MudCheckBox @bind-Value="chan.IsLocked" 
                                 Dense="true" 
                                 Color="Color.Secondary" 
@@ -123,6 +122,11 @@ else
                                 UncheckedIcon="@Icons.Material.Filled.LockOpen" 
                                 Class="pl-3">
                                 </MudCheckBox>
+                                <MudIconButton Icon="@Icons.Material.Filled.Backup" 
+                                Color="Color.Info" 
+                                Size="Size.Small" 
+                                OnClick="() => OpenBackupFrequencyModal(context, chan)"
+                                Class="pl-3" />
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -156,7 +160,7 @@ else
     <!-- Mobile View -->
     <MudHidden Breakpoint="Breakpoint.SmAndUp">
         <div class="d-flex pl-1 pr-1 w-100 align-center justify-space-between pt-2">
-            <MudFab Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())">Open</MudFab>
+            <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())" Title="Add device to inventory">Open</MudIconButton>
             <div class="d-flex">
                 <MudIconButton Icon="@Icons.Material.Filled.Calculate" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2" @onclick="RFCalcul" />
                 <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" Color="Color.Primary" Variant="Variant.Filled">
@@ -168,12 +172,15 @@ else
         </div>
         @foreach (var device in DevicesViewModel.Devices)
         {
-            <MudCard Elevation="6" Outlined="true" Class="mt-2">
+            <MudCard Elevation="0" Outlined="true" Class="mt-2 border-solid border-1 mud-border-secondary pa-4">
                 <MudCardContent>
                     <!-- Device Name and Frequencies Section -->
                     <div class="mb-4">
-                        <MudText Typo="Typo.h6">@GetBrandAndModel(device)</MudText>
+                        <div class="d-flex justify-center">
+                            <MudText Typo="Typo.h6">@GetBrandAndModel(device)</MudText>
+                        </div>
                         <MudTable Breakpoint="Breakpoint.None" @bind-Items="@device.Channels" Hover="true">
+
                             <RowTemplate Context="chan">
                                 <MudTd>
                                     <div class="d-flex flex-column">
@@ -200,6 +207,11 @@ else
                                             CheckedIcon="@Icons.Material.Filled.Lock" 
                                             UncheckedIcon="@Icons.Material.Filled.LockOpen" 
                                             Class="pl-3" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.Backup" 
+                                            Color="Color.Info" 
+                                            Size="Size.Small" 
+                                            OnClick="() => OpenBackupFrequencyModal(device, chan)"
+                                            Class="pl-3" />
                                         </div>
                                     </div>
                                 </MudTd>
@@ -208,9 +220,8 @@ else
                     </div>
 
                     <!-- Group and Actions Section -->
-                    <div class="mb-4">
-                        <MudText Typo="Typo.subtitle1">Group & Actions</MudText>
-                        <div class="d-flex flex-column">
+                    <MudPaper Outlined="true" Class="border-solid border-1 mud-border-secondary pa-4" Elevation="0">
+                        <div class="">
                             <MudSelect T="int" 
                             Value="device.GroupID" 
                             ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(device, newGroupId)"
@@ -250,15 +261,14 @@ else
                                 aria-label="delete" />
                             </div>
                         </div>
-                    </div>
+                    </MudPaper>
                 </MudCardContent>
             </MudCard>
         }
     </MudHidden>
 }
 <div class="chart-container d-none d-md-block">
-    <div id="sciChartDiv" class="" style="width: 100%; height: 200px;"></div>
-    
+    <div id="sciChartDiv" style="width: 100%; height: 200px; margin: 0 auto;"></div>
 </div>
 
 @code
@@ -272,14 +282,10 @@ else
 
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
-    private string searchString1 = "";
     private MudTable<RFDevice> mudTable;
     private int selectedRowNumber = -1;
     private bool selectAll { get; set; }
     private List<string> clickedEvents = new();
-    private bool OfflineBoxVisibility = false;
-    private bool isAddingDevice = false;
-    private int selectedQuantity = 1;
     private bool lockAll = false;
     private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
 
@@ -345,6 +351,7 @@ else
 
             await DevicesViewModel.LoadDevicesAsync();
             await GroupsViewModel.LoadGroupsAsync();
+            await BackupFrequenciesViewModel.LoadBackupFrequenciesAsync();
 
             foreach (var device in DevicesViewModel.Devices)
             {
@@ -376,7 +383,22 @@ else
     }
     private async Task DeleteDevice(RFDevice device)
     {
+        // Do we need to delete all backup frequencies for this device type? that's what's done here
+        bool isLastOfType = !DevicesViewModel.Devices
+            .Any(d => d.ID != device.ID && 
+                 d.Brand == device.Brand && 
+                 d.Model == device.Model && 
+                 d.Frequency == device.Frequency);
+        
         await DevicesViewModel.DeleteDeviceAsync(device.ID);
+        
+        if (isLastOfType)
+        {
+            await BackupFrequenciesViewModel.DeleteBackupFrequenciesForDeviceTypeAsync(
+                device.Brand, device.Model, device.Frequency);
+        }
+        
+        await OnDeviceSaved.InvokeAsync();
         Snackbar.Add("Device deleted", Severity.Success);
     }
     private async Task DesyncDevice(RFDevice device)
@@ -404,14 +426,41 @@ else
         var overlappingGroups = FindOverlappingGroups();
         var excludedRanges = GetExcludedRanges();
 
+        FrequencyDataViewModel.FrequencyData.UsedFrequencies.Clear();
+        FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder.Clear();
+        FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder.Clear();
+        FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder.Clear();
+        FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder.Clear();
+        FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder.Clear();
+
+        var groupFrequencyData = new Dictionary<int, FrequencyData>();
+
+        // Define colors for different groups
+        var groupColors = new[]
+        {
+            "#00FFFF", // Dark Green
+            "#0000FF", // Blue
+            "#800000",  // Maroon
+            "#FF0000", // Red
+            "#800080", // Purple
+            "#FFA500", // Orange
+            "#00FFFF", // Green
+            "#FFFF00", // Yellow
+            "#FF00FF", // Magenta
+            "#00FFFF", // Cyan
+        };
+
         foreach (var groupSet in overlappingGroups)
         {
-            FrequencyDataViewModel.FrequencyData.UsedFrequencies.Clear();
-            FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder.Clear();
-            FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder.Clear();
-            FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder.Clear();
-            FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder.Clear();
-            FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder.Clear();
+            var groupData = new FrequencyData
+            {
+                UsedFrequencies = new HashSet<int>(),
+                TwoTX3rdOrder = new HashSet<int>(),
+                TwoTX5rdOrder = new HashSet<int>(),
+                TwoTX7rdOrder = new HashSet<int>(),
+                TwoTX9rdOrder = new HashSet<int>(),
+                ThreeTX3rdOrder = new HashSet<int>()
+            };
 
             var devicesInGroup = GetDevicesForGroupSet(groupSet);
 
@@ -423,7 +472,7 @@ else
                     chan.Checked = false;
                     if (chan.IsLocked)
                     {
-                        chan.SetRandomFrequency(FrequencyDataViewModel.FrequencyData.UsedFrequencies, FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder, FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder, excludedRanges);
+                        chan.SetRandomFrequency(groupData.UsedFrequencies, groupData.TwoTX3rdOrder, groupData.TwoTX5rdOrder, groupData.TwoTX7rdOrder, groupData.TwoTX9rdOrder, groupData.ThreeTX3rdOrder, excludedRanges);
                     }
                 }
             }
@@ -433,14 +482,62 @@ else
             {
                 foreach (RFChannel chan in device.Channels)
                 {
-                    chan.SetRandomFrequency(FrequencyDataViewModel.FrequencyData.UsedFrequencies, FrequencyDataViewModel.FrequencyData.TwoTX3rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX5rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX7rdOrder, FrequencyDataViewModel.FrequencyData.TwoTX9rdOrder, FrequencyDataViewModel.FrequencyData.ThreeTX3rdOrder, excludedRanges);
+                    chan.SetRandomFrequency(groupData.UsedFrequencies, groupData.TwoTX3rdOrder, groupData.TwoTX5rdOrder, groupData.TwoTX7rdOrder, groupData.TwoTX9rdOrder, groupData.ThreeTX3rdOrder, excludedRanges);
                 }
             }
-            await DevicesViewModel.SaveAllDevicesAsync();
-            await FrequencyDataViewModel.SaveFrequencyDataAsync();
-            await OnDeviceSaved.InvokeAsync();
-            HandleCalculationCompleted();
+
+            // Store the group data with color
+            foreach (var group in groupSet)
+            {
+                groupData.Color = groupColors[group.ID % groupColors.Length];
+                groupFrequencyData[group.ID] = groupData;
+            }
+
+            // Third pass: assign frequencies to backup frequencies
+            foreach (RFDevice device in devicesInGroup)
+            {
+                var deviceBackupFrequencies = BackupFrequenciesViewModel.GetBackupFrequenciesForDeviceType(device.Brand, device.Model, device.Frequency);
+                foreach (var backupFreq in deviceBackupFrequencies)
+                {
+                    // Create a temporary channel for the backup frequency
+                    var tempChannel = new RFChannel
+                    {
+                        Range = new List<int> { (int)backupFreq.MinRange, (int)backupFreq.MaxRange, 0, (int)backupFreq.Step },
+                        Step = (int)backupFreq.Step,
+                        SelfSpacing = device.Channels[0].SelfSpacing,
+                        ThirdOrderSpacing = device.Channels[0].ThirdOrderSpacing,
+                        FifthOrderSpacing = device.Channels[0].FifthOrderSpacing,
+                        SeventhOrderSpacing = device.Channels[0].SeventhOrderSpacing,
+                        NinthOrderSpacing = device.Channels[0].NinthOrderSpacing,
+                        ThirdOrderSpacing3Tx = device.Channels[0].ThirdOrderSpacing3Tx
+                    };
+
+                    // Use the same logic as regular channels
+                    tempChannel.SetRandomFrequency(
+                        groupData.UsedFrequencies,
+                        groupData.TwoTX3rdOrder,
+                        groupData.TwoTX5rdOrder,
+                        groupData.TwoTX7rdOrder,
+                        groupData.TwoTX9rdOrder,
+                        groupData.ThreeTX3rdOrder,
+                        excludedRanges
+                    );
+
+                    // Save the calculated frequency
+                    backupFreq.BackupFrequency = tempChannel.Frequency;
+                    await BackupFrequenciesViewModel.SaveBackupFrequencyAsync(backupFreq);
+                }
+            }
         }
+
+        // Update the FrequencyDataViewModel with the grouped data
+        FrequencyDataViewModel.FrequencyData.GroupData = groupFrequencyData;
+
+        await DevicesViewModel.SaveAllDevicesAsync();
+        await FrequencyDataViewModel.SaveFrequencyDataAsync();
+        
+        HandleCalculationCompleted();
+        await OnDeviceSaved.InvokeAsync();
     }
     private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
     {
@@ -503,6 +600,7 @@ else
     private async Task DeleteAll()
     {
         await DevicesViewModel.DeleteAllDeviceAsync();
+        await BackupFrequenciesViewModel.DeleteAllBackupFrequenciesAsync();
         await OnDeviceSaved.InvokeAsync();
     }
     private void LockAll()
@@ -534,7 +632,8 @@ else
         var options = new DialogOptions
         {
             MaxWidth = MaxWidth.Medium,
-            FullWidth = true
+            FullWidth = true,
+            CloseOnEscapeKey = true
         };
 
         var dialog = Dialog.Show<DeviceSelection>("Add your devices", parameters, options);
@@ -543,7 +642,9 @@ else
         if (!result.Canceled)
         {
             StateHasChanged();
+            await OnDeviceSaved.InvokeAsync();
         }
+        
     }
     private async Task OpenDialogOnlineDevice()
     {
@@ -556,7 +657,8 @@ else
         var options = new DialogOptions
         {
             MaxWidth = MaxWidth.Medium,
-            FullWidth = true
+            FullWidth = true,
+            CloseOnEscapeKey = true
         };
 
         var dialog = Dialog.Show<OnlineDevicesModal>("Online Devices", parameters, options);
@@ -578,7 +680,8 @@ else
         var options = new DialogOptions
         {
             MaxWidth = MaxWidth.Small,
-            FullWidth = true
+            FullWidth = true,
+            CloseOnEscapeKey = true
         };
 
         var dialog = Dialog.Show<SyncModal>("Quick Sync", parameters, options);
@@ -635,6 +738,15 @@ else
         if (firstRender)
         {
             await ScansViewModel.LoadScansAsync();
+            
+            // Créer un dictionnaire des noms de groupes
+            var groupNames = GroupsViewModel.Groups.ToDictionary(
+                g => g.ID.ToString(), 
+                g => g.Name
+            );
+            
+            // Initialiser le graphique et passer les noms des groupes
+            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", groupNames);
             await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", 
                 FrequencyDataViewModel.FrequencyData,
                 ScansViewModel.Scans.Select(s => new { 
@@ -650,6 +762,14 @@ else
 
         try
         {
+            // Créer un dictionnaire des noms de groupes
+            var groupNames = GroupsViewModel.Groups.ToDictionary(
+                g => g.ID.ToString(), 
+                g => g.Name
+            );
+            
+            // Mettre à jour les noms des groupes avant de réinitialiser le graphique
+            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", groupNames);
             await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", 
                 FrequencyDataViewModel.FrequencyData,
                 ScansViewModel.Scans.Select(s => new { 
@@ -673,8 +793,8 @@ else
             { "CancelText", "Cancel" }
         };
 
-        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = Dialog.Show<ConfirmationDialog>("Import Database", parameters, options);
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = Dialog.Show<ConfirmationDialog>("",parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
@@ -703,7 +823,7 @@ else
             { "CancelText", "Cancel" }
         };
 
-        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
         var dialog = Dialog.Show<ConfirmationDialog>("Export Database", parameters, options);
         var result = await dialog.Result;
 
@@ -718,6 +838,32 @@ else
             {
                 Snackbar.Add("Failed to export database", Severity.Error);
             }
+        }
+    }
+    private async Task OpenBackupFrequencyModal(RFDevice device, RFChannel channel)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Device", device },
+            { "Channel", channel },
+            { "BackupFrequenciesViewModel", BackupFrequenciesViewModel },
+            { "DeviceMappingService", DeviceMappingService }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseOnEscapeKey = true,
+            NoHeader = true
+        };
+
+        var dialog = Dialog.Show<BackupFrequencyModal>("Backup Frequencies", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            StateHasChanged();
         }
     }
 }

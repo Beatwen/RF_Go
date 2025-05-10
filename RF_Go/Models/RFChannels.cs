@@ -1,7 +1,6 @@
-﻿using Newtonsoft.Json;
-using SQLite;
+﻿using SQLite;
 using System.Diagnostics;
-using System.Threading.Channels;
+using System.Text.Json;
 
 
 namespace RF_Go.Models
@@ -21,8 +20,8 @@ namespace RF_Go.Models
         public List<int> Range { get; set; }
         public string RangeSerialized
         {
-            get => JsonConvert.SerializeObject(Range);
-            set => Range = JsonConvert.DeserializeObject<List<int>>(value);
+            get => JsonSerializer.Serialize(Range);
+            set => Range = JsonSerializer.Deserialize<List<int>>(value);
         }
         public int Step { get; set; }
         public int SelfSpacing { get; set; }

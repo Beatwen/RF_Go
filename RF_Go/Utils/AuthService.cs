@@ -115,7 +115,6 @@ namespace RF_Go.Utils
             else
             {
                 Debug.WriteLine("NavigationManager is not initialized. Delaying navigation.");
-                // Optionally, you can queue the navigation to be executed later.
             }
 
             return Task.FromResult<string>(null);

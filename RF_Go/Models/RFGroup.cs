@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
 using SQLite;
 
 namespace RF_Go.Models
@@ -21,10 +15,10 @@ namespace RF_Go.Models
         public IReadOnlyList<TimePeriod> TimePeriods => _timePeriods;
         public string TimePeriodsSerialized
         {
-            get => JsonConvert.SerializeObject(_timePeriods);
+            get => JsonSerializer.Serialize(_timePeriods);
             set
             {
-                var periods = JsonConvert.DeserializeObject<List<TimePeriod>>(value);
+                var periods = JsonSerializer.Deserialize<List<TimePeriod>>(value);
                 if (periods != null)
                 {
                     _timePeriods.Clear();

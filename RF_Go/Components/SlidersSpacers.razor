@@ -1,5 +1,4 @@
 ﻿@using MudBlazor
-@using Newtonsoft.Json
 @using System.IO
 @using System
 @using RF_Go.Data
@@ -8,7 +7,7 @@
 @using RF_Go.Components
 @using System.Diagnostics
 
-<div class="SlidersSpacers">
+<div class="SlidersSpacers" style="max-height: calc(100vh - 269px); overflow:auto;" >
     @foreach (var deviceGroup in DevicesViewModel.Devices.GroupBy(d => new { d.Brand, d.Model, d.Frequency }))
     {
         <div class="d-flex flex-column">
@@ -33,6 +32,7 @@
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
     [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
     [Parameter] public DeviceData DeviceData { get; set; }
+
     private List<int> spacings = new List<int> { 3, 5, 7, 9, 33 };
     private bool GetSpacingState(string brand, string model, string frequency, int spacing)
     {
@@ -131,7 +131,6 @@
                                                                     d.Model == model &&
                                                                         d.Frequency == frequency))
         {
-            Debug.Print("go oa o ao g!");
             DevicesViewModel.SetOperatingDevice(device);
             await DevicesViewModel.SaveDeviceAsync();
         }

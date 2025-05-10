@@ -7,7 +7,7 @@
 
 
 <MudCard Class="pa-4">
-    <MudText Typo="Typo.h6" Align="Align.Center">Acheter une Licence</MudText>
+    <MudText Typo="Typo.h6" Align="Align.Center">Buy a license</MudText>
     <MudSelect T="string" @bind-Value="SelectedLicenseType" FullWidth="true">
         <MudSelectItem Value="@("Standard")">Standard</MudSelectItem>
         <MudSelectItem Value="@("Premium")">Premium</MudSelectItem>
@@ -22,7 +22,6 @@
 </MudCard>
 
 @code {
-    private string Email = "";
     private string SelectedLicenseType = "Standard";
     private string Message = "";
     private string BaseURL = AppConfig.AppBaseUrl + "/login";

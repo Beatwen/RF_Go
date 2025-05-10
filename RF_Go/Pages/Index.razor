@@ -1,10 +1,10 @@
 ﻿@page "/index"
 @inherits ComponentBase
 
-@using Newtonsoft.Json
 @using System.IO
 @using System
 @using System.Text
+@using System.Text.Json
 @using RF_Go.Components.Licensing
 @using RF_Go.Data
 @using RF_Go.Models
@@ -29,7 +29,7 @@
     @if (isLoadingJSON)
     {
         <MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column justify-center" style="height:100vh;">
-            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4" >Creating your account...</MudText>
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4" >Loading devices...</MudText>
             <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Striped="true" Size="Size.Medium" Class="w-50 my-7" />
         </MudContainer>
     }
@@ -49,6 +49,7 @@
                             ExclusionChannelViewModel="ExclusionChannelViewModel"
                             DevicesViewModel="DevicesViewModel"
                             GroupsViewModel="GroupsViewModel"
+                            OnDeviceSaved="OnDeviceSaved"
                             FrequencyDataViewModel="FrequencyDataViewModel"/>
                         </MudPaper>
                     </MudItem>
@@ -88,14 +89,10 @@
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
     private bool isLoadingJSON = true;
-    private bool _selectOnRowClick = true;
     private DeviceData deviceData;
-    private int id;
     private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
-    private MudTable<RFDevice> mudTable;
     private bool selectAll { get; set; }
     private List<string> clickedEvents = new();
-    private RFDevice selectedItem1 = null;
     public List<ChartSeries> Series { get; set; } = new();
     public string[] XAxisLabels => Enumerable.Range(100000, 1000000).Select(x => x.ToString()).ToArray();
 
@@ -103,6 +100,14 @@
     {
         StateHasChanged();
     }
+
+    private async Task OnDeviceSaved()
+    {
+        await DevicesViewModel.LoadDevicesAsync();
+        await FrequencyDataViewModel.LoadFrequencyDataAsync();
+        StateHasChanged();
+    }
+
     private bool EnableSpacingInChannels(string brand, string model, string frequency, int spacing)
     {
         return true;
@@ -125,8 +130,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        var json = DeviceDataJson.Devices;
-        deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+        deviceData = DeviceDataJson.GetDeviceData();
         await DevicesViewModel.LoadDevicesAsync();
         await FrequencyDataViewModel.LoadFrequencyDataAsync();
 

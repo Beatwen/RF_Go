@@ -2,15 +2,10 @@
 using System.Diagnostics;
 using RF_Go.Services.Commands;
 using RF_Go.Services.NetworkProtocols;
-using System.Threading.Tasks;
 using RF_Go.Services.DeviceHandlers;
 using RF_Go.Utils.ValidationRules;
 using System.Text.Json;
-using MudBlazor;
-using RF_Go.Components;
 using RF_Go.ViewModels;
-using Microsoft.Maui.Controls;
-using Newtonsoft.Json;
 using RF_Go.Data;
 
 
@@ -35,14 +30,13 @@ namespace RF_Go.Services.Mapping
 
         public static RFDevice CastDeviceDiscoveredToRFDevice(DeviceDiscoveredEventArgs device)
         {
-            var brand = device.Brand;
             if (device == null)
             {
                 throw new ArgumentNullException("Device cannot be null");
             }
             try
             {
-                RFDevice rfDevice = new RFDevice
+                RFDevice rfDevice = new ()
                 {
                     Name = device.Name,
                     Brand = device.Brand,
@@ -50,7 +44,7 @@ namespace RF_Go.Services.Mapping
                     Model = device.Type,
                     IpAddress = device.IPAddress,
                     SerialNumber = device.SerialNumber,
-                    Channels = new List<RFChannel>()
+                    Channels = []
                 };
 
                 foreach (var channel in device.Channels)
@@ -178,17 +172,11 @@ namespace RF_Go.Services.Mapping
 
         public async Task SyncFromDevice(RFDevice offlineDevice)
         {
-            if (offlineDevice == null)
-            {
-                throw new ArgumentNullException("Device cannot be null");
-            }
+            
             try
             {
                 var deviceInfo = await FetchDeviceData(offlineDevice);
-                if (deviceInfo == null)
-                {
-                    throw new Exception("Device not found on the network.");
-                }
+                ArgumentNullException.ThrowIfNull(offlineDevice, nameof(offlineDevice));
 
                 offlineDevice.Name = deviceInfo.Name;
                 offlineDevice.Frequency = deviceInfo.Frequency;
@@ -228,8 +216,7 @@ namespace RF_Go.Services.Mapping
         {
             var errors = new List<string>();
             var discoveredDevices = _discoveryService.DiscoveredDevices.ToList();
-            var json = DeviceDataJson.Devices;
-            var deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+            var deviceData = DeviceDataJson.GetDeviceData();
 
             foreach (var discoveredDevice in discoveredDevices)
             {
@@ -250,8 +237,8 @@ namespace RF_Go.Services.Mapping
 
                     try
                     {
-                        _devicesViewModel.SaveDataDevicesInfo(device);
-                        _devicesViewModel.SaveDataChannelsInfo(device);
+                        DevicesViewModel.SaveDataDevicesInfo(device);
+                        DevicesViewModel.SaveDataChannelsInfo(device);
                         device.IsOnline = true;
                         device.IsSynced = true;
                         var clonedDevice = device.Clone();

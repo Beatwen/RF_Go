@@ -15,7 +15,7 @@
 
 <MudGrid Spacing="3" Class="pl-6 pr-6 pb-6">
     <MudItem xs="12" md="6" Class="table-container">
-        <MudTable Breakpoint="Breakpoint.None" Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" Height="75vh" FixedHeader="true" Bordered="true">
+        <MudTable Breakpoint="Breakpoint.None" Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" Height="75vh" FixedHeader="true" Bordered="true" Outlined="true" Class="border-solid border-1 mud-border-secondary">
             <HeaderContent>
                 <MudTh>
                     <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAll(IsChecked)" />
@@ -35,7 +35,7 @@
     </MudItem>
 
     <MudItem xs="12" md="6" Class="table-container">
-        <MudCard Elevation="0">
+        <MudCard Elevation="0" Outlined="true" Class="border-solid border-1 mud-border-secondary">
         <MudCardHeader>
             <CardHeaderContent>
                 <MudText Typo="Typo.h6">TV Channels Filter</MudText>
@@ -48,36 +48,36 @@
                 </div>
             </CardHeaderActions>
         </MudCardHeader>
-    <MudCardContent>
-                <MudTable Elevation="0" Items="@ExclusionChannelViewModel.UserAddedChannels"
-                          FixedHeader="true"
-                          Hover="true"
-                          Bordered="true"
-                          Dense="true"
-                          Breakpoint="Breakpoint.None"
-                          Height="20vh">
-                    <HeaderContent>
-                        <MudTh>
-                            <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAllUserChan(IsChecked)" />
-                        </MudTh>
-                        <MudTh>Frequency Range</MudTh>
-                        <MudTh></MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd>
-                            <MudCheckBox Value="@context.Exclude" ValueChanged="(bool isChecked) => ToggleExclusionUserChannels(context, isChecked)" />
-                        </MudTd>
-                        <MudTd>
-                            <div class="d-flex align-center">
-                                @context.StartFrequency - @context.EndFrequency
-                            </div>
-                        </MudTd>
-                        <MudTd>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteExclusionChannel(context)" Size="Size.Small" />
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-        </MudCardContent>
+        <MudCardContent>
+                    <MudTable Elevation="0" Items="@ExclusionChannelViewModel.UserAddedChannels"
+                            FixedHeader="true"
+                            Hover="true"
+                            Bordered="true"
+                            Dense="true"
+                            Breakpoint="Breakpoint.None"
+                            Height="20vh">
+                        <HeaderContent>
+                            <MudTh>
+                                <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAllUserChan(IsChecked)" />
+                            </MudTh>
+                            <MudTh>Frequency Range</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudCheckBox Value="@context.Exclude" ValueChanged="(bool isChecked) => ToggleExclusionUserChannels(context, isChecked)" />
+                            </MudTd>
+                            <MudTd>
+                                <div class="d-flex align-center">
+                                    @context.StartFrequency - @context.EndFrequency
+                                </div>
+                            </MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteExclusionChannel(context)" Size="Size.Small" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+            </MudCardContent>
         </MudCard>
         <ScanManager OnScanVisibilityChanged="HandleScanVisibilityChanged" OnScanDeleted="HandleScanDeleted" />
     </MudItem>

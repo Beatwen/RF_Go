@@ -1,5 +1,4 @@
 ﻿﻿@using MudBlazor
-@using Newtonsoft.Json
 @using System.IO
 @using System
 @using RF_Go.Data
@@ -7,9 +6,9 @@
 @using RF_Go.ViewModels
 @using System.Diagnostics
 @inject ISnackbar Snackbar
-
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject BackupFrequenciesViewModel BackupFrequenciesViewModel
 
 @* <MudText Typo="Typo.h5" Class="pl-6 pt-2">Devices Selection</MudText> */ *@
 
@@ -66,6 +65,15 @@
                 }
             </MudSelect>
         </MudItem>
+        <MudItem xs="12">
+            <MudSelect HelperText="Number of backup frequencies" Placeholder="Please Select" AdornmentColor="Color.Primary"
+            @bind-Value="@selectedBackupCount">
+                @foreach (var option in backupCountOptions)
+                {
+                    <MudSelectItem T="int" value="@option">@option</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
         <MudButton @onclick="() => SaveDeviceInDB(Device)">Save device</MudButton>
     </MudGrid>
 </div>
@@ -78,13 +86,12 @@
     [Parameter] public EventCallback OnDeviceSaved { get; set; }
 
     private RFDevice Device => DevicesViewModel.OperatingDevice;
-    private string searchString1 = "";
-    private MudTable<RFDevice> mudTable;
-    private int selectedRowNumber = -1;
     private bool selectAll { get; set; }
     private List<string> clickedEvents = new();
     private int selectedQuantity = 1;
     private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
+    private int selectedBackupCount = 0;
+    private List<int> backupCountOptions = Enumerable.Range(0, 6).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,8 +102,16 @@
 
     private async Task SaveDeviceInDB(RFDevice device)
     {
+        if (string.IsNullOrEmpty(device.Brand) || string.IsNullOrEmpty(device.Model) || string.IsNullOrEmpty(device.Frequency))
+        {
+            Snackbar.Add("Please select a brand, model, and frequency", Severity.Error);
+            return;
+        }
         DevicesViewModel.SaveDataDevicesInfo(device);
         DevicesViewModel.SaveDataChannelsInfo(device);
+
+        // Save backup frequency count for this device type
+        await BackupFrequenciesViewModel.SaveBackupFrequencyCountAsync(device.Brand, device.Model, device.Frequency, selectedBackupCount);
 
         for (int i = 0; i < selectedQuantity; i++)
         {
@@ -122,7 +137,6 @@
 
     private void OnBrandChanged(string e)
     {
-        Debug.WriteLine("Brand changed");
         Device.Brand = e;
         Device.Model = string.Empty;
         Device.Frequency = string.Empty;

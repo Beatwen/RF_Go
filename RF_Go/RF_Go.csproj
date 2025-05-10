@@ -76,6 +76,7 @@
     </ItemGroup>
 
     <ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="CommunityToolkit.Maui" Version="8.0.0" />
         <PackageReference Include="LiveCharts" Version="0.9.7" />
@@ -100,7 +101,6 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.3.0" />
         <PackageReference Include="MudBlazor" Version="7.15.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
         <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.7" />
         <PackageReference Include="SQLitePCLRaw.core" Version="2.1.7" />

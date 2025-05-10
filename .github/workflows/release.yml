@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+    
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Release
+    
+    - name: Publish Windows
+      run: dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -p:RuntimeIdentifier=win-x64 --self-contained -o ./publish/win-x64
+    
+    - name: Create Windows Installer
+      run: |
+        # Ajoutez ici les commandes pour créer un installateur (ex: avec WiX ou InnoSetup)
+        # Cette étape dépend de votre système d'installation préféré
+    
+    - name: Extract Version
+      id: get_version
+      shell: pwsh
+      run: |
+        $TAG = $env:GITHUB_REF.Replace('refs/tags/', '')
+        echo "::set-output name=VERSION::$TAG"
+    
+    - name: Create GitHub Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./publish/win-x64/**/*.exe
+          ./publish/win-x64/**/*.dll
+        name: RF_Go ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        body_path: docs/releases/${{ steps.get_version.outputs.VERSION }}.md
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

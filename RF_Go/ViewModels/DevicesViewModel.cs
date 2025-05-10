@@ -1,11 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Newtonsoft.Json;
 using RF_Go.Data;
 using RF_Go.Models;
 using RF_Go.Services.NetworkProtocols;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace RF_Go.ViewModels
 {
@@ -20,9 +20,9 @@ namespace RF_Go.ViewModels
         }
 
         [ObservableProperty]
-        private ObservableCollection<RFDevice> _devices = new();
+        private ObservableCollection<RFDevice> _devices = [];
         [ObservableProperty]
-        private List<DeviceDiscoveredEventArgs> _discoveredDevices = new();
+        private List<DeviceDiscoveredEventArgs> _discoveredDevices = [];
         [ObservableProperty]
         private RFDevice _operatingDevice = new();
 
@@ -72,7 +72,10 @@ namespace RF_Go.ViewModels
             if (!isValid)
             {
                 // A FAIRE : revérifier les datas et l'erreur générer ici
-                await Shell.Current.DisplayAlert("Validation Error", errorMessage, "Ok");
+                Debug.Print("Validation Error: {0}", errorMessage); 
+                Debug.Print("Error: {0}", "Device update error"); 
+                Debug.Print("Delete Error: {0}", "Device was not deleted"); 
+
                 return;
             }
 
@@ -99,7 +102,7 @@ namespace RF_Go.ViewModels
                     }
                     else
                     {
-                        await Shell.Current.DisplayAlert("Error", "Device update error", "Ok");
+                        Debug.Print("Error ,  Device update error , Ok");
                         return;
                     }
                 }
@@ -118,7 +121,7 @@ namespace RF_Go.ViewModels
                     var (isValid, errorMessage) = device.Validate();
                     if (!isValid)
                     {
-                        await Shell.Current.DisplayAlert("Validation Error", $"Device {device.Name}: {errorMessage}", "Ok");
+                        Debug.Print("Validation Error", $"Device {device.Name}: {errorMessage}", "Ok");
                         continue;
                     }
 
@@ -144,7 +147,7 @@ namespace RF_Go.ViewModels
             var (isValid, errorMessage) = device.Validate();
             if (!isValid)
             {
-                await Shell.Current.DisplayAlert("Validation Error", errorMessage, "Ok");
+                Debug.Print("Validation Error", errorMessage, "Ok");
                 return;
             }
 
@@ -168,7 +171,7 @@ namespace RF_Go.ViewModels
                 else
                 {
                     // A FAIRE remonter les info à la snackbar
-                    await Shell.Current.DisplayAlert("Error", "Device update error", "Ok");
+                    Debug.Print("Error", "Device update error", "Ok");
                 }
             }, busyText);
         }
@@ -188,28 +191,25 @@ namespace RF_Go.ViewModels
                 }
                 else
                 {
-                    await Shell.Current.DisplayAlert("Delete Error", "Device was not deleted", "Ok");
+                    Debug.Print("Delete Error", "Device was not deleted", "Ok");
                 }
             }, "Deleting Device...");
         }
-        public void SaveDataDevicesInfo(RFDevice device)
+        public static void SaveDataDevicesInfo(RFDevice device)
         {
-            var json = DeviceDataJson.Devices;
-            var deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+            var deviceData = DeviceDataJson.GetDeviceData();
             device.Range = deviceData.Brands[device.Brand][device.Model][device.Frequency];
             device.Step = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][3];
             device.NumberOfChannels = (int)deviceData.Brands[device.Brand][device.Model][device.Frequency][2];
-            Debug.WriteLine(device.NumberOfChannels);
-            device.Channels = new List<RFChannel>();
+            device.Channels = [];
             for (int i = 0; i < device.NumberOfChannels; i++)
             {
                 device.Channels.Add(new RFChannel());
             }
         }
-        public void SaveDataChannelsInfo(RFDevice device)
+        public static void SaveDataChannelsInfo(RFDevice device)
         {
-            var json = DeviceDataJson.Devices;
-            var deviceData = JsonConvert.DeserializeObject<DeviceData>(json);
+            var deviceData = DeviceDataJson.GetDeviceData();
             var freq = deviceData.Brands[device.Brand][device.Model][device.Frequency];
             int count = 1;
             foreach (RFChannel chan in device.Channels)
@@ -240,7 +240,7 @@ namespace RF_Go.ViewModels
                     }
                     else
                     {
-                        await Shell.Current.DisplayAlert("Delete Error", "Device was not deleted", "Ok");
+                        Debug.Print("Delete Error", "Device was not deleted", "Ok");
                     }
                 }
             }, "Deleting Devices...");

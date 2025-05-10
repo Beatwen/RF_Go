@@ -79,7 +79,6 @@
 
 @code {
     private User User = null;
-    private bool IsDeleteDialogOpen = false;
     private string Message = "";
     private HttpClient client = new HttpClient();
 
@@ -90,6 +89,7 @@
 
     private async Task LogOut()
     {
+        
         try
         {
             string accessToken = await AuthService.GetValidAccessTokenAsync();
@@ -127,6 +127,7 @@
         catch (Exception ex)
         {
             Message = $"Error: {ex.Message}";
+            NavigationManager.NavigateTo("/login");
         }
     }
     // Function deleted to avoid user delete himself. User has to go through the website to delete his accound now.

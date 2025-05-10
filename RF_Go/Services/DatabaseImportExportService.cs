@@ -94,14 +94,30 @@ namespace RF_Go.Services
                         await _dbContext.DeleteAllAsync<ExclusionChannel>();
                         await _dbContext.DeleteAllAsync<FrequencyData>();
 
-                        // Insérer les nouvelles données
+                        // Dictionary to map old group IDs to new group IDs
+                        var groupIdMapping = new Dictionary<int, int>();
+
                         foreach (var group in importData.Groups)
                         {
+                            var oldId = group.ID;
+                            group.ID = 0; 
                             await _dbContext.AddItemAsync(group);
+                            
+                            // Get the new ID and store the mapping
+                            var newGroup = await _dbContext.GetAllAsync<RFGroup>();
+                            var insertedGroup = newGroup.FirstOrDefault(g => g.Name == group.Name);
+                            if (insertedGroup != null)
+                            {
+                                groupIdMapping[oldId] = insertedGroup.ID;
+                            }
                         }
 
                         foreach (var device in importData.Devices)
                         {
+                            if (device.GroupID > 0 && groupIdMapping.ContainsKey(device.GroupID))
+                            {
+                                device.GroupID = groupIdMapping[device.GroupID];
+                            }
                             await _dbContext.AddItemAsync(device);
                         }
 

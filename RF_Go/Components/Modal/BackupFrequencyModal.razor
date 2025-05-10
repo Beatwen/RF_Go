@@ -1,0 +1,130 @@
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using RF_Go.Services.Mapping
+@using MudBlazor
+@inject IDialogService Dialog
+@inject MudBlazor.ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Backup Frequencies for @($"{Device.Brand} {Device.Model} {Device.Frequency}")</MudText>
+        
+        <div class="d-flex justify-space-between align-center mb-2">
+            <MudText Typo="Typo.subtitle1">Backup Frequencies</MudText>
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      Size="Size.Small"
+                      StartIcon="@Icons.Material.Filled.Add"
+                      OnClick="AddNewBackupFrequency">
+                Add Backup
+            </MudButton>
+        </div>
+
+        <MudTable Items="@BackupFrequencies" Dense="true" Hover="true">
+            <HeaderContent>
+                <MudTh>Channel</MudTh>
+                <MudTh>Frequency</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@($"Channel {context.ChannelIndex + 1}")</MudTd>
+                <MudTd>@($"{context.BackupFrequency:#,0} MHz")</MudTd>
+                <MudTd>
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary" 
+                              Size="Size.Small"
+                              OnClick="() => ApplyFrequency(context, false)"
+                              Class="mr-2">
+                        Apply
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Success" 
+                              Size="Size.Small"
+                              OnClick="() => ApplyFrequency(context, true)"
+                              Class="mr-2">
+                        Apply & Sync
+                    </MudButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                 Color="Color.Error" 
+                                 Size="Size.Small"
+                                 OnClick="() => DeleteBackupFrequency(context)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Secondary">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public RFDevice Device { get; set; }
+    [Parameter] public RFChannel Channel { get; set; }
+    [Parameter] public BackupFrequenciesViewModel BackupFrequenciesViewModel { get; set; }
+    [Parameter] public DeviceMappingService DeviceMappingService { get; set; }
+
+    private List<RFBackupFrequency> BackupFrequencies { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        BackupFrequencies = BackupFrequenciesViewModel.GetBackupFrequenciesForDeviceType(Device.Brand, Device.Model, Device.Frequency);
+    }
+
+    private async Task AddNewBackupFrequency()
+    {
+        var newBackupFrequency = new RFBackupFrequency
+        {
+            Brand = Device.Brand,
+            Model = Device.Model,
+            Frequency = Device.Frequency,
+            ChannelIndex = BackupFrequencies.Count,
+            BackupFrequency = 0,
+            IsUsed = false,
+            MinRange = Device.Channels[0].Range[0],
+            MaxRange = Device.Channels[0].Range[1],
+            Step = Device.Channels[0].Step
+        };
+
+        await BackupFrequenciesViewModel.SaveBackupFrequencyAsync(newBackupFrequency);
+        BackupFrequencies.Add(newBackupFrequency);
+        StateHasChanged();
+    }
+
+    private async Task DeleteBackupFrequency(RFBackupFrequency backupFrequency)
+    {
+        await BackupFrequenciesViewModel.DeleteBackupFrequencyAsync(backupFrequency);
+        BackupFrequencies.Remove(backupFrequency);
+        StateHasChanged();
+    }
+
+    private async Task ApplyFrequency(RFBackupFrequency backupFrequency, bool syncAfter)
+    {
+        Channel.Frequency = backupFrequency.BackupFrequency;
+        if (syncAfter)
+        {
+            var errors = await DeviceMappingService.SyncToDevice(Device);
+            if (errors.Any())
+            {
+                foreach (var error in errors)
+                {
+                    Snackbar.Add(error, Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Frequency applied and synced successfully", Severity.Success);
+            }
+        }
+        else
+        {
+            Snackbar.Add("Frequency applied successfully", Severity.Success);
+        }
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+} 

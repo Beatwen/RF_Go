@@ -1,6 +1,5 @@
 ﻿@page "/groups-schedule"
 @using MudBlazor
-@using Newtonsoft.Json
 @using System.IO
 @using System
 @using RF_Go.Data
@@ -17,7 +16,7 @@
 
     @foreach (var group in GroupsViewModel.Groups)
     {
-        <MudCard Class="mb-4" Style="width: 100%; max-width: 600px;">
+        <MudCard Elevation="0" Outlined="true" Class="border-solid border-1 mud-border-secondary mb-2" Style="max-width: 600px;">
             <MudCardContent Class="d-flex flex-column align-center">
                 @if (temporaryGroupID == group.ID)
                 {

@@ -1,11 +1,11 @@
 ﻿
-using Newtonsoft.Json;
 using System.ComponentModel;
 using SQLite;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading.Channels;
+using System.Text.Json;
 
 
 namespace RF_Go.Models
@@ -28,15 +28,15 @@ namespace RF_Go.Models
         public List<int> Range { get; set; }
         public string RangeSerialized
         {
-            get => JsonConvert.SerializeObject(Range);
-            set => Range = JsonConvert.DeserializeObject<List<int>>(value);
+            get => JsonSerializer.Serialize(Range);
+            set => Range = JsonSerializer.Deserialize<List<int>>(value);
         }
         [Ignore]
         public List<RFChannel> Channels { get; set; } = new List<RFChannel>();
         public string ChannelsSerialized
         {
-            get => JsonConvert.SerializeObject(Channels);
-            set => Channels = JsonConvert.DeserializeObject<List<RFChannel>>(value);
+            get => JsonSerializer.Serialize(Channels);
+            set => Channels = JsonSerializer.Deserialize<List<RFChannel>>(value);
         }
         public string IpAddress { get; set; } = "0.0.0.0";
         public string Calendar { get; set; }
