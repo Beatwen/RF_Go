@@ -19,6 +19,12 @@ jobs:
       with:
         dotnet-version: 8.0.x
     
+    - name: Install MAUI Workloads
+      run: |
+        dotnet workload install maui
+        dotnet workload install android ios maccatalyst macos
+        dotnet workload restore
+    
     - name: Restore dependencies
       run: dotnet restore
     
