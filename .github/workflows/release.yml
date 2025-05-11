@@ -48,7 +48,7 @@ jobs:
     
     - name: Publish Android
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-android -o ./publish/android -p:PublishReadyToRun=false
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-android -r android-arm64 --self-contained -o ./publish/android -p:PublishReadyToRun=false
         mkdir -p ./android-output
         cp ./publish/android/*.apk ./android-output/ 2>$null || echo "No APK files found"
         Compress-Archive -Path ./android-output/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip -ErrorAction SilentlyContinue
@@ -56,8 +56,14 @@ jobs:
     
     - name: Publish macOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst -p:PublishReadyToRun=false
-        Compress-Archive -Path ./publish/maccatalyst/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos.zip -ErrorAction SilentlyContinue
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst-x64 -p:PublishReadyToRun=false
+        Compress-Archive -Path ./publish/maccatalyst-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip -ErrorAction SilentlyContinue
+      continue-on-error: true
+    
+    - name: Publish iOS
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false
+        Compress-Archive -Path ./publish/ios-arm64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip -ErrorAction SilentlyContinue
       continue-on-error: true
     
     - name: Create GitHub Release
@@ -67,7 +73,8 @@ jobs:
         files: |
           ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip
           ./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip
-          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos.zip
+          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip
+          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip
         name: RF_Go ${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
