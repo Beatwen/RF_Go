@@ -66,18 +66,51 @@ jobs:
         Compress-Archive -Path ./publish/ios-arm64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip -ErrorAction SilentlyContinue
       continue-on-error: true
     
+    - name: Create release notes
+      run: |
+        $content = "# RF_Go v${{ steps.get_version.outputs.VERSION }}`n`n"
+        $content += "Date de sortie: $(Get-Date -Format 'yyyy-MM-dd')`n`n"
+        $content += "## Nouveautés`n"
+        $content += "- Version initiale de RF_Go`n"
+        $content += "- Fonctionnalité de gestion des scans`n"
+        $content += "- Capacités d'import/export`n`n"
+        $content += "## Notes importantes`n"
+        $content += "- Cette version nécessite .NET 8.0 ou supérieur`n"
+        $content += "- Compatible avec Windows 10/11`n"
+        Set-Content -Path "./release-notes.md" -Value $content
+    
+    - name: Find available files
+      id: find_files
+      shell: pwsh
+      run: |
+        $files = @()
+        
+        if (Test-Path "./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip") {
+          $files += "./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip"
+        }
+        
+        if (Test-Path "./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip") {
+          $files += "./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip"
+        }
+        
+        if (Test-Path "./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip") {
+          $files += "./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip"
+        }
+        
+        if (Test-Path "./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip") {
+          $files += "./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip"
+        }
+        
+        $filesJson = $files | ConvertTo-Json -Compress
+        echo "FILES=$filesJson" >> $env:GITHUB_OUTPUT
+
     - name: Create GitHub Release
-      id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip
-          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip
-          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip
-          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip
+        files: ${{ fromJson(steps.find_files.outputs.FILES) }}
         name: RF_Go ${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
-        body_path: docs/releases/${{ steps.get_version.outputs.VERSION }}.md
+        body_path: ./release-notes.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
