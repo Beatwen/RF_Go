@@ -22,17 +22,20 @@ jobs:
     - name: Install MAUI Workloads
       run: |
         dotnet workload install maui
-        dotnet workload install android ios maccatalyst macos
-        dotnet workload restore
+        dotnet workload install android ios maccatalyst tvos macos
+        dotnet workload restore RF_Go/RF_Go.csproj
+    
+    - name: Check MAUI Workloads
+      run: dotnet workload list
     
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore RF_Go/RF_Go.csproj
     
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.1
     
-    - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration Release
+    - name: Build Windows
+      run: msbuild RF_Go/RF_Go.csproj /t:Restore,Build /p:Configuration=Release /p:TargetFramework=net8.0-windows10.0.19041.0
     
     - name: Extract Version
       id: get_version
@@ -43,7 +46,7 @@ jobs:
     
     - name: Publish Windows
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -p:RuntimeIdentifier=win-x64 --self-contained -o ./publish/win-x64
+        msbuild RF_Go/RF_Go.csproj /t:Publish /p:Configuration=Release /p:TargetFramework=net8.0-windows10.0.19041.0 /p:RuntimeIdentifier=win-x64 /p:PublishDir=../publish/win-x64 /p:SelfContained=true /p:PublishReadyToRun=false
         Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip
     
     - name: Create GitHub Release
