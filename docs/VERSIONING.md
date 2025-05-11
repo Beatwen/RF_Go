@@ -40,7 +40,7 @@ Le projet utilise [Semantic Versioning 2.0.0](https://semver.org/), avec une str
 
 ## Nomenclature des Branches
 
-- `main`: Code de production stable
+- `master`: Code de production stable
 - `develop`: Développement en cours
 - `feature/xxx`: Nouvelles fonctionnalités
 - `bugfix/xxx`: Corrections de bugs
