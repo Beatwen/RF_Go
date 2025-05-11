@@ -17,6 +17,7 @@ Le projet utilise [Semantic Versioning 2.0.0](https://semver.org/), avec une str
 1. Mettre à jour `RF_Go/Utils/Version.cs` avec le nouveau numéro de version et la date
 2. Mettre à jour le `CHANGELOG.md` avec les nouveautés, changements et corrections
 3. Créer un fichier de documentation dans `docs/releases/vX.Y.Z.md`
+4. Créez un tag et une release GitHub
 
 ### 2. Création de la Release GitHub
 
