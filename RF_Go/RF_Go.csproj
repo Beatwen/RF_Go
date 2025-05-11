@@ -40,6 +40,12 @@
         <GenerateTestArtifacts>True</GenerateTestArtifacts>
         <AppInstallerUri>C:\Users\c_bou\source\repos\RF_Go\Installers</AppInstallerUri>
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+        
+        <!-- RuntimeIdentifiers pour toutes les plateformes -->
+        <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
+        <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">iossimulator-x64;ios-arm64</RuntimeIdentifiers>
+        <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
+        <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">win-x64;win-x86</RuntimeIdentifiers>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
@@ -49,6 +55,10 @@
 	    <ProvisioningType>manual</ProvisioningType>
     </PropertyGroup>
 
+    <!-- Désactivation de ReadyToRun pour éviter les problèmes de compilation -->
+    <PropertyGroup>
+      <PublishReadyToRun>false</PublishReadyToRun>
+    </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|AnyCPU'">
       <CodesignExtraArgs>269570</CodesignExtraArgs>

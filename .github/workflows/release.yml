@@ -22,20 +22,17 @@ jobs:
     - name: Install MAUI Workloads
       run: |
         dotnet workload install maui
-        dotnet workload install android ios maccatalyst tvos macos
-        dotnet workload restore RF_Go/RF_Go.csproj
-    
-    - name: Check MAUI Workloads
-      run: dotnet workload list
+        dotnet workload install android ios maccatalyst macos
+        dotnet workload restore
     
     - name: Restore dependencies
-      run: dotnet restore RF_Go/RF_Go.csproj
+      run: dotnet restore
     
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.1
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
     
-    - name: Build Windows
-      run: msbuild RF_Go/RF_Go.csproj /t:Restore,Build /p:Configuration=Release /p:TargetFramework=net8.0-windows10.0.19041.0
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Release
     
     - name: Extract Version
       id: get_version
@@ -46,8 +43,22 @@ jobs:
     
     - name: Publish Windows
       run: |
-        msbuild RF_Go/RF_Go.csproj /t:Publish /p:Configuration=Release /p:TargetFramework=net8.0-windows10.0.19041.0 /p:RuntimeIdentifier=win-x64 /p:PublishDir=../publish/win-x64 /p:SelfContained=true /p:PublishReadyToRun=false
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/win-x64 -p:PublishReadyToRun=false
         Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip
+    
+    - name: Publish Android
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-android -o ./publish/android -p:PublishReadyToRun=false
+        mkdir -p ./android-output
+        cp ./publish/android/*.apk ./android-output/ 2>$null || echo "No APK files found"
+        Compress-Archive -Path ./android-output/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip -ErrorAction SilentlyContinue
+      continue-on-error: true
+    
+    - name: Publish macOS
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst -p:PublishReadyToRun=false
+        Compress-Archive -Path ./publish/maccatalyst/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos.zip -ErrorAction SilentlyContinue
+      continue-on-error: true
     
     - name: Create GitHub Release
       id: create_release
@@ -55,6 +66,8 @@ jobs:
       with:
         files: |
           ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip
+          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip
+          ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos.zip
         name: RF_Go ${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
