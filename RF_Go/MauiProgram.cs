@@ -64,11 +64,39 @@ namespace RF_Go
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(AppConfig.ApiBaseUrl) });
             builder.Services.AddSingleton<AuthService>();
 
+            // Device data
+            builder.Services.AddSingleton(_ => DeviceDataJson.GetDeviceData());
+            
+            // Device handlers
             builder.Services.AddSingleton<IDeviceHandler, SennheiserDeviceHandler>();
+            
+            // Command sets
             builder.Services.AddSingleton<IDeviceCommandSet, SennheiserCommandSet>();
+            builder.Services.AddSingleton<IDeviceCommandSet, SennheiserG4CommandSet>();
+            builder.Services.AddSingleton<SennheiserG4CommandSet>();
+            builder.Services.AddSingleton<SennheiserCommandSet>();
+            
+            // Communication service (unifié pour tous les types d'appareils)
             builder.Services.AddSingleton<UDPCommunicationService>();
+            
+            // Register device handlers with their correct dependencies
+            builder.Services.AddSingleton<SennheiserDeviceHandler>(sp => 
+                new SennheiserDeviceHandler(
+                    sp.GetRequiredService<UDPCommunicationService>(),
+                    sp.GetRequiredService<SennheiserCommandSet>()));
+                    
+            builder.Services.AddSingleton<SennheiserG4DeviceHandler>(sp => 
+                new SennheiserG4DeviceHandler(
+                    sp.GetRequiredService<SennheiserG4CommandSet>(), 
+                    sp.GetRequiredService<UDPCommunicationService>(), 
+                    sp.GetRequiredService<DeviceData>()));
+                    
+            // Register handlers with the interface
+            builder.Services.AddSingleton<IDeviceHandler>(sp => sp.GetRequiredService<SennheiserDeviceHandler>());
+            builder.Services.AddSingleton<IDeviceHandler>(sp => sp.GetRequiredService<SennheiserG4DeviceHandler>());
+            
             builder.Services.AddSingleton<DeviceMappingService>();
-            builder.Services.AddSingleton<SennheiserDeviceHandler>();
+            
             builder.Services.AddSingleton<ShureDiscoveryService>();
             builder.Services.AddSingleton<SennheiserDiscoveryService>();
 

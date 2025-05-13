@@ -27,9 +27,10 @@
             <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
                 No devices found. Start by adding a device or import a session.
             </MudAlert>
-            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => OpenDialogToImportDatabaseAsync())" Title="Import Database"/>
+            <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="@(() => OpenDialogToImportDatabaseAsync())" Title="Import Database"/>
             <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenDialogToAddDeviceAsync())" Title="Add Device"/>
             <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" OnClick="@(() => OpenDialogToExportDatabaseAsync())" Title="Export Database"/>
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.AutoFixHigh" OnClick='() => MagicSync("FromDevices")' Title="Auto Sync devices on network" />
         </MudPaper>
     </MudContainer>
 }

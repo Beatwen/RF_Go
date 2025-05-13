@@ -68,6 +68,33 @@ namespace RF_Go.Services.Mapping
             }
         }
 
+        private IDeviceHandler GetAppropriateHandler(RFDevice device)
+        {
+            if (device == null)
+            {
+                return null;
+            }
+
+            // Prioritize G4 handler for G4 devices
+            if (device.Model?.Contains("G4") == true)
+            {
+                var g4Handler = _deviceHandlers.FirstOrDefault(h => 
+                    h.Brand == device.Brand && 
+                    h.GetType().Name.Contains("G4"));
+                
+                if (g4Handler != null)
+                {
+                    Debug.WriteLine($"Selected G4 handler for device {device.Name}");
+                    return g4Handler;
+                }
+            }
+
+            // Fall back to regular handler by brand
+            var regularHandler = _deviceHandlers.FirstOrDefault(h => h.Brand == device.Brand);
+            Debug.WriteLine($"Selected regular handler {regularHandler?.GetType().Name} for device {device.Name}");
+            return regularHandler;
+        }
+
         public async Task<List<string>> FirstSyncToDevice(RFDevice offlineDevice, RFDevice onlineDevice)
         {
             var errors = new List<string>();
@@ -76,26 +103,54 @@ namespace RF_Go.Services.Mapping
             {
                 throw new ArgumentNullException("Device cannot be null");
             }
-            // A FAIRE : this cannot stay like this, the port must be dynamic
-            var ip = onlineDevice.IpAddress;
-            var port = 45;
 
-            foreach (var channel in offlineDevice.Channels)
+            var handler = GetAppropriateHandler(onlineDevice);
+            if (handler == null)
             {
-                var channelFrequencyCommand = _commandSet.SetChannelFrequencyCommand(channel.chanNumber, channel.Frequency);
-                await _communicationService.SendCommandAsync(ip, port, channelFrequencyCommand);
+                var errorMessage = $"No handler found for brand {onlineDevice.Brand}";
+                Debug.WriteLine(errorMessage);
+                errors.Add(errorMessage);
+                return errors;
+            }
 
-                var (validatedChannelName, validationErrors) = ValidationHelper.ValidateInput(onlineDevice.Model, channel.ChannelName);
-                if (validationErrors.Any())
+            try
+            {
+                // Create a DeviceDiscoveredEventArgs from the offline device, but with online device's IP
+                var deviceInfo = new DeviceDiscoveredEventArgs
                 {
-                    errors.AddRange(validationErrors.Select(error => $"Validation error for channel {channel.chanNumber}: {error}"));
+                    Name = offlineDevice.Name,
+                    Brand = offlineDevice.Brand,
+                    Type = offlineDevice.Model,
+                    SerialNumber = offlineDevice.SerialNumber,
+                    IPAddress = onlineDevice.IpAddress, // Use online device's IP address
+                    Frequency = offlineDevice.Frequency,
+                    Channels = offlineDevice.Channels.Select(c => new DeviceDiscoveredEventArgs.ChannelInfo
+                    {
+                        ChannelNumber = c.chanNumber,
+                        Name = c.ChannelName,
+                        Frequency = c.Frequency.ToString()
+                    }).ToList()
+                };
+
+                // Use the SyncToDevice method to update the physical device
+                var syncErrors = await handler.SyncToDevice(deviceInfo);
+                if (syncErrors.Any())
+                {
+                    errors.AddRange(syncErrors);
+                    Debug.WriteLine($"Errors during first sync to device {offlineDevice.Name}: {string.Join(", ", syncErrors)}");
                 }
                 else
                 {
-                    var channelNameCommand = _commandSet.SetChannelNameCommand(channel.chanNumber, validatedChannelName);
-                    await _communicationService.SendCommandAsync(ip, port, channelNameCommand);
+                    Debug.WriteLine($"Device {offlineDevice.Name} synced successfully");
                 }
             }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Error syncing device {offlineDevice.Name}: {ex.Message}";
+                Debug.WriteLine(errorMessage);
+                errors.Add(errorMessage);
+            }
+
             return errors;
         }
 
@@ -107,25 +162,52 @@ namespace RF_Go.Services.Mapping
             {
                 throw new ArgumentNullException("Device cannot be null");
             }
-            // A FAIRE this cannot stay like this, the port must be dynamic
-            var ip = offlineDevice.IpAddress;
-            var port = 45;
 
-            foreach (var channel in offlineDevice.Channels)
+            var handler = GetAppropriateHandler(offlineDevice);
+            if (handler == null)
             {
-                var channelFrequencyCommand = _commandSet.SetChannelFrequencyCommand(channel.chanNumber, channel.Frequency);
-                await _communicationService.SendCommandAsync(ip, port, channelFrequencyCommand);
+                var errorMessage = $"No handler found for brand {offlineDevice.Brand}";
+                Debug.WriteLine(errorMessage);
+                errors.Add(errorMessage);
+                return errors;
+            }
 
-                var (validatedChannelName, validationErrors) = ValidationHelper.ValidateInput(offlineDevice.Model, channel.ChannelName);
-                if (validationErrors.Any())
+            try
+            {
+                // Create a DeviceDiscoveredEventArgs from the offline device
+                var deviceInfo = new DeviceDiscoveredEventArgs
                 {
-                    errors.AddRange(validationErrors.Select(error => $"Validation error for channel {channel.chanNumber}: {error}"));
+                    Name = offlineDevice.Name,
+                    Brand = offlineDevice.Brand,
+                    Type = offlineDevice.Model,
+                    SerialNumber = offlineDevice.SerialNumber,
+                    IPAddress = offlineDevice.IpAddress,
+                    Frequency = offlineDevice.Frequency,
+                    Channels = offlineDevice.Channels.Select(c => new DeviceDiscoveredEventArgs.ChannelInfo
+                    {
+                        ChannelNumber = c.chanNumber,
+                        Name = c.ChannelName,
+                        Frequency = c.Frequency.ToString()
+                    }).ToList()
+                };
+
+                // Use the SyncToDevice method to update the physical device
+                var syncErrors = await handler.SyncToDevice(deviceInfo);
+                if (syncErrors.Any())
+                {
+                    errors.AddRange(syncErrors);
+                    Debug.WriteLine($"Errors during sync to device {offlineDevice.Name}: {string.Join(", ", syncErrors)}");
                 }
                 else
                 {
-                    var channelNameCommand = _commandSet.SetChannelNameCommand(channel.chanNumber, validatedChannelName);
-                    await _communicationService.SendCommandAsync(ip, port, channelNameCommand);
+                    Debug.WriteLine($"Device {offlineDevice.Name} synced successfully");
                 }
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Error syncing device {offlineDevice.Name}: {ex.Message}";
+                Debug.WriteLine(errorMessage);
+                errors.Add(errorMessage);
             }
 
             return errors;
@@ -172,17 +254,44 @@ namespace RF_Go.Services.Mapping
 
         public async Task SyncFromDevice(RFDevice offlineDevice)
         {
-            
             try
             {
-                var deviceInfo = await FetchDeviceData(offlineDevice);
                 ArgumentNullException.ThrowIfNull(offlineDevice, nameof(offlineDevice));
 
+                // Find appropriate handler for the device's brand
+                var handler = GetAppropriateHandler(offlineDevice);
+                if (handler == null)
+                {
+                    throw new Exception($"No handler found for brand {offlineDevice.Brand}");
+                }
+
+                // Create a DeviceDiscoveredEventArgs to fetch device data
+                var deviceInfo = new DeviceDiscoveredEventArgs
+                {
+                    Name = offlineDevice.Name,
+                    Brand = offlineDevice.Brand,
+                    Type = offlineDevice.Model,
+                    SerialNumber = offlineDevice.SerialNumber,
+                    IPAddress = offlineDevice.IpAddress,
+                    Frequency = offlineDevice.Frequency,
+                    Channels = offlineDevice.Channels.Select(c => new DeviceDiscoveredEventArgs.ChannelInfo
+                    {
+                        ChannelNumber = c.chanNumber,
+                        Name = c.ChannelName,
+                        Frequency = c.Frequency.ToString()
+                    }).ToList()
+                };
+
+                // Use the handler to fetch the latest data from the physical device
+                await handler.HandleDevice(deviceInfo);
+
+                // Update offline device with data from the physical device
                 offlineDevice.Name = deviceInfo.Name;
                 offlineDevice.Frequency = deviceInfo.Frequency;
                 offlineDevice.IpAddress = deviceInfo.IPAddress;
                 offlineDevice.SerialNumber = deviceInfo.SerialNumber;
 
+                // Update channels
                 foreach (var channel in deviceInfo.Channels)
                 {
                     Debug.WriteLine($"Channel Number: {channel.ChannelNumber}, Name: {channel.Name}, Frequency: {channel.Frequency}");
@@ -203,11 +312,11 @@ namespace RF_Go.Services.Mapping
                         Debug.WriteLine($"Channel number {channel.ChannelNumber} is out of range for offlineDevice.Channels");
                     }
                 }
-                Debug.WriteLine("SyncFromDeviceUsingOfflineDevice completed successfully");
+                Debug.WriteLine("SyncFromDevice completed successfully");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in SyncFromDeviceUsingOfflineDevice: {ex.Message}");
+                Debug.WriteLine($"Error in SyncFromDevice: {ex.Message}");
                 throw;
             }
         }
@@ -312,6 +421,55 @@ namespace RF_Go.Services.Mapping
 
             await handler.HandleDevice(deviceInfo);
             return deviceInfo;
+        }
+
+        public async Task<bool> IsDevicePendingSync(RFDevice device)
+        {
+            try
+            {
+                // Find appropriate handler for the device's brand
+                var handler = GetAppropriateHandler(device);
+                if (handler == null)
+                {
+                    Debug.WriteLine($"No handler found for brand {device.Brand}");
+                    return false;
+                }
+
+                // Create a DeviceDiscoveredEventArgs to check sync status
+                var deviceInfo = new DeviceDiscoveredEventArgs
+                {
+                    Name = device.Name,
+                    Brand = device.Brand,
+                    Type = device.Model,
+                    SerialNumber = device.SerialNumber,
+                    IPAddress = device.IpAddress,
+                    Frequency = device.Frequency,
+                    Channels = device.Channels.Select(c => new DeviceDiscoveredEventArgs.ChannelInfo
+                    {
+                        ChannelNumber = c.chanNumber,
+                        Name = c.ChannelName,
+                        Frequency = c.Frequency.ToString()
+                    }).ToList()
+                };
+
+                // Use the handler's IsDevicePendingSync method to check if sync is needed
+                var (isEqual, isNotResponding) = await handler.IsDevicePendingSync(deviceInfo);
+                
+                // If device is not responding, we can't determine if sync is needed
+                if (isNotResponding)
+                {
+                    Debug.WriteLine($"Device {device.Name} is not responding");
+                    return false;
+                }
+                
+                // If isEqual is false, the device needs sync
+                return !isEqual;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error checking if device {device.Name} is pending sync: {ex.Message}");
+                return false;
+            }
         }
     }
 }

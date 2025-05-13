@@ -10,9 +10,9 @@ namespace RF_Go.Services.DeviceHandlers
     {
         public string Brand => "Sennheiser";
         private readonly UDPCommunicationService _communicationService;
-        private readonly IDeviceCommandSet _commandSet;
+        private readonly SennheiserCommandSet _commandSet;
         private readonly int Port = 45;
-        public SennheiserDeviceHandler(UDPCommunicationService communicationService, IDeviceCommandSet commandSet)
+        public SennheiserDeviceHandler(UDPCommunicationService communicationService, SennheiserCommandSet commandSet)
         {
             _communicationService = communicationService;
             _commandSet = commandSet;
@@ -94,6 +94,82 @@ namespace RF_Go.Services.DeviceHandlers
             }
 
             return (true, false);
+        }
+
+        public async Task<List<string>> SyncToDevice(DeviceDiscoveredEventArgs deviceInfo)
+        {
+            var errors = new List<string>();
+            
+            if (deviceInfo.IPAddress == null)
+            {
+                Debug.WriteLine("No IP addresses found for the device.");
+                errors.Add("No IP address found for the device.");
+                return errors;
+            }
+
+            var ip = deviceInfo.IPAddress;
+
+            try
+            {
+                foreach (var channel in deviceInfo.Channels)
+                {
+                    if (channel.ChannelNumber < 1 || channel.ChannelNumber > 2)
+                    {
+                        errors.Add($"Invalid channel number: {channel.ChannelNumber}. Sennheiser devices support channels 1-2.");
+                        continue;
+                    }
+
+                    // Set channel frequency
+                    if (!string.IsNullOrEmpty(channel.Frequency) && int.TryParse(channel.Frequency, out int frequency))
+                    {
+                        var frequencyCommand = _commandSet.SetChannelFrequencyCommand(channel.ChannelNumber, frequency);
+                        var frequencyResponse = await _communicationService.SendCommandAsync(ip, Port, frequencyCommand);
+                        Debug.WriteLine($"Frequency set response for channel {channel.ChannelNumber}: {frequencyResponse}");
+                        
+                        // Check for errors in response
+                        if (frequencyResponse.Contains("error") || frequencyResponse.Contains("Error"))
+                        {
+                            errors.Add($"Error setting frequency for channel {channel.ChannelNumber}: {frequencyResponse}");
+                        }
+                    }
+                    else
+                    {
+                        errors.Add($"Invalid frequency format for channel {channel.ChannelNumber}: {channel.Frequency}");
+                    }
+
+                    // Set channel name
+                    if (!string.IsNullOrEmpty(channel.Name))
+                    {
+                        // Validate channel name
+                        var validChannelName = channel.Name;
+                        // Truncate if too long
+                        if (validChannelName.Length > 8)
+                        {
+                            validChannelName = validChannelName.Substring(0, 8);
+                            Debug.WriteLine($"Channel name truncated to 8 characters: {validChannelName}");
+                        }
+                        
+                        var nameCommand = _commandSet.SetChannelNameCommand(channel.ChannelNumber, validChannelName);
+                        var nameResponse = await _communicationService.SendCommandAsync(ip, Port, nameCommand);
+                        Debug.WriteLine($"Name set response for channel {channel.ChannelNumber}: {nameResponse}");
+                        
+                        // Check for errors in response
+                        if (nameResponse.Contains("error") || nameResponse.Contains("Error"))
+                        {
+                            errors.Add($"Error setting name for channel {channel.ChannelNumber}: {nameResponse}");
+                        }
+                    }
+                }
+
+                Debug.WriteLine($"Sync completed for device at {ip}");
+                return errors;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error during sync to device: {ex.Message}");
+                errors.Add($"Exception during sync: {ex.Message}");
+                return errors;
+            }
         }
 
         private string ExtractValue(string json, params string[] keys)
