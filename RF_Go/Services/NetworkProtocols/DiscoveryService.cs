@@ -51,7 +51,6 @@ namespace RF_Go.Services.NetworkProtocols
             _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
             TriggerSennheiserDiscovery();
             
-            // Exécuter la découverte G4 dans un thread séparé avec un timeout strict
             Task.Run(async () => {
                 try {
                     using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
@@ -89,7 +88,7 @@ namespace RF_Go.Services.NetworkProtocols
                     try
                     {
                         var resolvedAddresses = await Dns.GetHostAddressesAsync(srvRecord.Target.ToString());
-                        addressIPV4 = resolvedAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork); // Première IPv4
+                        addressIPV4 = resolvedAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
                         Debug.WriteLine($"Resolved address: {addressIPV4}");
                     }
                     catch (Exception ex)
@@ -103,7 +102,7 @@ namespace RF_Go.Services.NetworkProtocols
             {
                 Name = e.ServiceInstanceName.Labels[0],
                 Brand = "Unknown",
-                IPAddress = addressIPV4 != null ? addressIPV4.ToString() : null // Une seule IP
+                IPAddress = addressIPV4 != null ? addressIPV4.ToString() : null
             };
 
             // Determine the best handler for this service
@@ -130,7 +129,6 @@ namespace RF_Go.Services.NetworkProtocols
                         if (g4Handler != null)
                         {
                             bestHandler = g4Handler;
-                            Debug.WriteLine($"Using specialized G4 handler for {serviceName}");
                         }
                     }
                     
@@ -163,7 +161,7 @@ namespace RF_Go.Services.NetworkProtocols
                 Debug.WriteLine($"No IP addresses found for the device: {deviceInfo.Name}");
             }
 
-            var discoveredDevicesCopy = DiscoveredDevices.ToList(); // Créez une copie de la collection
+            var discoveredDevicesCopy = DiscoveredDevices.ToList();
             if (!discoveredDevicesCopy.Any(d => d.Name == deviceInfo.Name))
             {
                 DiscoveredDevices.Add(deviceInfo);
@@ -175,19 +173,17 @@ namespace RF_Go.Services.NetworkProtocols
         public void TriggerSennheiserDiscovery()
         {
             Debug.WriteLine("Triggering standard Sennheiser discovery via mDNS.");
-            // Trigger discovery for standard Sennheiser devices via mDNS
             var query = new Message
             {
                 Questions = {
-                                        new Question
-                                        {
-                                            Name = "_ssc._udp.local",
-                                            Type = DnsType.PTR
-                                        }
-                                    }
+                    new Question
+                    {
+                        Name = "_ssc._udp.local",
+                        Type = DnsType.PTR
+                    }
+                }
             };
             _multicastService.SendQuery(query);
-            // Ne pas appeler TriggerSennheiserG4Discovery() ici, c'est un processus séparé
         }
         
         private async Task TriggerSennheiserG4DiscoveryAsync(CancellationToken cancellationToken)
@@ -198,46 +194,42 @@ namespace RF_Go.Services.NetworkProtocols
                 _g4DiscoveryCts?.Cancel();
                 _g4DiscoveryCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 
+                // Clean up any existing UDP client
                 _g4UdpClient?.Dispose();
+                
+                // Create a new UDP client specifically for G4 discovery
                 _g4UdpClient = new UdpClient();
+                
+                // Configure socket options for multicast properly
                 _g4UdpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                _g4UdpClient.MulticastLoopback = true; // Let's receive our own packets for debugging
-                _g4UdpClient.EnableBroadcast = true;
+                _g4UdpClient.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
+                _g4UdpClient.MulticastLoopback = false;
                 
                 try {
-                    // Bind to the G4 discovery port
-                    _g4UdpClient.Client.Bind(new IPEndPoint(IPAddress.Any, 8133));
+                    // Bind to port 8133 on all interfaces
+                    IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 8133);
+                    _g4UdpClient.Client.Bind(localEndpoint);
+                    
+                    // Join the multicast group
                     _g4UdpClient.JoinMulticastGroup(IPAddress.Parse("224.0.0.251"));
-                    Debug.WriteLine("Successfully joined multicast group 224.0.0.251");
                     
                     // Start listening for G4 device responses
                     var listenTask = ListenForG4DevicesAsync(_g4DiscoveryCts.Token);
                     
                     // Send the discovery trigger - first attempt
                     await SendG4DiscoveryTrigger();
-                    Debug.WriteLine("Sent first G4 discovery packet, waiting for responses...");
-                    await Task.Delay(2000, cancellationToken); // Wait 2 seconds
+                    await Task.Delay(2000, cancellationToken);
                     
                     // Send a second discovery trigger
                     await SendG4DiscoveryTrigger();
-                    Debug.WriteLine("Sent second G4 discovery packet, waiting for responses...");
-                    await Task.Delay(5000, cancellationToken); // Wait longer (5 seconds) for all responses
-                    
-                    Debug.WriteLine("G4 discovery cycle completed");
-                }
-                catch (OperationCanceledException) {
-                    Debug.WriteLine("G4 discovery operation canceled");
-                }
-                catch (Exception ex) {
-                    Debug.WriteLine($"G4 discovery encountered an error but will continue: {ex.Message}");
+                    await Task.Delay(5000, cancellationToken);
                 }
                 finally {
                     // Clean up
                     try {
-                        // Leave the multicast group
                         if (_g4UdpClient != null)
                         {
-                            try { _g4UdpClient.DropMulticastGroup(IPAddress.Parse("224.0.0.251")); } catch { }
+                            _g4UdpClient.DropMulticastGroup(IPAddress.Parse("224.0.0.251"));
                             _g4UdpClient.Close();
                         }
                     } 
@@ -260,40 +252,32 @@ namespace RF_Go.Services.NetworkProtocols
         {
             try
             {
+                // Create discovery packet
                 string commandStr = "[servicecommand]devinfo\r\n";
-                List<byte> packet = new List<byte>();
+                byte[] commandBytes = Encoding.ASCII.GetBytes(commandStr);
                 
-                // Header bytes from the hex dump
-                // 12 07 06 20 00 00 19 00
-                packet.Add(0x12);
-                packet.Add(0x07);
-                packet.Add(0x06);
-                packet.Add(0x20);
-                packet.Add(0x00);
-                packet.Add(0x00);
-                packet.Add(0x19);
-                packet.Add(0x00);
+                // Create a packet with header
+                byte[] header = new byte[] { 0x12, 0x07, 0x06, 0x20, 0x00, 0x00, 0x19, 0x00 };
                 
-                packet.AddRange(Encoding.ASCII.GetBytes(commandStr));
+                // Total size is 1035 bytes
+                byte[] packet = new byte[1035];
                 
-                // Pad the packet to 1035 bytes (the exact size shown in dump)
-                int remainingBytes = 1035 - packet.Count;
-                for (int i = 0; i < remainingBytes; i++)
-                {
-                    packet.Add(0x00);
-                }
+                // Copy header
+                Array.Copy(header, 0, packet, 0, header.Length);
                 
-                // Add the specific trailer seen in the hex dump
-                // Ensure the last 3 bytes are 0x01 0x01 0x01
-                if (packet.Count >= 3)
-                {
-                    packet[^3] = 0x01;
-                    packet[^2] = 0x01;
-                    packet[^1] = 0x01;
-                }
+                // Copy command string
+                Array.Copy(commandBytes, 0, packet, header.Length, commandBytes.Length);
                 
-                Debug.WriteLine($"Sending G4 discovery packet to 224.0.0.251:8133, size: {packet.Count} bytes");
-                await _g4UdpClient.SendAsync(packet.ToArray(), packet.Count, new IPEndPoint(IPAddress.Parse("224.0.0.251"), 8133));
+                // Set footer at the end of the packet
+                packet[packet.Length - 3] = 0x01;
+                packet[packet.Length - 2] = 0x01;
+                packet[packet.Length - 1] = 0x01;
+                
+                // Create a specific endpoint for the destination
+                IPEndPoint multicastEndpoint = new IPEndPoint(IPAddress.Parse("224.0.0.251"), 8133);
+                
+                // Send the discovery packet
+                await _g4UdpClient.SendAsync(packet, packet.Length, multicastEndpoint);
             }
             catch (Exception ex)
             {
@@ -310,10 +294,9 @@ namespace RF_Go.Services.NetworkProtocols
                     var result = await _g4UdpClient.ReceiveAsync(cancellationToken);
                     string dataAscii = Encoding.ASCII.GetString(result.Buffer);
                     
-                    // Skip our own discovery packet (the one we sent)
+                    // Skip our own discovery packet
                     if (dataAscii.Contains("[servicecommand]devinfo"))
                     {
-                        Debug.WriteLine("Ignoring our own discovery packet");
                         continue;
                     }
 
@@ -321,11 +304,23 @@ namespace RF_Go.Services.NetworkProtocols
                     if (dataAscii.Contains("Model=") && 
                        (dataAscii.Contains("SR-IEMG4") || dataAscii.Contains("G4")))
                     {
-                        Debug.WriteLine($"G4 device response from {result.RemoteEndPoint}: {dataAscii}");
-                        
                         var deviceInfo = ParseG4DeviceInfo(dataAscii, result.RemoteEndPoint.Address);
                         if (deviceInfo != null)
                         {
+                            // Check if device is already synced - same logic as in OnServiceInstanceDiscovered
+                            if (!string.IsNullOrEmpty(deviceInfo.SerialNumber))
+                            {
+                                var existingDevice = _devicesViewModel.Devices.FirstOrDefault(d => d.SerialNumber == deviceInfo.SerialNumber);
+                                if (existingDevice != null)
+                                {
+                                    deviceInfo.IsSynced = true;
+                                }
+                                else
+                                {
+                                    deviceInfo.IsSynced = false;
+                                }
+                            }
+                            
                             var discoveredDevicesCopy = DiscoveredDevices.ToList();
                             if (!discoveredDevicesCopy.Any(d => d.Name == deviceInfo.Name))
                             {
@@ -333,10 +328,6 @@ namespace RF_Go.Services.NetworkProtocols
                                 DeviceDiscovered?.Invoke(this, deviceInfo);
                             }
                         }
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Ignoring packet that doesn't match G4 pattern from {result.RemoteEndPoint}");
                     }
                 }
             }
@@ -354,13 +345,10 @@ namespace RF_Go.Services.NetworkProtocols
         {
             try
             {
-                Debug.WriteLine($"Parsing G4 data: {data}");
-                
                 // First, check if this is truly a G4 device by looking for G4-specific patterns
                 if (!(data.Contains("SR-IEMG4") || data.Contains("G4 IEM") || 
                       data.Contains("Model=") && data.Contains("ID=") && data.Contains("IPA=")))
                 {
-                    Debug.WriteLine("Data not matching G4 device pattern, skipping");
                     return null;
                 }
                 
@@ -369,8 +357,6 @@ namespace RF_Go.Services.NetworkProtocols
                 string id = "";
                 string ipa = "";
                 
-                // Based on the hex dump format:
-                // "Model=SR-IEMG4   ID=001B66A6C99A   IPA=192.168.0.41"
                 int modelIndex = data.IndexOf("Model=");
                 int idIndex = data.IndexOf("ID=");
                 int ipaIndex = data.IndexOf("IPA=");
@@ -398,8 +384,6 @@ namespace RF_Go.Services.NetworkProtocols
                     {
                         ipa = remoteAddress.ToString();
                     }
-                    
-                    Debug.WriteLine($"Extracted device info: Model={model}, ID={id}, IPA={ipa}");
                 }
                 else
                 {
@@ -418,14 +402,12 @@ namespace RF_Go.Services.NetworkProtocols
                 // Check if we have a valid model and ID
                 if (string.IsNullOrEmpty(model) || string.IsNullOrEmpty(id))
                 {
-                    Debug.WriteLine("Failed to extract model or ID");
                     return null;
                 }
                 
                 // Double-check this is a G4 model
                 if (!model.Contains("G4") && !model.Contains("IEM"))
                 {
-                    Debug.WriteLine($"Model {model} doesn't appear to be a G4 device, skipping");
                     return null;
                 }
                 
@@ -444,11 +426,6 @@ namespace RF_Go.Services.NetworkProtocols
                 if (handler != null && handler.CanHandle(deviceInfo.Type))
                 {
                     handler.HandleDevice(deviceInfo).Wait();
-                    Debug.WriteLine($"G4 device handled by {handler.GetType().Name}");
-                }
-                else
-                {
-                    Debug.WriteLine($"No suitable handler found for G4 device {deviceInfo.Type}");
                 }
                 
                 return deviceInfo;
@@ -486,9 +463,7 @@ namespace RF_Go.Services.NetworkProtocols
             {
                 if (!discoveredDevices.Any(d => d.Name == device.Name))
                 {
-
                     discoveredDevices.Add(device);
-                    Debug.WriteLine($"Discovered Device: {device.Name}, IPs: {string.Join(", ", device.IPAddress)}");
                 }
             };
 
@@ -515,18 +490,19 @@ namespace RF_Go.Services.NetworkProtocols
 
             return discoveredDevices;
         }
+        
         public async Task CheckDeviceSync(object state)
         {
             try
             {
-                // Si state est un RFDevice, vérifier uniquement cet appareil
+                // If state is an RFDevice, check only that device
                 if (state is RFDevice deviceToCheck)
                 {
                     await CheckSingleDeviceSync(deviceToCheck);
                     return;
                 }
 
-                // Sinon vérifier tous les appareils
+                // Otherwise check all devices
                 var devicesCopy = _devicesViewModel.Devices.ToList();
                 foreach (var discoveredDevice in devicesCopy)
                 {
@@ -560,15 +536,12 @@ namespace RF_Go.Services.NetworkProtocols
                 
                 if (g4Handler != null)
                 {
-                    Debug.WriteLine($"Selected G4 handler for device {device.Name}");
                     return g4Handler;
                 }
             }
 
             // Fall back to regular handler by brand
-            var regularHandler = _handlers.FirstOrDefault(h => h.Brand == device.Brand);
-            Debug.WriteLine($"Selected regular handler {regularHandler?.GetType().Name} for device {device.Name}");
-            return regularHandler;
+            return _handlers.FirstOrDefault(h => h.Brand == device.Brand);
         }
 
         private IDeviceHandler GetAppropriateHandlerForType(string brand, string type)
@@ -582,13 +555,10 @@ namespace RF_Go.Services.NetworkProtocols
                 
                 if (g4Handler != null)
                 {
-                    Debug.WriteLine($"Selected G4 handler for device type {type}");
                     return g4Handler;
                 }
             }
-            var regularHandler = _handlers.FirstOrDefault(h => h.Brand == brand);
-            Debug.WriteLine($"Selected regular handler {regularHandler?.GetType().Name} for device type {type}");
-            return regularHandler;
+            return _handlers.FirstOrDefault(h => h.Brand == brand);
         }
 
         private async Task CheckSingleDeviceSync(RFDevice device)
@@ -626,13 +596,11 @@ namespace RF_Go.Services.NetworkProtocols
                 if (IsNotResponding)
                 {
                     device.IsOnline = false;
-                    Debug.WriteLine($"Device {device.Name} is not responding");
                 }
                 else
                 {
                     device.IsOnline = true;
                     device.PendingSync = !IsEqual;
-                    Debug.WriteLine($"Device {device.Name} - IsEqual: {IsEqual}, PendingSync: {device.PendingSync}");
                 }
             }
             catch (Exception ex)
