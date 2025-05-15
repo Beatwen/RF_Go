@@ -11,5 +11,14 @@
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/workflows.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Authentification",
+    "permalink": "/RF_Go/docs/features/authentication"
+  },
+  "next": {
+    "title": "Protocoles DNS et Découverte",
+    "permalink": "/RF_Go/docs/protocols/dns-discovery"
+  }
 }

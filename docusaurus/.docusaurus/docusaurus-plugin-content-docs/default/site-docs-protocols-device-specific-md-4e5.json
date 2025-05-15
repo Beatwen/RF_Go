@@ -1,7 +1,7 @@
 {
   "id": "protocols/device-specific",
   "title": "Protocoles Spécifiques aux Appareils",
-  "description": "Documentation des protocoles spécifiques aux différents appareils dans RF Go.",
+  "description": "RF Go prend en charge divers appareils audio sans fil provenant de différents fabricants, chacun avec ses propres protocoles de communication. Cette section détaille les protocoles spécifiques implémentés pour chaque type d'appareil.",
   "source": "@site/docs/protocols/device-specific.md",
   "sourceDirName": "protocols",
   "slug": "/protocols/device-specific",

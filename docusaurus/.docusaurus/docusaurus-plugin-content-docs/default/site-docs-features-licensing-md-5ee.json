@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Gestion des Fréquences",
-    "permalink": "/RF_Go/docs/features/frequency-management"
+    "title": "Gestion des scans RF",
+    "permalink": "/RF_Go/docs/features/scan-management"
   },
   "next": {
     "title": "Authentification",

@@ -1,0 +1,15 @@
+{
+  "id": "features/backup-frequencies",
+  "title": "Backup Frequencies",
+  "description": "Introduction",
+  "source": "@site/docs/features/backup-frequencies.md",
+  "sourceDirName": "features",
+  "slug": "/features/backup-frequencies",
+  "permalink": "/RF_Go/docs/features/backup-frequencies",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/backup-frequencies.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

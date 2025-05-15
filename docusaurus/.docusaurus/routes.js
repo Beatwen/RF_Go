@@ -3,51 +3,16 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/RF_Go/__docusaurus/debug/',
-    component: ComponentCreator('/RF_Go/__docusaurus/debug/', '981'),
-    exact: true
-  },
-  {
-    path: '/RF_Go/__docusaurus/debug/config/',
-    component: ComponentCreator('/RF_Go/__docusaurus/debug/config/', 'e40'),
-    exact: true
-  },
-  {
-    path: '/RF_Go/__docusaurus/debug/content/',
-    component: ComponentCreator('/RF_Go/__docusaurus/debug/content/', '432'),
-    exact: true
-  },
-  {
-    path: '/RF_Go/__docusaurus/debug/globalData/',
-    component: ComponentCreator('/RF_Go/__docusaurus/debug/globalData/', '27e'),
-    exact: true
-  },
-  {
-    path: '/RF_Go/__docusaurus/debug/metadata/',
-    component: ComponentCreator('/RF_Go/__docusaurus/debug/metadata/', 'f35'),
-    exact: true
-  },
-  {
-    path: '/RF_Go/__docusaurus/debug/registry/',
-    component: ComponentCreator('/RF_Go/__docusaurus/debug/registry/', '708'),
-    exact: true
-  },
-  {
-    path: '/RF_Go/__docusaurus/debug/routes/',
-    component: ComponentCreator('/RF_Go/__docusaurus/debug/routes/', 'fef'),
-    exact: true
-  },
-  {
     path: '/RF_Go/docs/',
-    component: ComponentCreator('/RF_Go/docs/', 'b01'),
+    component: ComponentCreator('/RF_Go/docs/', 'f14'),
     routes: [
       {
         path: '/RF_Go/docs/',
-        component: ComponentCreator('/RF_Go/docs/', '614'),
+        component: ComponentCreator('/RF_Go/docs/', 'ea0'),
         routes: [
           {
             path: '/RF_Go/docs/',
-            component: ComponentCreator('/RF_Go/docs/', '795'),
+            component: ComponentCreator('/RF_Go/docs/', 'd06'),
             routes: [
               {
                 path: '/RF_Go/docs/',
@@ -171,6 +136,11 @@ export default [
                 sidebar: "tutorialSidebar"
               },
               {
+                path: '/RF_Go/docs/features/backup-frequencies/',
+                component: ComponentCreator('/RF_Go/docs/features/backup-frequencies/', '8b2'),
+                exact: true
+              },
+              {
                 path: '/RF_Go/docs/features/device-management/',
                 component: ComponentCreator('/RF_Go/docs/features/device-management/', '3bc'),
                 exact: true,
@@ -183,15 +153,34 @@ export default [
                 sidebar: "tutorialSidebar"
               },
               {
+                path: '/RF_Go/docs/features/frequency-visualization/',
+                component: ComponentCreator('/RF_Go/docs/features/frequency-visualization/', '4e2'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
                 path: '/RF_Go/docs/features/licensing/',
                 component: ComponentCreator('/RF_Go/docs/features/licensing/', '00a'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
+                path: '/RF_Go/docs/features/scan-management/',
+                component: ComponentCreator('/RF_Go/docs/features/scan-management/', '378'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/features/session-management/',
+                component: ComponentCreator('/RF_Go/docs/features/session-management/', 'c18'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
                 path: '/RF_Go/docs/features/workflows/',
-                component: ComponentCreator('/RF_Go/docs/features/workflows/', 'a26'),
-                exact: true
+                component: ComponentCreator('/RF_Go/docs/features/workflows/', '8ca'),
+                exact: true,
+                sidebar: "tutorialSidebar"
               },
               {
                 path: '/RF_Go/docs/getting-started/',

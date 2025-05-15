@@ -107,6 +107,10 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "features/backup-frequencies",
+              "path": "/RF_Go/docs/features/backup-frequencies"
+            },
+            {
               "id": "features/device-management",
               "path": "/RF_Go/docs/features/device-management",
               "sidebar": "tutorialSidebar"
@@ -117,13 +121,29 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "features/frequency-visualization",
+              "path": "/RF_Go/docs/features/frequency-visualization",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "features/licensing",
               "path": "/RF_Go/docs/features/licensing",
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "features/scan-management",
+              "path": "/RF_Go/docs/features/scan-management",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "features/session-management",
+              "path": "/RF_Go/docs/features/session-management",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "features/workflows",
-              "path": "/RF_Go/docs/features/workflows"
+              "path": "/RF_Go/docs/features/workflows",
+              "sidebar": "tutorialSidebar"
             },
             {
               "id": "getting-started",
