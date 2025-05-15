@@ -13,7 +13,7 @@ flowchart TB
     DiscoveryService --> mDNSDiscovery
     DiscoveryService --> G4Discovery
     DiscoveryService --> StandardSennheiserDiscovery
-    mDNSDiscovery -- "_ssc._udp.local" --> ShureDevices
+    mDNSDiscovery -- "_ssc._udp.local" --> SennhsierEWDX/TeamConnectCeiling2..
     mDNSDiscovery -- "_ewd._http.local" --> SennheiserEWDX
     G4Discovery -- "UDP Multicast" --> SennheiserG4IEM
     StandardSennheiserDiscovery -- "mDNS Query" --> SennheiserLegacy

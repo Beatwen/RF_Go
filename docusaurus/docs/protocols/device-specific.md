@@ -128,12 +128,11 @@ Les appareils Sennheiser plus anciens utilisent généralement le protocole mDNS
 
 Les appareils Shure utilisent un protocole propriétaire basé sur mDNS et communication UDP.
 
-#### Découverte
+#### Découverte Shure
 
-- Service mDNS: `_ssc._udp.local`
 - Port standard: 2202
 
-#### Communication
+#### Communication Shure
 
 La communication avec les appareils Shure se fait via leur protocole SSC (Shure System Control) sur UDP:
 
@@ -162,11 +161,11 @@ Les commandes et réponses sont en format JSON:
 
 Les appareils Wisycom comme MTP60, MTP61 et MCR54 utilisent leur propre protocole propriétaire basé sur UDP et des formats de commande spécifiques.
 
-#### Découverte
+#### Découverte Wisycom
 
 - Les appareils Wisycom sont généralement découverts via mDNS ou détection d'adresse IP directe
 
-#### Communication
+#### Communication Wisycom
 
 La communication se fait via un protocole propriétaire avec des commandes spécifiques au modèle.
 
@@ -225,4 +224,4 @@ Des services de communication spécialisés sont utilisés selon les besoins de 
 - Vérifier la connectivité réseau avec l'appareil (ping)
 - S'assurer que les bons ports sont accessibles
 - Vérifier que l'appareil a une IP valide et unique
-- Pour G4, vérifier que le port 53212 n'est pas en conflit avec d'autres applications 
+- Pour G4, vérifier que le port 53212 n'est pas en conflit avec d'autres applications

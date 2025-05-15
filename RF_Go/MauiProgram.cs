@@ -73,8 +73,10 @@ namespace RF_Go
             // Command sets
             builder.Services.AddSingleton<IDeviceCommandSet, SennheiserCommandSet>();
             builder.Services.AddSingleton<IDeviceCommandSet, SennheiserG4CommandSet>();
+            builder.Services.AddSingleton<IDeviceCommandSet, ShureCommandSet>();
             builder.Services.AddSingleton<SennheiserG4CommandSet>();
             builder.Services.AddSingleton<SennheiserCommandSet>();
+            builder.Services.AddSingleton<ShureCommandSet>();
             
             // Communication service (unifié pour tous les types d'appareils)
             builder.Services.AddSingleton<UDPCommunicationService>();
@@ -91,10 +93,17 @@ namespace RF_Go
                     sp.GetRequiredService<UDPCommunicationService>(), 
                     sp.GetRequiredService<DeviceData>()));
                     
+            // Add ShureDeviceHandler registration
+            builder.Services.AddSingleton<ShureDeviceHandler>(sp => 
+                new ShureDeviceHandler(
+                    sp.GetRequiredService<UDPCommunicationService>(),
+                    sp.GetRequiredService<ShureCommandSet>()));
+                    
             // Register handlers with the interface
             builder.Services.AddSingleton<IDeviceHandler>(sp => sp.GetRequiredService<SennheiserDeviceHandler>());
             builder.Services.AddSingleton<IDeviceHandler>(sp => sp.GetRequiredService<SennheiserG4DeviceHandler>());
-            
+            builder.Services.AddSingleton<IDeviceHandler>(sp => sp.GetRequiredService<ShureDeviceHandler>());
+
             builder.Services.AddSingleton<DeviceMappingService>();
             
             builder.Services.AddSingleton<ShureDiscoveryService>();
