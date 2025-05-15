@@ -12,7 +12,7 @@ namespace RF_Go.Services.DeviceHandlers
         public string Brand => "Shure";
         private readonly UDPCommunicationService _communicationService;
         private readonly ShureCommandSet _commandSet;
-        private readonly int Port = 2202;  // Shure uses port 2202 for control
+        private readonly int Port = 2202; 
         
         public ShureDeviceHandler(UDPCommunicationService communicationService, ShureCommandSet commandSet)
         {

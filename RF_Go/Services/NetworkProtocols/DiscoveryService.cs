@@ -48,22 +48,22 @@ namespace RF_Go.Services.NetworkProtocols
         public void StartDiscovery()
         {
             DiscoveredDevices.Clear();
-            _multicastService.Start();
-            _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
-            _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
-            TriggerSennheiserDiscovery();
+            //_multicastService.Start();
+            //_serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
+            //_serviceDiscovery.QueryServiceInstances("_ewd._http.local");
+            //TriggerSennheiserDiscovery();
             
-            Task.Run(async () => {
-                try {
-                    using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
-                    {
-                        await TriggerSennheiserG4DiscoveryAsync(timeoutCts.Token);
-                    }
-                }
-                catch (Exception ex) {
-                    Debug.WriteLine($"G4 discovery safely aborted: {ex.Message}");
-                }
-            });
+            //Task.Run(async () => {
+            //    try {
+            //        using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
+            //        {
+            //            await TriggerSennheiserG4DiscoveryAsync(timeoutCts.Token);
+            //        }
+            //    }
+            //    catch (Exception ex) {
+            //        Debug.WriteLine($"G4 discovery safely aborted: {ex.Message}");
+            //    }
+            //});
             
             // Add Shure discovery
             Task.Run(async () => {
@@ -642,39 +642,33 @@ namespace RF_Go.Services.NetworkProtocols
 
         private async Task TriggerShureDiscoveryAsync(CancellationToken cancellationToken)
         {
-            Debug.WriteLine("Triggering Shure ULX-D discovery via proprietary protocol.");
+            Debug.WriteLine("Triggering Shure discovery via SLP protocol (239.255.254.253:8427)");
             try
             {
                 _shureDiscoveryCts?.Cancel();
                 _shureDiscoveryCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                
-                // Clean up any existing UDP client
                 _shureUdpClient?.Dispose();
                 
-                // Create a new UDP client specifically for Shure discovery
+                // Create a new UDP client specifically for SLP/Shure discovery
                 _shureUdpClient = new UdpClient();
                 
-                // Configure socket options for multicast properly
                 _shureUdpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 _shureUdpClient.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
-                _shureUdpClient.MulticastLoopback = false;
+                _shureUdpClient.MulticastLoopback = true; // Enable loopback to receive our own packets
                 
                 try {
-                    // Try SSDP discovery (port 1900)
-                    await TryShureSsdpDiscovery();
-                    
-                    // After a short delay, try SLP discovery (port 8427)
-                    await Task.Delay(2000, cancellationToken);
-                    await TryShureSlpDiscovery();
-                    
-                    // Listen for responses for some time
-                    await Task.Delay(5000, cancellationToken);
+                    await JoinAndListenToShureMulticast(cancellationToken);
+                    await Task.Delay(10000, cancellationToken);
+                    Debug.WriteLine("Shure discovery period completed");
                 }
                 finally {
                     // Clean up
                     try {
-                        _shureUdpClient?.Close();
-                        _shureUdpClient?.Dispose();
+                        if (_shureUdpClient != null)
+                        {
+                            _shureUdpClient.DropMulticastGroup(IPAddress.Parse("239.255.254.253"));
+                            _shureUdpClient.Close();
+                        }
                     } 
                     catch (Exception ex) {
                         Debug.WriteLine($"Error during Shure client cleanup: {ex.Message}");
@@ -691,139 +685,247 @@ namespace RF_Go.Services.NetworkProtocols
             }
         }
 
-        private async Task TryShureSsdpDiscovery()
-        {
-            try 
-            {
-                // Bind to all interfaces
-                IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 0);
-                _shureUdpClient.Client.Bind(localEndpoint);
-                
-                // Join the SSDP multicast group
-                _shureUdpClient.JoinMulticastGroup(IPAddress.Parse("239.255.255.250"));
-                
-                // Start listening for responses
-                var receiveTask = ListenForShureDevicesAsync(_shureDiscoveryCts.Token);
-                
-                // Create SSDP M-SEARCH message
-                string ssdpMessage = 
-                    "M-SEARCH * HTTP/1.1\r\n" +
-                    "HOST: 239.255.255.250:1900\r\n" +
-                    "MAN: \"ssdp:discover\"\r\n" +
-                    "MX: 3\r\n" +
-                    "ST: ssdp:all\r\n" + // Search for all devices
-                    "\r\n";
-                
-                byte[] ssdpData = Encoding.ASCII.GetBytes(ssdpMessage);
-                
-                // Send to SSDP multicast address
-                IPEndPoint ssdpEndpoint = new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900);
-                await _shureUdpClient.SendAsync(ssdpData, ssdpData.Length, ssdpEndpoint);
-                
-                Debug.WriteLine("Sent SSDP discovery packet for Shure devices");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error in Shure SSDP discovery: {ex.Message}");
-            }
-        }
-
-        private async Task TryShureSlpDiscovery()
+        private async Task JoinAndListenToShureMulticast(CancellationToken cancellationToken)
         {
             try
             {
-                // Create a new client for SLP if needed (or reuse existing but with different multicast group)
-                _shureUdpClient?.Close();
-                _shureUdpClient = new UdpClient();
-                _shureUdpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                _shureUdpClient.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
-                _shureUdpClient.MulticastLoopback = false;
+                Debug.WriteLine("Setting up to receive Shure multicast data on 239.255.254.253:8427");
                 
-                // Bind to all interfaces 
-                IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 0);
+                // Bind to port 8427 specifically as required for Shure SLP
+                IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 8427);
                 _shureUdpClient.Client.Bind(localEndpoint);
                 
-                // Join the SLP multicast group
+                // Join the SLP multicast group used by Shure
                 _shureUdpClient.JoinMulticastGroup(IPAddress.Parse("239.255.254.253"));
+                Debug.WriteLine("Successfully joined Shure multicast group 239.255.254.253");
                 
-                // Start listening for responses on the SLP port
-                var receiveTask = ListenForShureDevicesAsync(_shureDiscoveryCts.Token);
-                
-                // SLP service request packet (simplified version)
-                byte[] slpHeader = new byte[] { 
-                    0x02, // SLP Version 2
-                    0x01, // Function-ID: Service Request
-                    0x00, 0x00, // Message Length (placeholder)
-                    0x00, 0x00, // Flags
-                    0x00, 0x00, // Next Offset 
-                    0x00, 0x00, // Language Tag Length
-                    // Simplified SLP packet - enough to trigger responses
-                };
-                
-                // Send to SLP multicast address
-                IPEndPoint slpEndpoint = new IPEndPoint(IPAddress.Parse("239.255.254.253"), 8427);
-                await _shureUdpClient.SendAsync(slpHeader, slpHeader.Length, slpEndpoint);
-                
-                Debug.WriteLine("Sent SLP discovery packet for Shure devices");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error in Shure SLP discovery: {ex.Message}");
-            }
-        }
-
-        private async Task ListenForShureDevicesAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var result = await _shureUdpClient.ReceiveAsync(cancellationToken);
-                    string dataAscii = Encoding.ASCII.GetString(result.Buffer);
+                // Start listening for multicast traffic in a background task
+                Task.Run(async () => {
+                    Debug.WriteLine("Starting to listen for Shure multicast traffic");
                     
-                    Debug.WriteLine($"Received potential Shure device data from {result.RemoteEndPoint.Address}");
-                    
-                    // Check if this looks like a Shure device response
-                    if (dataAscii.Contains("Shure") || dataAscii.Contains("ULXD") || 
-                        dataAscii.Contains("AD4") || dataAscii.Contains("PSM1000") || 
-                        dataAscii.Contains("UR4D"))
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        Debug.WriteLine($"Shure device response detected: {dataAscii.Substring(0, Math.Min(100, dataAscii.Length))}");
-                        
-                        var deviceInfo = ParseShureDeviceInfo(dataAscii, result.RemoteEndPoint.Address);
-                        if (deviceInfo != null)
+                        try
                         {
-                            // Check if device is already synced
-                            if (!string.IsNullOrEmpty(deviceInfo.SerialNumber))
+                            // Use a timeout to prevent blocking forever
+                            using (var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
                             {
-                                var existingDevice = _devicesViewModel.Devices.FirstOrDefault(d => d.SerialNumber == deviceInfo.SerialNumber);
-                                if (existingDevice != null)
+                                timeoutCts.CancelAfter(2000); // 2 second timeout
+                                
+                                try
                                 {
-                                    deviceInfo.IsSynced = true;
+                                    Debug.WriteLine("Waiting for Shure multicast data...");
+                                    var result = await _shureUdpClient.ReceiveAsync(timeoutCts.Token);
+                                    byte[] data = result.Buffer;
+                                    
+                                    // Print detailed information about received data
+                                    string hexDump = BitConverter.ToString(data).Replace("-", " ");
+                                    string asciiDump = new string(data.Select(b => b < 32 || b > 126 ? '.' : (char)b).ToArray());
+                                    
+                                    Debug.WriteLine($"========== RECEIVED SHURE MULTICAST DATA ==========");
+                                    Debug.WriteLine($"From: {result.RemoteEndPoint.Address}:{result.RemoteEndPoint.Port}");
+                                    Debug.WriteLine($"Data length: {data.Length} bytes");
+                                    Debug.WriteLine($"Hex: {hexDump}");
+                                    Debug.WriteLine($"ASCII: {asciiDump}");
+                                    
+                                    // If it looks like a valid SLP packet (version 2)
+                                    if (data.Length > 5 && data[0] == 0x02)
+                                    {
+                                        Debug.WriteLine($"Detected SLP packet, function ID: {data[1]}");
+                                        
+                                        // Process the device info if it's a service reply (function ID 7)
+                                        if (data[1] == 0x07)
+                                        {
+                                            var deviceInfo = ParseShureSlpResponse(data, result.RemoteEndPoint.Address);
+                                            if (deviceInfo != null)
+                                            {
+                                                ProcessDiscoveredDevice(deviceInfo);
+                                                Debug.WriteLine($"Processed Shure device: {deviceInfo.Name} ({deviceInfo.Type})");
+                                            }
+                                        }
+                                    }
                                 }
-                                else
+                                catch (OperationCanceledException)
                                 {
-                                    deviceInfo.IsSynced = false;
+                                    // This is just a timeout, continue the loop
+                                    Debug.WriteLine("Timeout waiting for Shure multicast data");
                                 }
                             }
-                            
-                            var discoveredDevicesCopy = DiscoveredDevices.ToList();
-                            if (!discoveredDevicesCopy.Any(d => d.Name == deviceInfo.Name))
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex is SocketException || ex is ObjectDisposedException)
                             {
-                                DiscoveredDevices.Add(deviceInfo);
-                                DeviceDiscovered?.Invoke(this, deviceInfo);
+                                Debug.WriteLine($"Socket error: {ex.Message}");
+                                break; // Exit the loop on socket errors
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"Error processing Shure data: {ex.Message}");
                             }
                         }
                     }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Operation was cancelled, no need to log
+                    
+                    Debug.WriteLine("Stopped listening for Shure multicast traffic");
+                }, cancellationToken);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error while listening for Shure devices: {ex.Message}");
+                Debug.WriteLine($"Error setting up Shure multicast listener: {ex.Message}");
+            }
+        }
+
+        private void ProcessDiscoveredDevice(DeviceDiscoveredEventArgs deviceInfo)
+        {
+            // Check if device is already synced
+            if (!string.IsNullOrEmpty(deviceInfo.SerialNumber))
+            {
+                var existingDevice = _devicesViewModel.Devices.FirstOrDefault(d => d.SerialNumber == deviceInfo.SerialNumber);
+                if (existingDevice != null)
+                {
+                    deviceInfo.IsSynced = true;
+                }
+                else
+                {
+                    deviceInfo.IsSynced = false;
+                }
+            }
+            
+            var discoveredDevicesCopy = DiscoveredDevices.ToList();
+            if (!discoveredDevicesCopy.Any(d => d.Name == deviceInfo.Name))
+            {
+                DiscoveredDevices.Add(deviceInfo);
+                DeviceDiscovered?.Invoke(this, deviceInfo);
+            }
+        }
+
+        private DeviceDiscoveredEventArgs ParseShureSlpResponse(byte[] responseData, IPAddress remoteAddress)
+        {
+            try
+            {
+                // Convert to ASCII for string analysis
+                string dataAscii = Encoding.ASCII.GetString(responseData);
+                
+                // Extract device information from SLP response
+                // Based on the sample hex dump, we expect to find:
+                // 1. Model information (like ULXD4D)
+                // 2. Serial number or device ID
+                
+                // Extract model from acn-uacn field
+                string model = "";
+                string frequencyCode = "";
+                int acnUacnPos = dataAscii.IndexOf("acn-uacn=");
+                if (acnUacnPos >= 0)
+                {
+                    int modelStart = acnUacnPos + "acn-uacn=".Length;
+                    int modelEnd = dataAscii.IndexOf(')', modelStart);
+                    if (modelEnd > modelStart)
+                    {
+                        string modelFull = dataAscii.Substring(modelStart, modelEnd - modelStart);
+                        // Parse something like "ULXD4D H51 REV2"
+                        string[] modelParts = modelFull.Split(' ');
+                        if (modelParts.Length > 0)
+                        {
+                            model = modelParts[0];
+                            frequencyCode = modelParts[1];
+
+                            
+                        }
+                    }
+                }
+                
+                // Extract device ID/serial from cid field
+                string deviceId = "";
+                int cidPos = dataAscii.IndexOf("cid=");
+                if (cidPos >= 0)
+                {
+                    int idStart = cidPos + "cid=".Length;
+                    int idEnd = dataAscii.IndexOf('-', idStart);
+                    if (idEnd > idStart)
+                    {
+                        deviceId = dataAscii.Substring(idStart, idEnd - idStart);
+                    }
+                }
+                
+                // If we couldn't find either, try fallback extraction
+                if (string.IsNullOrEmpty(model))
+                {
+                    if (dataAscii.Contains("ULXD4D"))
+                        model = "ULXD4D";
+                    else if (dataAscii.Contains("ULXD4Q"))
+                        model = "ULXD4Q";
+                    else if (dataAscii.Contains("ULXD4"))
+                        model = "ULXD4";
+                    else if (dataAscii.Contains("AD4D"))
+                        model = "AD4D";
+                    else if (dataAscii.Contains("AD4Q"))
+                        model = "AD4Q";
+                    else if (dataAscii.Contains("PSM1000"))
+                        model = "PSM1000";
+                    else if (dataAscii.Contains("UR4D"))
+                        model = "UR4D";
+                    else
+                        model = "Unknown Shure";
+                }
+                
+                if (string.IsNullOrEmpty(deviceId))
+                {
+                    // Try to extract MAC-like ID that might be in the response
+                    var macMatch = System.Text.RegularExpressions.Regex.Match(dataAscii, @"([0-9A-F]{8}-[0-9A-F]{4})");
+                    if (macMatch.Success)
+                    {
+                        deviceId = macMatch.Groups[1].Value;
+                    }
+                    else
+                    {
+                        // Generate a random ID based on IP if we can't find one
+                        deviceId = $"SHURE-{remoteAddress.GetHashCode() & 0x7FFFFFFF:X8}";
+                    }
+                }
+                
+                // Extract network information to get device configuration
+                string ipAddress = remoteAddress.ToString();
+                int ipPos = dataAscii.IndexOf("esta.dmp/");
+                if (ipPos >= 0)
+                {
+                    int ipStart = ipPos + "esta.dmp/".Length;
+                    int ipEnd = dataAscii.IndexOf(':', ipStart);
+                    if (ipEnd > ipStart)
+                    {
+                        string extractedIp = dataAscii.Substring(ipStart, ipEnd - ipStart);
+                        if (IPAddress.TryParse(extractedIp, out _))
+                        {
+                            ipAddress = extractedIp;
+                        }
+                    }
+                }
+                
+                Debug.WriteLine($"Extracted Shure device info from SLP: Model={model}, ID={deviceId}, IP={ipAddress}");
+                
+                // Create the device info object
+                var deviceInfo = new DeviceDiscoveredEventArgs
+                {
+                    Name = $"{model} {deviceId}",
+                    Brand = "Shure",
+                    Type = model,
+                    Frequency = frequencyCode,
+                    SerialNumber = deviceId,
+                    IPAddress = ipAddress
+                };
+                
+                // Use appropriate handler to fill in additional info
+                var handler = GetAppropriateHandlerForType(deviceInfo.Brand, deviceInfo.Type);
+                if (handler != null && handler.CanHandle(deviceInfo.Type))
+                {
+                    handler.HandleDevice(deviceInfo).Wait();
+                }
+                
+                return deviceInfo;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error parsing Shure SLP response: {ex.Message}");
+                return null;
             }
         }
 
