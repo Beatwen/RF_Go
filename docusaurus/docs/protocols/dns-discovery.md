@@ -2,7 +2,22 @@
 
 ## Vue d'ensemble
 
-RF Go utilise plusieurs protocoles pour la découverte et la communication avec les appareils audio sans fil. Cette section décrit les protocoles de découverte basés sur DNS, notamment Bonjour (mDNS) et les protocoles spécifiques aux fabricants.
+RF Go utilise plusieurs protocoles pour la découverte et la communication avec les appareils audio sans fil. Cette section décrit les protocoles de découverte basés sur DNS, notamment Bonjour (mDNS) et les protocoles spécifiques aux fabricants, ainsi que les protocoles propriétaires comme celui utilisé par Sennheiser G4.
+
+## Architecture du Service de Découverte
+
+RF Go implémente un service de découverte unifié qui combine plusieurs méthodes pour détecter tous les types d'appareils compatibles. L'architecture est conçue pour être extensible, permettant l'ajout de nouveaux protocoles de découverte.
+
+```mermaid
+flowchart TB
+    DiscoveryService --> mDNSDiscovery
+    DiscoveryService --> G4Discovery
+    DiscoveryService --> StandardSennheiserDiscovery
+    mDNSDiscovery -- "_ssc._udp.local" --> ShureDevices
+    mDNSDiscovery -- "_ewd._http.local" --> SennheiserEWDX
+    G4Discovery -- "UDP Multicast" --> SennheiserG4IEM
+    StandardSennheiserDiscovery -- "mDNS Query" --> SennheiserLegacy
+```
 
 ## Bonjour (mDNS)
 
@@ -24,60 +39,152 @@ sequenceDiagram
 
 ### Implémentation
 
-RF Go utilise la bibliothèque `makaretu.Dns` pour implémenter la découverte mDNS :
+RF Go utilise la bibliothèque `Makaretu.Dns` pour implémenter la découverte mDNS :
 
 ```csharp
 public class DiscoveryService
 {
-    private readonly MulticastService _mdns;
-    private readonly ServiceDiscovery _sd;
+    private readonly MulticastService _multicastService;
+    private readonly ServiceDiscovery _serviceDiscovery;
 
-    public DiscoveryService()
+    public DiscoveryService(IEnumerable<IDeviceHandler> handlers, DevicesViewModel devicesViewModel)
     {
-        _mdns = new MulticastService();
-        _sd = new ServiceDiscovery(_mdns);
+        _multicastService = new MulticastService();
+        _serviceDiscovery = new ServiceDiscovery(_multicastService);
+        _serviceDiscovery.ServiceDiscovered += OnServiceDiscovered;
+        _serviceDiscovery.ServiceInstanceDiscovered += OnServiceInstanceDiscovered;
     }
 
-    public async Task DiscoverDevicesAsync()
+    public void StartDiscovery()
     {
-        _mdns.Start();
-        _sd.QueryAllServices();
-        // ... traitement des réponses
+        _multicastService.Start();
+        _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
+        _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
+        // ... autres méthodes de découverte
     }
 }
 ```
+
+## Protocole de Découverte Sennheiser G4
+
+### En résumé
+
+Les appareils Sennheiser G4 IEM utilisent un protocole propriétaire basé sur UDP multicast qui diffère des méthodes mDNS standard. RF Go implémente un mécanisme spécifique pour découvrir ces appareils.
+
+### Processus de Découverte G4
+
+```mermaid
+sequenceDiagram
+    participant App as RF Go
+    participant Network as Réseau Local
+    participant G4 as Sennheiser G4 IEM
+
+    App->>Network: Paquet Discovery UDP (port 8133, adresse 224.0.0.251)
+    Note right of App: Format: [servicecommand]devinfo
+    Network->>G4: Diffusion du paquet de découverte
+    G4->>Network: Réponse UDP (port 53212)
+    Note right of G4: Contient Model=, ID=, IPA=
+    Network->>App: Réception de la réponse
+    App->>App: Extraction des informations et identification du modèle
+```
+
+### Implémentations
+
+RF Go implémente cette découverte via une méthode spécialisée dans le `DiscoveryService` :
+
+```csharp
+private async Task TriggerSennheiserG4DiscoveryAsync(CancellationToken cancellationToken)
+{
+    // Configuration du client UDP pour la découverte G4
+    _g4UdpClient = new UdpClient();
+    _g4UdpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+    
+    // Liaison au port 8133 et jointure au groupe multicast
+    IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 8133);
+    _g4UdpClient.Client.Bind(localEndpoint);
+    _g4UdpClient.JoinMulticastGroup(IPAddress.Parse("224.0.0.251"));
+    
+    // Envoi de la commande de découverte
+    string commandStr = "[servicecommand]devinfo\r\n";
+    // ... construction et envoi du paquet
+}
+```
+
+### Format des Paquets G4
+
+1. **Paquet de découverte** :
+   - Commence par un en-tête spécifique
+   - Contient la commande `[servicecommand]devinfo`
+   - Taille totale de 1035 octets avec un pied de page spécifique
+
+2. **Réponse G4** :
+   - Contient les champs `Model=`, `ID=` et `IPA=`
+   - L'adresse IP source est utilisée si le champ `IPA=` n'est pas valide
+   - Le format de la réponse est analysé pour extraire les informations de l'appareil
 
 ## Protocoles Spécifiques aux Fabricants
 
 ### Sennheiser
 
-#### Découverte
+#### Découverte Standard
 
-- Utilise mDNS avec le service `_sennheiser._tcp`
-- Port par défaut : 8080
+- Utilise mDNS avec la requête `_ssc._udp.local`
+- Port par défaut : variable selon les modèles
 - Format des enregistrements TXT spécifiques
 
-#### Communication
+#### Découverte EWDX
 
-- API REST sur le port 8080
-- Endpoints spécifiques pour :
-  - Configuration des fréquences
-  - Récupération des informations
-  - Mise à jour du firmware
+- Utilise mDNS avec la requête `_ewd._http.local`
+- Communication via API REST HTTP
+- Identification des modèles via les enregistrements DNS
 
 ### Shure
 
 #### Découverte
 
-- Utilise mDNS avec le service `_shure._tcp`
+- Utilise mDNS avec le service `_ssc._udp.local`
 - Port par défaut : 2202
 - Enregistrements TXT pour l'identification
 
 #### Communication
 
-- Protocole propriétaire sur le port 2202
-- Commandes binaires spécifiques
-- Format de données structuré
+- Protocole propriétaire sur ports spécifiques
+- Commandes structurées selon la documentation Shure
+- Format de données JSON
+
+## Détection et Attribution des Gestionnaires d'Appareils
+
+RF Go utilise une approche modulaire pour attribuer les gestionnaires appropriés à chaque appareil découvert :
+
+```csharp
+foreach (var handler in _handlers)
+{
+    if (handler.CanHandle(serviceName))
+    {
+        // Définir d'abord la marque pour pouvoir l'utiliser pour trouver le gestionnaire approprié
+        deviceInfo.Brand = handler.Brand;
+        
+        // Trouver le meilleur gestionnaire (en cas de plusieurs gestionnaires pour la même marque)
+        var bestHandler = handler;
+        if (serviceName.Contains("G4") || serviceName.Contains("IEM"))
+        {
+            // Essayer d'obtenir un gestionnaire spécifique G4 si c'est un appareil G4
+            var g4Handler = _handlers.FirstOrDefault(h => 
+                h.Brand == handler.Brand && 
+                h.GetType().Name.Contains("G4") && 
+                h.CanHandle(serviceName));
+                
+            if (g4Handler != null)
+            {
+                bestHandler = g4Handler;
+            }
+        }
+        
+        await bestHandler.HandleDevice(deviceInfo);
+        break;
+    }
+}
+```
 
 ## Configuration du Réseau
 
@@ -85,7 +192,10 @@ public class DiscoveryService
 
 - Réseau local avec multicast activé
 - Pas de pare-feu bloquant les ports mDNS (5353/udp)
-- Accès aux ports spécifiques des appareils
+- Ports spécifiques ouverts :
+  - 8133/udp pour la découverte Sennheiser G4
+  - 53212/udp pour la communication avec les appareils G4
+  - Ports standards pour les autres appareils
 
 ### Dépannage
 
@@ -101,6 +211,7 @@ public class DiscoveryService
 - La découverte mDNS est limitée au réseau local
 - Les communications avec les appareils doivent être sécurisées
 - Utilisation de TLS pour les API REST quand disponible
+- Protocoles propriétaires peuvent manquer de sécurité
 
 ### Bonnes Pratiques
 

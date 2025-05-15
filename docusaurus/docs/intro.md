@@ -22,6 +22,7 @@ RF Go est particulièrement adapté pour la gestion des systèmes audio sans fil
   - Possibilité de calculer en fonction des intermodulation de 3ème ordre, 5ème ordre et 7ème ordre. Mais aussi, les intermodulations générés entre 3 transmeteur pour le 3ème ordre.
   - Largeur de bande totalement paramètrable par type d'appareil importé
   - Filtrage par canaux TV et par filtre de l'utilisateur
+  - Fréquences de secours pour une récupération rapide en cas d'interférence
 
 - **Visualisation** : Interface graphique intuitive pour la visualisation des données
 

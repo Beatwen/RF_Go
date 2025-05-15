@@ -27,8 +27,12 @@ const sidebars = {
       items: [
         'features/device-management',
         'features/frequency-management',
+        'features/frequency-visualization',
+        'features/session-management',
+        'features/scan-management',
         'features/licensing',
         'features/authentication',
+        'features/workflows',
       ],
     },
     {
