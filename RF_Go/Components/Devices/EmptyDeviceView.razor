@@ -1,0 +1,20 @@
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.Medium" Style="display: flex; justify-content: center; align-items: center;">
+    <MudPaper Class="pa-6" Elevation="3" Style="text-align: center; max-width: 400px;">
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
+            No devices found. Start by adding a device or import a session.
+        </MudAlert>
+        <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="@OnImportDatabase" Title="Import Database"/>
+        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@OnAddDevice" Title="Add Device"/>
+        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" OnClick="@OnExportDatabase" Title="Export Database"/>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.AutoFixHigh" OnClick="@OnMagicSync" Title="Auto Sync devices on network" />
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter] public EventCallback OnImportDatabase { get; set; }
+    [Parameter] public EventCallback OnAddDevice { get; set; }
+    [Parameter] public EventCallback OnExportDatabase { get; set; }
+    [Parameter] public EventCallback OnMagicSync { get; set; }
+} 

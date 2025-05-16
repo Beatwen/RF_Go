@@ -60,6 +60,7 @@ namespace RF_Go
             builder.Services.AddScoped<ScansViewModel>();
             builder.Services.AddScoped<ScanImportExportService>();
             builder.Services.AddScoped<BackupFrequenciesViewModel>();
+            builder.Services.AddSingleton<FrequencyCalculationService>();
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(AppConfig.ApiBaseUrl) });
             builder.Services.AddSingleton<AuthService>();

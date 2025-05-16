@@ -1,0 +1,350 @@
+@using System.IO
+@using System
+@using RF_Go.Data
+@using RF_Go.Models
+@using RF_Go.Components.Modal
+@using RF_Go.Components.Devices
+@using RF_Go.ViewModels
+@using RF_Go.Services
+@using RF_Go.Services.Mapping
+@using System.ComponentModel
+@using System.Diagnostics
+
+
+@inject IDialogService Dialog
+@inject MudBlazor.ISnackbar Snackbar
+@inject DeviceMappingService DeviceMappingService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject DatabaseImportExportService DatabaseImportExportService
+@inject ScansViewModel ScansViewModel
+@inject ScanImportExportService ScanImportExportService
+@inject BackupFrequenciesViewModel BackupFrequenciesViewModel
+@inject FrequencyCalculationService FrequencyCalculationService
+
+@if (DevicesViewModel.Devices.Count == 0)
+{
+    <EmptyDeviceView 
+        OnImportDatabase="OpenDialogToImportDatabaseAsync"
+        OnAddDevice="OpenDialogToAddDeviceAsync"
+        OnExportDatabase="OpenDialogToExportDatabaseAsync"
+        OnMagicSync="@(() => MagicSync("FromDevices"))" />
+}
+else
+{
+    <DeviceTable 
+        DevicesViewModel="DevicesViewModel"
+        GroupsViewModel="GroupsViewModel"
+        OnDeviceSaved="OnDeviceSaved"
+        OnDeleteDevice="DeleteDevice"
+        OnDesyncDevice="DesyncDevice"
+        OnSaveDevice="SaveDeviceAsync"
+        OnDeleteAll="DeleteAll"
+        OnLockAll="LockAll"
+        OnOpenQuickSync="OpenQuickSyncModal"
+        OnRFCalcul="RFCalcul"
+        OnMagicSync="MagicSync" />
+}
+
+<div class="chart-container d-none d-md-block">
+    <div id="sciChartDiv" style="width: 100%; height: 200px; margin: 0 auto;"></div>
+</div>
+
+@code {
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
+    [Parameter] public DeviceData DeviceData { get; set; }
+    [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
+    [Parameter] public EventCallback OnDeviceSaved { get; set; }
+    [Parameter] public FrequencyDataViewModel FrequencyDataViewModel { get; set; }
+
+    private bool lockAll = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (DevicesViewModel == null)
+                throw new InvalidOperationException("DevicesViewModel is not initialized.");
+            if (GroupsViewModel == null)
+                throw new InvalidOperationException("GroupsViewModel is not initialized.");
+            if (DeviceData == null)
+                throw new InvalidOperationException("DeviceData is not initialized.");
+            if (ExclusionChannelViewModel == null)
+                throw new InvalidOperationException("ExclusionChannelViewModel is not initialized.");
+
+            await DevicesViewModel.LoadDevicesAsync();
+            await GroupsViewModel.LoadGroupsAsync();
+            await BackupFrequenciesViewModel.LoadBackupFrequenciesAsync();
+
+            foreach (var device in DevicesViewModel.Devices)
+            {
+                device.PropertyChanged += Device_PropertyChanged;
+            }
+
+            await base.OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
+            throw;
+        }
+    }
+
+    private void Device_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(RFDevice.IsSynced) || 
+            e.PropertyName == nameof(RFDevice.PendingSync) || 
+            e.PropertyName == nameof(RFDevice.IsOnline))
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        foreach (var device in DevicesViewModel.Devices)
+        {
+            device.PropertyChanged -= Device_PropertyChanged;
+        }
+    }
+
+    // Dialog methods
+    private async Task OpenDialogToAddDeviceAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "DeviceData", DeviceData },
+            { "DevicesViewModel", DevicesViewModel },
+            { "GroupsViewModel", GroupsViewModel }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = Dialog.Show<DeviceSelection>("Add your devices", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            StateHasChanged();
+            await OnDeviceSaved.InvokeAsync();
+        }
+    }
+
+    private async Task OpenDialogToImportDatabaseAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Import Database" },
+            { "Message", "Are you sure you want to import a database? This will replace your current data." },
+            { "ConfirmText", "Import" },
+            { "CancelText", "Cancel" }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = Dialog.Show<ConfirmationDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var success = await DatabaseImportExportService.ImportDatabaseAsync();
+            if (success)
+            {
+                Snackbar.Add("Database imported successfully", Severity.Success);
+                await DevicesViewModel.LoadDevicesAsync();
+                await GroupsViewModel.LoadGroupsAsync();
+            }
+            else
+            {
+                Snackbar.Add("Failed to import database", Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenDialogToExportDatabaseAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "Export Database" },
+            { "Message", "Are you sure you want to export your current database?" },
+            { "ConfirmText", "Export" },
+            { "CancelText", "Cancel" }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = Dialog.Show<ConfirmationDialog>("Export Database", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var success = await DatabaseImportExportService.ExportDatabaseAsync();
+            if (success)
+            {
+                Snackbar.Add("Database exported successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to export database", Severity.Error);
+            }
+        }
+    }
+
+    // Device operations
+    private async Task DeleteDevice(RFDevice device)
+    {
+        bool isLastOfType = !DevicesViewModel.Devices
+            .Any(d => d.ID != device.ID && 
+                 d.Brand == device.Brand && 
+                 d.Model == device.Model && 
+                 d.Frequency == device.Frequency);
+        
+        await DevicesViewModel.DeleteDeviceAsync(device.ID);
+        
+        if (isLastOfType)
+        {
+            await BackupFrequenciesViewModel.DeleteBackupFrequenciesForDeviceTypeAsync(
+                device.Brand, device.Model, device.Frequency);
+        }
+        
+        await OnDeviceSaved.InvokeAsync();
+        Snackbar.Add("Device deleted", Severity.Success);
+    }
+
+    private async Task DesyncDevice(RFDevice device)
+    {
+        device.IsSynced = false;
+        device.IsOnline = false;
+        device.PendingSync = false;
+        device.SerialNumber = null;
+        device.IpAddress = null;
+        await SaveDeviceAsync(device);
+        Snackbar.Add("Device desynchronized", Severity.Info);
+    }
+
+    private async Task SaveDeviceAsync(RFDevice device)
+    {
+        DevicesViewModel.SetOperatingDevice(device);
+        await DevicesViewModel.SaveDeviceAsync();
+    }
+
+    private async Task DeleteAll()
+    {
+        await DevicesViewModel.DeleteAllDeviceAsync();
+        await BackupFrequenciesViewModel.DeleteAllBackupFrequenciesAsync();
+        await OnDeviceSaved.InvokeAsync();
+    }
+
+    private void LockAll()
+    {
+        foreach (RFDevice device in DevicesViewModel.Devices)
+        {
+            foreach (RFChannel chan in device.Channels)
+            {
+                chan.IsLocked = !lockAll;
+            }
+        }
+    }
+
+    // Sync operations
+    private async Task OpenQuickSyncModal(RFDevice device)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Device", device },
+            { "OnlineDevices", DevicesViewModel.Devices }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = Dialog.Show<SyncModal>("Quick Sync", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task MagicSync(string destination)
+    {
+        List<string> errors = new();
+        if (destination == "ToDevices")
+        {
+            errors = await DeviceMappingService.SyncAllToDevice();
+        }
+        else if (destination == "FromDevices")
+        {
+            errors = await DeviceMappingService.SyncAllFromDevice();
+        }
+        foreach (string e in errors)
+        {
+            Snackbar.Add(e, Severity.Error);
+        }
+    }
+
+    // Chart operations
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ScansViewModel.LoadScansAsync();
+            
+            var groupNames = GroupsViewModel.Groups.ToDictionary(
+                g => g.ID.ToString(), 
+                g => g.Name
+            );
+            
+            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", groupNames);
+            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", 
+                FrequencyDataViewModel.FrequencyData,
+                ScansViewModel.Scans.Select(s => new { 
+                    frequenciesJson = s.FrequenciesJson,
+                    valuesJson = s.ValuesJson,
+                    isVisible = ScansViewModel.IsScanVisible(s)
+                }).ToList());
+        }
+    }
+
+    private async void HandleCalculationCompleted()
+    {
+        StateHasChanged();
+
+        try
+        {
+            var groupNames = GroupsViewModel.Groups.ToDictionary(
+                g => g.ID.ToString(), 
+                g => g.Name
+            );
+            
+            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", groupNames);
+            await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", 
+                FrequencyDataViewModel.FrequencyData,
+                ScansViewModel.Scans.Select(s => new { 
+                    frequenciesJson = s.FrequenciesJson,
+                    valuesJson = s.ValuesJson,
+                    isVisible = ScansViewModel.IsScanVisible(s)
+                }).ToList());
+        }
+        catch (Exception ex)
+        {
+            Debug.Print($"Error calling JavaScript: {ex.Message}");
+        }
+    }
+
+    private async Task RFCalcul()
+    {
+        await FrequencyCalculationService.CalculateFrequenciesAsync();
+        HandleCalculationCompleted();
+        await OnDeviceSaved.InvokeAsync();
+    }
+} 

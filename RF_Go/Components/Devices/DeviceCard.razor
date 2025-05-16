@@ -1,0 +1,172 @@
+@using RF_Go.Models
+@using RF_Go.ViewModels
+@using MudBlazor
+
+<MudHidden Breakpoint="Breakpoint.SmAndUp">
+    <div class="d-flex pl-1 pr-1 w-100 align-center justify-space-between pt-2">
+        <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" 
+            Icon="@Icons.Material.Filled.Add" OnClick="@OnAddDevice" Title="Add device to inventory">Open</MudIconButton>
+        <div class="d-flex">
+            <MudIconButton Icon="@Icons.Material.Filled.Calculate" Variant="Variant.Filled" 
+                Color="Color.Primary" Class="mx-2" @onclick="OnRFCalcul" />
+            <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" 
+                EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" 
+                Color="Color.Primary" Variant="Variant.Filled">
+                <MudMenuItem Class="mx-2" @onclick="OnOpenDialogOnlineDevice" 
+                    Icon="@Icons.Material.Filled.Map">Map</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" 
+                    @onclick='() => OnMagicSync.InvokeAsync("FromDevices")'>Sync From</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" 
+                    @onclick='() => OnMagicSync.InvokeAsync("ToDevices")'>Sync To</MudMenuItem>
+            </MudMenu>
+        </div>
+    </div>
+    @foreach (var device in DevicesViewModel.Devices)
+    {
+        <MudCard Elevation="0" Outlined="true" Class="mt-2 border-solid border-1 mud-border-secondary pa-4">
+            <MudCardContent>
+                <!-- Device Name and Frequencies Section -->
+                <div class="mb-4">
+                    <div class="d-flex justify-center">
+                        <MudText Typo="Typo.h6">@GetBrandAndModel(device)</MudText>
+                    </div>
+                    <MudTable Breakpoint="Breakpoint.None" @bind-Items="@device.Channels" Hover="true">
+                        <RowTemplate Context="chan">
+                            <MudTd>
+                                <div class="d-flex flex-column">
+                                    <MudTextField Typo="Typo.caption" 
+                                    Label='@($"Channel {device.Channels.IndexOf(chan) + 1}")' 
+                                    @bind-Value="@chan.ChannelName" 
+                                    Class="mt-0" 
+                                    Margin="Margin.Dense" 
+                                    Variant="Variant.Outlined"
+                                    @onblur="() => OnSaveDevice.InvokeAsync(device)" />
+                                    <div class="d-flex align-center mt-2">
+                                        <MudNumericField @bind-Value="chan.Frequency" 
+                                        Min="@chan.Range[0]" 
+                                        Max="@chan.Range[1]" 
+                                        Step="@chan.Step" 
+                                        Style="@CalculateStyle(chan)" 
+                                        Label="@GetRange(chan)" 
+                                        Variant="Variant.Outlined" 
+                                        Margin="Margin.Dense" 
+                                        FullWidth="true"
+                                        @onblur="() => OnSaveDevice.InvokeAsync(device)" />
+                                        <MudCheckBox @bind-Value="chan.IsLocked" 
+                                        Color="Color.Secondary" 
+                                        CheckedIcon="@Icons.Material.Filled.Lock" 
+                                        UncheckedIcon="@Icons.Material.Filled.LockOpen" 
+                                        Class="pl-3" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Backup" 
+                                        Color="Color.Info" 
+                                        Size="Size.Small" 
+                                        OnClick="() => OnOpenBackupFrequency.InvokeAsync((device, chan))"
+                                        Class="pl-3" />
+                                    </div>
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </div>
+
+                <!-- Group and Actions Section -->
+                <MudPaper Outlined="true" Class="border-solid border-1 mud-border-secondary pa-4" Elevation="0">
+                    <div class="">
+                        <MudSelect T="int" 
+                        Value="device.GroupID" 
+                        ValueChanged="(newGroupId) => GroupsViewModel.UpdateDeviceGroupAsync(device, newGroupId)"
+                        Class="mb-2">
+                            @foreach (var group in GroupsViewModel.Groups)
+                            {
+                                <MudSelectItem Value="@group.ID">@group.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <div class="d-flex justify-space-between mb-2">
+                            <MudTextField Typo="Typo.caption" 
+                            @bind-Value="@device.IpAddress" 
+                            Placeholder="IP Address" 
+                            @onblur="() => OnSaveDevice.InvokeAsync(device)" 
+                            Class="custom-textfield" />
+                            <MudIconButton @onclick="() => OnOpenQuickSync.InvokeAsync(device)" 
+                            Icon="@GetSyncIcon(device)" 
+                            Color="@GetSyncColor(device)" 
+                            />
+                        </div>
+
+                        <div class="d-flex justify-end">
+                            @if (device.IsSynced)
+                            {
+                                <MudButton StartIcon="@Icons.Material.Filled.Link"
+                                FullWidth=true
+                                @onclick="() => OnDesyncDevice.InvokeAsync(device)" 
+                                aria-label="desync"
+                                IconColor="Color.Primary"
+                                Class="mr-2" />
+                            }
+                            <MudButton StartIcon="@Icons.Material.Filled.Delete"
+                            FullWidth=true
+                            @onclick="() => OnDeleteDevice.InvokeAsync(device)" 
+                            IconColor="Color.Error"
+                            aria-label="delete" />
+                        </div>
+                    </div>
+                </MudPaper>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudHidden>
+
+@code {
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
+    [Parameter] public EventCallback<RFDevice> OnDeleteDevice { get; set; }
+    [Parameter] public EventCallback<RFDevice> OnDesyncDevice { get; set; }
+    [Parameter] public EventCallback<RFDevice> OnSaveDevice { get; set; }
+    [Parameter] public EventCallback<RFDevice> OnOpenQuickSync { get; set; }
+    [Parameter] public EventCallback<(RFDevice, RFChannel)> OnOpenBackupFrequency { get; set; }
+    [Parameter] public EventCallback OnRFCalcul { get; set; }
+    [Parameter] public EventCallback OnOpenDialogOnlineDevice { get; set; }
+    [Parameter] public EventCallback<string> OnMagicSync { get; set; }
+    [Parameter] public EventCallback OnAddDevice { get; set; }
+
+    private string GetBrandAndModel(RFDevice device)
+    {
+        return device.Brand + "-" + device.Model;
+    }
+
+    private string CalculateStyle(RFChannel chan)
+    {
+        string color = chan.Checked ? "lightgreen" : "red";
+        return "color:" + color + "; ";
+    }
+
+    private string GetRange(RFChannel chan)
+    {
+        string startRange = (chan.Range[0] / 1000).ToString();
+        string endRange = (chan.Range[1] / 1000).ToString();
+        return $"{startRange} - {endRange} Mhz";
+    }
+
+    private string GetSyncIcon(RFDevice device)
+    {
+        if (!device.IsOnline && device.IsSynced)
+        {
+            return Icons.Material.Filled.QuestionMark;
+        }
+        if (device.PendingSync && device.IsOnline)
+        {
+            return Icons.Material.Filled.Sync;
+        }
+        return device.IsSynced ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel;
+    }
+
+    private Color GetSyncColor(RFDevice device)
+    {
+        if (device.PendingSync || !device.IsOnline)
+        {
+            return Color.Warning;
+        }
+        return device.IsSynced ? Color.Success : Color.Error;
+    }
+} 
