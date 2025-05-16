@@ -69,17 +69,20 @@ namespace RF_Go.Services.NetworkProtocols
             });
 
             // Add Shure discovery
-            //Task.Run(async () => {
-            //    try {
-            //        using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
-            //        {
-            //            await TriggerShureDiscoveryAsync(timeoutCts.Token);
-            //        }
-            //    }
-            //    catch (Exception ex) {
-            //        Debug.WriteLine($"Shure discovery safely aborted: {ex.Message}");
-            //    }
-            //});
+            Task.Run(async () =>
+            {
+                try
+                {
+                    using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
+                    {
+                        await TriggerShureDiscoveryAsync(timeoutCts.Token);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Shure discovery safely aborted: {ex.Message}");
+                }
+            });
         }
 
         private void OnServiceDiscovered(object sender, DomainName serviceName)
