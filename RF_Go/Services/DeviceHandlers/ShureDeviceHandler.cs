@@ -10,11 +10,11 @@ namespace RF_Go.Services.DeviceHandlers
     public class ShureDeviceHandler : IDeviceHandler
     {
         public string Brand => "Shure";
-        private readonly UDPCommunicationService _communicationService;
+        private readonly TCPCommunicationService _communicationService;
         private readonly ShureCommandSet _commandSet;
         private readonly int Port = 2202; 
         
-        public ShureDeviceHandler(UDPCommunicationService communicationService, ShureCommandSet commandSet)
+        public ShureDeviceHandler(TCPCommunicationService communicationService, ShureCommandSet commandSet)
         {
             _communicationService = communicationService;
             _commandSet = commandSet;
@@ -22,10 +22,22 @@ namespace RF_Go.Services.DeviceHandlers
 
         public bool CanHandle(string serviceName)
         {
-            // Handle discovery for Shure devices
             return serviceName.Contains("Shure") || 
                    serviceName.Contains("ULXD") || 
                    serviceName.Contains("AD4") || 
+                   serviceName.Contains("AD610") ||
+                   serviceName.Contains("AXT400") ||
+                   serviceName.Contains("AXT600") ||
+                   serviceName.Contains("AXT610") ||
+                   serviceName.Contains("AXT630") ||
+                   serviceName.Contains("AXT631") ||
+                   serviceName.Contains("AXT900") ||
+                   serviceName.Contains("P10T") ||
+                   serviceName.Contains("SBRC") ||
+                   serviceName.Contains("SBC220") ||
+                   serviceName.Contains("SBC240") ||
+                   serviceName.Contains("SBC840") ||
+                   serviceName.Contains("SBC840M") ||
                    serviceName.Contains("PSM1000") || 
                    serviceName.Contains("UR4D");
         }
@@ -50,7 +62,7 @@ namespace RF_Go.Services.DeviceHandlers
             var modelName = ExtractValueFromResponse(modelResponse, "MODEL");
             if (!string.IsNullOrEmpty(modelName))
             {
-                deviceInfo.Type = modelName;
+                deviceInfo.Type = modelName.Trim();
             }
 
             // Get serial number (via NET_SETTINGS command)
@@ -58,25 +70,27 @@ namespace RF_Go.Services.DeviceHandlers
             var serialNumber = ExtractValueFromResponse(serialResponse, "NET_SETTINGS");
             if (!string.IsNullOrEmpty(serialNumber))
             {
-                // Extract just the MAC address as serial number
-                var parts = serialNumber.Split(' ');
-                if (parts.Length >= 6) // Last part should be MAC
+                // Extract MAC address from the end of the response
+                // Format: "< REP NET_SETTINGS SC AUTO 192.168.000.036 255.255.255.000 192.168.000.001 00:0E:DD:49:11:C9 >"
+                int lastSpaceIndex = serialNumber.LastIndexOf(' ');
+                if (lastSpaceIndex > 0)
                 {
-                    deviceInfo.SerialNumber = parts[parts.Length - 1].Replace(":", "");
+                    // Get the MAC address and remove colons
+                    deviceInfo.SerialNumber = serialNumber.Substring(lastSpaceIndex + 1).Replace(":", "");
                 }
             }
 
             // Determine channel count based on model
-            int channelCount = 2; // Default for most models
-            if (deviceInfo.Type?.Contains("ULXD4D") == true || deviceInfo.Type?.Contains("AD4D") == true)
-            {
-                channelCount = 2;
-            }
-            else if (deviceInfo.Type?.Contains("ULXD4Q") == true || deviceInfo.Type?.Contains("AD4Q") == true)
+            int channelCount = 2; 
+            if (deviceInfo.Type?.Contains("ULXD4Q") == true || deviceInfo.Type?.Contains("AD4Q") == true)
             {
                 channelCount = 4;
             }
-            else if (deviceInfo.Type?.Contains("ULXD4") == true) // Single channel
+            else if (deviceInfo.Type?.Contains("ULXD4D") == true || deviceInfo.Type?.Contains("AD4D") == true)
+            {
+                channelCount = 2;
+            }
+            else if (deviceInfo.Type?.Equals("ULXD4") == true)
             {
                 channelCount = 1;
             }
@@ -84,12 +98,10 @@ namespace RF_Go.Services.DeviceHandlers
             // Get channel info
             for (int channel = 1; channel <= channelCount; channel++)
             {
-                // Get channel name (format: < REP x CHAN_NAME {string} >)
                 var channelNameCommand = _commandSet.GetChannelNameCommand(channel);
                 var channelNameResponse = await _communicationService.SendCommandAsync(ip, Port, channelNameCommand);
                 var channelName = ExtractChannelValueFromResponse(channelNameResponse, channel, "CHAN_NAME");
                 
-                // Get channel frequency (format: < REP x FREQUENCY ###### >)
                 var freqCommand = _commandSet.GetChannelFrequencyCommand(channel);
                 var freqResponse = await _communicationService.SendCommandAsync(ip, Port, freqCommand);
                 var channelFrequency = ExtractChannelValueFromResponse(freqResponse, channel, "FREQUENCY");
@@ -97,20 +109,12 @@ namespace RF_Go.Services.DeviceHandlers
                 deviceInfo.Channels.Add(new DeviceDiscoveredEventArgs.ChannelInfo
                 {
                     ChannelNumber = channel,
-                    Name = channelName,
+                    Name = channelName.Trim(),
                     Frequency = channelFrequency
                 });
             }
-            
-            // Get frequency diversity mode (as band information)
-            var diversityCommand = "< GET FREQUENCY_DIVERSITY_MODE >";
-            var diversityResponse = await _communicationService.SendCommandAsync(ip, Port, diversityCommand);
-            var diversityMode = ExtractValueFromResponse(diversityResponse, "FREQUENCY_DIVERSITY_MODE");
-            if (!string.IsNullOrEmpty(diversityMode))
-            {
-                deviceInfo.Frequency = diversityMode;
-            }
         }
+
 
         public async Task<(bool IsEqual, bool IsNotResponding)> IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo)
         {
@@ -144,7 +148,7 @@ namespace RF_Go.Services.DeviceHandlers
                 var currentName = ExtractChannelValueFromResponse(nameResponse, channelInfo.ChannelNumber, "CHAN_NAME");
                 
                 // Compare with expected values
-                if (channelInfo.Frequency != currentFreq || channelInfo.Name != currentName)
+                if (channelInfo.Frequency != currentFreq || channelInfo.Name != currentName.Trim())
                 {
                     Debug.WriteLine($"Channel {channelInfo.ChannelNumber} needs sync: freq={channelInfo.Frequency}/{currentFreq}, name={channelInfo.Name}/{currentName}");
                     return (false, false);  // Needs sync
@@ -188,7 +192,6 @@ namespace RF_Go.Services.DeviceHandlers
                             }
                             else
                             {
-                                // Already in kHz format
                                 frequency = int.Parse(freqValue);
                             }
                             
@@ -196,7 +199,6 @@ namespace RF_Go.Services.DeviceHandlers
                             var frequencyResponse = await _communicationService.SendCommandAsync(ip, Port, frequencyCommand);
                             Debug.WriteLine($"Frequency set response for channel {channel.ChannelNumber}: {frequencyResponse}");
                             
-                            // Check for errors in response
                             if (frequencyResponse.Contains("ERR"))
                             {
                                 errors.Add($"Error setting frequency for channel {channel.ChannelNumber}: {frequencyResponse}");

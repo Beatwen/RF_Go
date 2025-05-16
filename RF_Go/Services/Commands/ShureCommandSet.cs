@@ -18,8 +18,8 @@ namespace RF_Go.Services.Commands
         public string GetSensitivityCommand(int channel) => ""; // Non disponible
         public string GetModeCommand(int channel) => $"< GET FREQUENCY_DIVERSITY_MODE >"; // Global, pas par canal
 
-        public string SetChannelFrequencyCommand(int channel, int frequency) => $"< SET {channel} FREQUENCY {frequency:D6} >";
-        public string SetChannelNameCommand(int channel, string name) => $"< SET {channel} CHAN_NAME {name} >";
+        public string SetChannelFrequencyCommand(int channel, int frequency) => $"< SET {channel} FREQUENCY {frequency} >";
+        public string SetChannelNameCommand(int channel, string name) => $"< SET {channel} CHAN_NAME {{{name}}} >";
         public string SetSignalQualityCommand(int channel, int quality) => ""; // Non modifiable
 
         public string SetMuteCommand(int channel, bool mute) => $"< SET {channel} AUDIO_MUTE {(mute ? "ON" : "OFF")} >";

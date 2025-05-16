@@ -80,6 +80,7 @@ namespace RF_Go
             
             // Communication service (unifié pour tous les types d'appareils)
             builder.Services.AddSingleton<UDPCommunicationService>();
+            builder.Services.AddSingleton<TCPCommunicationService>();
             
             // Register device handlers with their correct dependencies
             builder.Services.AddSingleton<SennheiserDeviceHandler>(sp => 
@@ -96,7 +97,7 @@ namespace RF_Go
             // Add ShureDeviceHandler registration
             builder.Services.AddSingleton<ShureDeviceHandler>(sp => 
                 new ShureDeviceHandler(
-                    sp.GetRequiredService<UDPCommunicationService>(),
+                    sp.GetRequiredService<TCPCommunicationService>(),
                     sp.GetRequiredService<ShureCommandSet>()));
                     
             // Register handlers with the interface

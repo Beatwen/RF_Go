@@ -48,35 +48,38 @@ namespace RF_Go.Services.NetworkProtocols
         public void StartDiscovery()
         {
             DiscoveredDevices.Clear();
-            //_multicastService.Start();
-            //_serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
-            //_serviceDiscovery.QueryServiceInstances("_ewd._http.local");
-            //TriggerSennheiserDiscovery();
-            
+            _multicastService.Start();
+            _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
+            _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
+            TriggerSennheiserDiscovery();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
+                    {
+                        await TriggerSennheiserG4DiscoveryAsync(timeoutCts.Token);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"G4 discovery safely aborted: {ex.Message}");
+                }
+            });
+
+            // Add Shure discovery
             //Task.Run(async () => {
             //    try {
             //        using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
             //        {
-            //            await TriggerSennheiserG4DiscoveryAsync(timeoutCts.Token);
+            //            await TriggerShureDiscoveryAsync(timeoutCts.Token);
             //        }
             //    }
             //    catch (Exception ex) {
-            //        Debug.WriteLine($"G4 discovery safely aborted: {ex.Message}");
+            //        Debug.WriteLine($"Shure discovery safely aborted: {ex.Message}");
             //    }
             //});
-            
-            // Add Shure discovery
-            Task.Run(async () => {
-                try {
-                    using (var timeoutCts = new CancellationTokenSource(10000)) // 10 sec
-                    {
-                        await TriggerShureDiscoveryAsync(timeoutCts.Token);
-                    }
-                }
-                catch (Exception ex) {
-                    Debug.WriteLine($"Shure discovery safely aborted: {ex.Message}");
-                }
-            });
         }
 
         private void OnServiceDiscovered(object sender, DomainName serviceName)
@@ -209,26 +212,17 @@ namespace RF_Go.Services.NetworkProtocols
                 _g4DiscoveryCts?.Cancel();
                 _g4DiscoveryCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 
-                // Clean up any existing UDP client
                 _g4UdpClient?.Dispose();
-                
-                // Create a new UDP client specifically for G4 discovery
                 _g4UdpClient = new UdpClient();
-                
-                // Configure socket options for multicast properly
                 _g4UdpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 _g4UdpClient.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
                 _g4UdpClient.MulticastLoopback = false;
                 
                 try {
-                    // Bind to port 8133 on all interfaces
                     IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 8133);
                     _g4UdpClient.Client.Bind(localEndpoint);
                     
-                    // Join the multicast group
                     _g4UdpClient.JoinMulticastGroup(IPAddress.Parse("224.0.0.251"));
-                    
-                    // Start listening for G4 device responses
                     var listenTask = ListenForG4DevicesAsync(_g4DiscoveryCts.Token);
                     
                     // Send the discovery trigger - first attempt
@@ -240,7 +234,6 @@ namespace RF_Go.Services.NetworkProtocols
                     await Task.Delay(5000, cancellationToken);
                 }
                 finally {
-                    // Clean up
                     try {
                         if (_g4UdpClient != null)
                         {
@@ -467,43 +460,6 @@ namespace RF_Go.Services.NetworkProtocols
                 endIndex = data.Length;
             string value = data.Substring(startIndex, endIndex - startIndex);
             return value.TrimEnd('\0');
-        }
-
-        public async Task<List<DeviceDiscoveredEventArgs>> DetectDevicesAsync()
-        {
-            var discoveredDevices = new List<DeviceDiscoveredEventArgs>();
-            var completionSource = new TaskCompletionSource();
-
-            EventHandler<DeviceDiscoveredEventArgs> handler = (sender, device) =>
-            {
-                if (!discoveredDevices.Any(d => d.Name == device.Name))
-                {
-                    discoveredDevices.Add(device);
-                }
-            };
-
-            DeviceDiscovered += handler;
-
-            try
-            {
-                StartDiscovery();
-                await Task.Delay(3000);
-                completionSource.SetResult();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error during device discovery: {ex.Message}");
-                completionSource.SetException(ex);
-            }
-            finally
-            {
-                StopDiscovery();
-                DeviceDiscovered -= handler;
-            }
-
-            await completionSource.Task;
-
-            return discoveredDevices;
         }
         
         public async Task CheckDeviceSync(object state)
@@ -860,6 +816,30 @@ namespace RF_Go.Services.NetworkProtocols
                         model = "AD4D";
                     else if (dataAscii.Contains("AD4Q"))
                         model = "AD4Q";
+                    else if (dataAscii.Contains("AD610"))
+                        model = "AD610";
+                    else if (dataAscii.Contains("AXT400"))
+                        model = "AXT400";
+                    else if (dataAscii.Contains("AXT600"))
+                        model = "AXT600";
+                    else if (dataAscii.Contains("AXT610"))
+                        model = "AXT610";
+                    else if (dataAscii.Contains("AXT630") || dataAscii.Contains("AXT631"))
+                        model = "AXT630/631";
+                    else if (dataAscii.Contains("AXT900"))
+                        model = "AXT900";
+                    else if (dataAscii.Contains("P10T"))
+                        model = "P10T";
+                    else if (dataAscii.Contains("SBRC"))
+                        model = "SBRC";
+                    else if (dataAscii.Contains("SBC220"))
+                        model = "SBC220";
+                    else if (dataAscii.Contains("SBC240"))
+                        model = "SBC240";
+                    else if (dataAscii.Contains("SBC840"))
+                        model = "SBC840";
+                    else if (dataAscii.Contains("SBC840M"))
+                        model = "SBC840M";
                     else if (dataAscii.Contains("PSM1000"))
                         model = "PSM1000";
                     else if (dataAscii.Contains("UR4D"))
@@ -929,71 +909,7 @@ namespace RF_Go.Services.NetworkProtocols
             }
         }
 
-        private DeviceDiscoveredEventArgs ParseShureDeviceInfo(string data, IPAddress remoteAddress)
-        {
-            try
-            {
-                // Extract information from the response
-                // This is a simplified parser - the actual format will need to be determined from real responses
-                string model = "";
-                string id = "";
-                
-                // Try to extract model
-                if (data.Contains("ULXD4D"))
-                    model = "ULXD4D";
-                else if (data.Contains("ULXD4Q"))
-                    model = "ULXD4Q";
-                else if (data.Contains("ULXD4"))
-                    model = "ULXD4";
-                else if (data.Contains("AD4D"))
-                    model = "AD4D";
-                else if (data.Contains("AD4Q"))
-                    model = "AD4Q";
-                else if (data.Contains("PSM1000"))
-                    model = "PSM1000";
-                else if (data.Contains("UR4D"))
-                    model = "UR4D";
-                else
-                    model = "Unknown Shure";
-                    
-                // Try to extract unique identifier
-                // This is a placeholder - need to determine the actual format
-                int idIndex = data.IndexOf("MAC=");
-                if (idIndex >= 0)
-                {
-                    id = data.Substring(idIndex + 4, 17); // Assume MAC address format
-                }
-                else
-                {
-                    id = "Unknown-" + Guid.NewGuid().ToString().Substring(0, 8);
-                }
-                
-                // Create device info
-                var deviceInfo = new DeviceDiscoveredEventArgs
-                {
-                    Name = model + " " + id,
-                    Brand = "Shure",
-                    Type = model,
-                    SerialNumber = id,
-                    IPAddress = remoteAddress.ToString(),
-                };
-                
-                // Get appropriate handler
-                var handler = GetAppropriateHandlerForType(deviceInfo.Brand, deviceInfo.Type);
-                if (handler != null && handler.CanHandle(deviceInfo.Type))
-                {
-                    handler.HandleDevice(deviceInfo).Wait();
-                }
-                
-                Debug.WriteLine($"Parsed Shure device: {deviceInfo.Name} at {deviceInfo.IPAddress}");
-                return deviceInfo;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error parsing Shure device info: {ex.Message}");
-                return null;
-            }
-        }
+
     }
 }
 
