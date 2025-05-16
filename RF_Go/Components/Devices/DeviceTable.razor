@@ -82,7 +82,17 @@
         </HeaderContent>
 
         <GroupHeaderTemplate>
-            <MudTh Class="mud-table-cell-custom-group" colspan="3">@($"{context.GroupName}: {context.Key}")</MudTh>
+            @if (context.GroupName == "RF Group")
+            {
+                var groupName = GroupsViewModel.Groups.FirstOrDefault(g => g.ID.ToString() == context.Key)?.Name ?? "Unknown Group";
+                <MudTh Class="mud-table-cell-custom-group" colspan="3">@($"{groupName}")</MudTh>
+            }
+            else
+            {
+                var uniqueModels = context.Items.Select(d => d.Model).Distinct().OrderBy(m => m);
+                var modelList = string.Join(", ", uniqueModels);
+                <MudTh Class="mud-table-cell-custom-group" colspan="3">@($"{context.Key}: {modelList}")</MudTh>
+            }
         </GroupHeaderTemplate>
 
         <RowTemplate>
@@ -175,12 +185,6 @@
         </PagerContent>
     </MudTable>
 </MudHidden>
-
-<div class="d-flex flex-wrap gap-4 mt-4">
-    <MudSwitch @bind-Value="_groupDefinition.Indentation" Color="Color.Primary">Indentation</MudSwitch>
-    <MudSwitch @bind-Value="_groupDefinition.Expandable" Color="Color.Primary">Expandable (RF Group)</MudSwitch>
-    <MudSwitch @bind-Value="_groupDefinition.InnerGroup.Expandable" Color="Color.Primary">Expandable (Brand)</MudSwitch>
-</div>
 
 @code {
     [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
