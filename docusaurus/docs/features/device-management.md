@@ -42,9 +42,62 @@ Le système de gestion des appareils est construit sur une architecture modulair
 
 ### Shure
 
-- Support pour les modèles AD4D, PSM1000 et UR4D
-- Découverte via mDNS avec service `_ssc._udp.local`
-- Configuration complète des paramètres via protocole propriétaire
+#### Appareils Supportés
+
+| Modèle | Canaux | Bande de Fréquence | Protocole |
+|--------|---------|-------------------|------------|
+| ULXD4D | 2 | 470-1805 MHz | UDP |
+| ULXD4Q | 4 | 470-1805 MHz | UDP |
+| ULXD4 | 1 | 470-1805 MHz | UDP |
+| AD4D | 2 | 470-1260 MHz | UDP |
+| AD4Q | 4 | 470-1260 MHz | UDP |
+| AD610 | 2 | 470-1260 MHz | UDP |
+| AXT400/600/610/630/900 | 2 | 470-787 MHz | UDP |
+| P10T | 2 | 470-952 MHz | UDP |
+| SBRC | 2 | 470-952 MHz | UDP |
+| SBC220/240/840/840M | 2 | 470-952 MHz | UDP |
+| PSM1000 | 2 | 470-952 MHz | UDP |
+| UR4D | 2 | 470-952 MHz | UDP |
+
+#### Caractéristiques Techniques
+
+- **Protocole de Découverte** : SLP (Service Location Protocol)
+  - Adresse multicast : 239.255.254.253
+  - Port : 8427
+
+- **Protocole de Communication** : TCP
+  - Port : 2202
+  - Format des commandes : XML-like
+  - Timeout : 5 secondes
+  - Support des commandes de lecture/écriture
+
+- **Fonctionnalités Supportées**
+  - Lecture/écriture des fréquences
+  - Gestion des noms de canaux
+  - Contrôle du mute
+  - Lecture des niveaux RF
+  - Configuration réseau
+
+#### Bandes de Fréquences
+
+Les appareils Shure supportent plusieurs bandes de fréquences selon le modèle :
+
+- **G50-G62** : 470-530 MHz
+- **H50-H54** : 534-636 MHz
+- **J51** : 572-636 MHz
+- **L50-L60** : 632-714 MHz
+- **JB** : 806-810 MHz
+- **X51** : 925-937.5 MHz
+- **Z16** : 1240-1260 MHz
+- **Z20** : 1790-1805 MHz
+
+#### Configuration Réseau
+
+- **Mode** : Auto ou Manuel
+- **Protocole** : DHCP ou IP statique
+- **Masque** : 255.255.255.0
+- **Passerelle** : Configurable
+- **MAC** : Format 00:00:00:00:00:00
 
 ## Interface Utilisateur
 

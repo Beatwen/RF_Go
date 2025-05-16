@@ -80,12 +80,12 @@ RF Go identifie automatiquement la bande de fréquence des appareils G4 en compa
 
 Les récepteurs Sennheiser EWDX-EM2 utilisent un protocole différent basé sur mDNS et API REST.
 
-#### Découverte
+#### Découverte Sennheiser
 
 - Service mDNS: `_ewd._http.local`
 - Port standard: variable (généralement 80)
 
-#### Communication
+#### Communication Sennheiser
 
 La communication avec les appareils EWDX se fait via API REST/HTTP:
 
@@ -143,7 +143,7 @@ La communication avec les appareils Shure se fait via leur protocole SSC (Shure 
 | `{"schema":"tx1"}\n` | Informations sur l'émetteur 1 | JSON |
 | `{"tx1":{"freq":"577.000"}}\n` | Définit la fréquence de l'émetteur 1 | JSON confirmant le changement |
 
-#### Format des Données
+#### Format des Données Shure
 
 Les commandes et réponses sont en format JSON:
 
@@ -161,11 +161,11 @@ Les commandes et réponses sont en format JSON:
 
 Les appareils Wisycom comme MTP60, MTP61 et MCR54 utilisent leur propre protocole propriétaire basé sur UDP et des formats de commande spécifiques.
 
-#### Découverte Wisycom
+### Découverte Wisycom
 
 - Les appareils Wisycom sont généralement découverts via mDNS ou détection d'adresse IP directe
 
-#### Communication Wisycom
+### Communication Wisycom
 
 La communication se fait via un protocole propriétaire avec des commandes spécifiques au modèle.
 

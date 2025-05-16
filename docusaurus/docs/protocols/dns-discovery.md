@@ -140,17 +140,55 @@ private async Task TriggerSennheiserG4DiscoveryAsync(CancellationToken cancellat
 
 ### Shure
 
-#### Découverte
+#### Découverte SLP (Service Location Protocol)
 
-- Utilise mDNS avec le service `_ssc._udp.local`
-- Port par défaut : 2202
-- Enregistrements TXT pour l'identification
+Les appareils Shure utilisent le protocole SLP (Service Location Protocol) pour la découverte sur le réseau :
 
-#### Communication
+- Adresse multicast : 239.255.254.253
+- Port : 8427
+- Format des paquets : Version 2 du protocole SLP
 
-- Protocole propriétaire sur ports spécifiques
-- Commandes structurées selon la documentation Shure
-- Format de données JSON
+```mermaid
+sequenceDiagram
+    participant App as RF Go
+    participant Network as Réseau Local
+    participant Shure as Appareil Shure
+
+    App->>Network: Rejoindre groupe multicast 239.255.254.253:8427
+    Network->>Shure: Diffusion des paquets SLP
+    Shure->>Network: Réponse SLP (Function ID 7)
+    Network->>App: Réception de la réponse
+    App->>App: Extraction des informations (acn-uacn, cid)
+```
+
+#### Format des Paquets SLP
+
+1. **En-tête SLP** :
+   - Version : 2
+   - Function ID : 7 (Service Reply)
+   - Contient les champs :
+     - `acn-uacn` : Modèle et code de fréquence (ex: "ULXD4D H51 REV2")
+     - `cid` : Identifiant unique de l'appareil
+
+2. **Extraction des Informations** :
+   - Modèle : Extrait du champ `acn-uacn`
+   - ID Série : Extrait du champ `cid`
+   - Adresse IP : Source du paquet ou champ `esta.dmp/`
+
+#### Appareils Supportés
+
+- ULXD4D (2 canaux)
+- ULXD4Q (4 canaux)
+- ULXD4 (1 canal)
+- AD4D (2 canaux)
+- AD4Q (4 canaux)
+- AD610 (2 canaux)
+- AXT400/600/610/630/900
+- P10T
+- SBRC
+- SBC220/240/840/840M
+- PSM1000
+- UR4D
 
 ## Détection et Attribution des Gestionnaires d'Appareils
 

@@ -133,6 +133,74 @@ private async Task ListenForResponsesAsync()
 }
 ```
 
+### Communication Shure
+
+Les appareils Shure utilisent un protocole TCP pour la communication de contrôle :
+
+#### Caractéristiques du Protocole
+
+- **Protocole** : TCP
+- **Port** : 2202
+- **Format des commandes** : Balises XML-like
+- **Réponses** : Format similaire aux commandes
+- **Timeout** : 5 secondes par défaut
+
+#### Format des Commandes
+
+Les commandes Shure suivent un format spécifique avec des balises XML-like :
+
+```csharp
+// Exemples de commandes Shure
+"< GET MODEL >"                    // Obtenir le modèle
+"< GET NET_SETTINGS sc >"          // Obtenir les paramètres réseau
+"< GET {channel} CHAN_NAME >"      // Obtenir le nom du canal
+"< GET {channel} FREQUENCY >"      // Obtenir la fréquence
+"< SET {channel} FREQUENCY {freq} >" // Définir la fréquence
+"< SET {channel} CHAN_NAME {name} >" // Définir le nom du canal
+```
+
+#### Commandes Principales
+
+1. **Lecture** :
+   - `GET MODEL` : Informations sur le modèle
+   - `GET NET_SETTINGS` : Configuration réseau
+   - `GET CHAN_NAME` : Nom du canal
+   - `GET FREQUENCY` : Fréquence actuelle
+   - `GET RX_RF_LVL` : Niveau RF
+   - `GET AUDIO_MUTE` : État du mute
+
+2. **Écriture** :
+   - `SET FREQUENCY` : Définir la fréquence
+   - `SET CHAN_NAME` : Définir le nom du canal
+   - `SET AUDIO_MUTE` : Activer/désactiver le mute
+
+#### Gestion des Réponses Shure
+
+Les réponses Shure suivent le même format que les commandes :
+
+```
+< REP MODEL ULXD4D >
+< REP NET_SETTINGS SC AUTO 192.168.000.036 255.255.255.000 192.168.000.001 00:0E:DD:49:11:C9 >
+< REP 1 CHAN_NAME {Mic1} >
+```
+
+#### Implémentation
+
+```csharp
+public class ShureCommandSet : IDeviceCommandSet
+{
+    public string GetModelCommand() => "< GET MODEL >";
+    public string GetSerialCommand() => "< GET NET_SETTINGS sc >";
+    public string GetChannelNameCommand(int channel) => $"< GET {channel} CHAN_NAME >";
+    public string GetChannelFrequencyCommand(int channel) => $"< GET {channel} FREQUENCY >";
+    
+    public string SetChannelFrequencyCommand(int channel, int frequency) => 
+        $"< SET {channel} FREQUENCY {frequency} >";
+    public string SetChannelNameCommand(int channel, string name) => 
+        $"< SET {channel} CHAN_NAME {{{name}}} >";
+}
+```
+
 ## Communication TCP
 
 Bien que la plupart des appareils utilisent UDP, certains modèles nécessitent des connexions TCP pour des communications plus fiables:
