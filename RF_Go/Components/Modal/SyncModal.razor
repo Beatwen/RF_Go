@@ -28,7 +28,7 @@
                 <MudTd>@context.Model</MudTd>
                 <MudTd>@context.Frequency & @context.IpAddress</MudTd>
                 <MudTd>
-                    @if (IsSyncable(context))
+                    @if (IsSyncable(context) && context.IpAddress != "0.0.0.0")
                     {
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => SyncToDevice(context)">
                                 Sync to Device

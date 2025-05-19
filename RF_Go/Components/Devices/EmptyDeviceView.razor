@@ -1,20 +1,72 @@
 @using MudBlazor
 
-<MudContainer MaxWidth="MaxWidth.Medium" Style="display: flex; justify-content: center; align-items: center;">
-    <MudPaper Class="pa-6" Elevation="3" Style="text-align: center; max-width: 400px;">
-        <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
-            No devices found. Start by adding a device or import a session.
-        </MudAlert>
-        <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Download" OnClick="@OnImportDatabase" Title="Import Database"/>
-        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" OnClick="@OnAddDevice" Title="Add Device"/>
-        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" OnClick="@OnExportDatabase" Title="Export Database"/>
-        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.AutoFixHigh" OnClick="@OnMagicSync" Title="Auto Sync devices on network" />
-    </MudPaper>
-</MudContainer>
+<div class="empty-device-container">
+    <div class="empty-device-content">
+        <MudIcon Icon="@Icons.Material.Filled.Devices" Size="Size.Large" Color="Color.Primary" />
+        <MudText Typo="Typo.h5" Class="mt-4">No devices found</MudText>
+        <MudText Typo="Typo.body1" Class="mt-2">Add your devices to get started</MudText>
+        
+        <div class="mt-8 d-flex flex-column gap-4">
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      OnClick="OnAddDevice"
+                      Disabled="@IsLoading">
+                Add Device
+            </MudButton>
+            
+            <MudButton Variant="Variant.Outlined" 
+                      Color="Color.Primary" 
+                      OnClick="OnImportDatabase"
+                      Disabled="@IsLoading">
+                Import Session
+            </MudButton>
+            
+            <MudButton Variant="Variant.Outlined" 
+                      Color="Color.Primary" 
+                      OnClick="OnExportDatabase"
+                      Disabled="@IsLoading">
+                Export Session
+            </MudButton>
+            
+            <MudButton Variant="Variant.Outlined" 
+                      Color="Color.Primary" 
+                      OnClick="OnMagicSync"
+                      Disabled="@IsLoading">
+                @if (IsLoading)
+                {
+                    <MudProgressCircular Color="Color.Primary" 
+                                       Indeterminate="true" 
+                                       Size="Size.Small" 
+                                       Class="mr-2" />
+                    <span>Syncing...</span>
+                }
+                else
+                {
+                    <span>Magic Sync</span>
+                }
+            </MudButton>
+        </div>
+    </div>
+</div>
 
 @code {
-    [Parameter] public EventCallback OnImportDatabase { get; set; }
     [Parameter] public EventCallback OnAddDevice { get; set; }
+    [Parameter] public EventCallback OnImportDatabase { get; set; }
     [Parameter] public EventCallback OnExportDatabase { get; set; }
     [Parameter] public EventCallback OnMagicSync { get; set; }
-} 
+    [Parameter] public bool IsLoading { get; set; }
+}
+
+<style>
+    .empty-device-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+    }
+
+    .empty-device-content {
+        text-align: center;
+        padding: 2rem;
+    }
+</style> 

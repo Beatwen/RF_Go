@@ -47,12 +47,20 @@ namespace RF_Go.Services.NetworkProtocols
 
         public void StartDiscovery()
         {
+            Debug.WriteLine("Starting discovery process...");
             DiscoveredDevices.Clear();
+            
+            // Start mDNS discovery
             _multicastService.Start();
             _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
             _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
+            Debug.WriteLine("mDNS discovery started");
+            
+            // Start standard Sennheiser discovery
             TriggerSennheiserDiscovery();
+            Debug.WriteLine("Standard Sennheiser discovery triggered");
 
+            // Start G4 discovery
             Task.Run(async () =>
             {
                 try
@@ -67,8 +75,9 @@ namespace RF_Go.Services.NetworkProtocols
                     Debug.WriteLine($"G4 discovery safely aborted: {ex.Message}");
                 }
             });
+            Debug.WriteLine("G4 discovery started");
 
-            // Add Shure discovery
+            // Start Shure discovery
             Task.Run(async () =>
             {
                 try
@@ -83,6 +92,7 @@ namespace RF_Go.Services.NetworkProtocols
                     Debug.WriteLine($"Shure discovery safely aborted: {ex.Message}");
                 }
             });
+            Debug.WriteLine("Shure discovery started");
         }
 
         private void OnServiceDiscovered(object sender, DomainName serviceName)
@@ -152,7 +162,6 @@ namespace RF_Go.Services.NetworkProtocols
                             bestHandler = g4Handler;
                         }
                     }
-                    
                     await bestHandler.HandleDevice(deviceInfo);
                     handlerFound = true;
                     break;
@@ -162,6 +171,7 @@ namespace RF_Go.Services.NetworkProtocols
             if (!handlerFound)
             {
                 Debug.WriteLine($"No handler found for service: {serviceName}");
+                return;
             }
 
             if (!string.IsNullOrEmpty(deviceInfo.SerialNumber))
@@ -610,7 +620,7 @@ namespace RF_Go.Services.NetworkProtocols
                 
                 _shureUdpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 _shureUdpClient.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
-                _shureUdpClient.MulticastLoopback = true; // Enable loopback to receive our own packets
+                _shureUdpClient.MulticastLoopback = false; // Disable loopback to match G4 configuration
                 
                 try {
                     await JoinAndListenToShureMulticast(cancellationToken);
@@ -647,16 +657,12 @@ namespace RF_Go.Services.NetworkProtocols
             {
                 Debug.WriteLine("Setting up to receive Shure multicast data on 239.255.254.253:8427");
                 
-                // Bind to port 8427 specifically as required for Shure SLP
+                IPEndPoint multicastEndpoint = new IPEndPoint(IPAddress.Parse("239.255.254.253"), 8427);
+                _shureUdpClient.JoinMulticastGroup(IPAddress.Parse("239.255.254.253"));
                 IPEndPoint localEndpoint = new IPEndPoint(IPAddress.Any, 8427);
                 _shureUdpClient.Client.Bind(localEndpoint);
                 
-                // Join the SLP multicast group used by Shure
-                _shureUdpClient.JoinMulticastGroup(IPAddress.Parse("239.255.254.253"));
-                Debug.WriteLine("Successfully joined Shure multicast group 239.255.254.253");
-                
-                // Start listening for multicast traffic in a background task
-                Task.Run(async () => {
+                await Task.Run(async () => {
                     Debug.WriteLine("Starting to listen for Shure multicast traffic");
                     
                     while (!cancellationToken.IsCancellationRequested)

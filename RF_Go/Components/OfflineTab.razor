@@ -28,7 +28,8 @@
             OnImportDatabase="OpenDialogToImportDatabaseAsync"
             OnAddDevice="OpenDialogToAddDeviceAsync"
             OnExportDatabase="OpenDialogToExportDatabaseAsync"
-            OnMagicSync="@(() => MagicSync("FromDevices"))" />
+            OnMagicSync="@(() => MagicSync("FromDevices"))"
+            IsLoading="@_isMagicSyncing" />
 }
 else
 {
@@ -62,6 +63,7 @@ else
     [Parameter] public FrequencyDataViewModel FrequencyDataViewModel { get; set; }
 
     private bool lockAll = false;
+    private bool _isMagicSyncing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -283,18 +285,34 @@ else
 
     private async Task MagicSync(string destination)
     {
-        List<string> errors = new();
-        if (destination == "ToDevices")
+        try
         {
-            errors = await DeviceMappingService.SyncAllToDevice();
+            _isMagicSyncing = true;
+            StateHasChanged();
+
+            List<string> errors = new();
+            if (destination == "ToDevices")
+            {
+                errors = await DeviceMappingService.SyncAllToDevice();
+            }
+            else if (destination == "FromDevices")
+            {
+                errors = await DeviceMappingService.SyncAllFromDevice();
+            }
+            foreach (string e in errors)
+            {
+                Snackbar.Add(e, Severity.Error);
+            }
+
+            await DevicesViewModel.LoadDevicesAsync();
+            await GroupsViewModel.LoadGroupsAsync();
+            StateHasChanged();
+            await OnDeviceSaved.InvokeAsync();
         }
-        else if (destination == "FromDevices")
+        finally
         {
-            errors = await DeviceMappingService.SyncAllFromDevice();
-        }
-        foreach (string e in errors)
-        {
-            Snackbar.Add(e, Severity.Error);
+            _isMagicSyncing = false;
+            StateHasChanged();
         }
     }
 
