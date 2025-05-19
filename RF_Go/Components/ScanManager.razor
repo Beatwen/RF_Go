@@ -8,7 +8,7 @@
 @inject ScansViewModel ScansViewModel
 @inject ScanImportExportService ScanImportExportService
 
-<MudCard Elevation="0" Outlined="true" Class="border-solid border-1 mud-border-secondary mt-1" Style="max-height: 40vh; overflow:auto">
+<MudCard Elevation="0" Outlined="true" Class="border-solid border-1 mud-border-secondary mt-1">
     <MudCardHeader>
         <CardHeaderContent>
             <MudText Typo="Typo.h6">Scans</MudText>
@@ -19,7 +19,7 @@
         </CardHeaderActions>
     </MudCardHeader>
     <MudCardContent>
-        <MudTable Items="@ScansViewModel.Scans" Dense="true" Hover="true" Bordered="true">
+        <MudTable Items="@ScansViewModel.Scans" Dense="true" Hover="true" Bordered="true" Height="26vh">
             <HeaderContent>
                 <MudTh>Name</MudTh>
                 <MudTh>Date</MudTh>

@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net8.0-maccatalyst;net8.0-ios;net8.0-android</TargetFrameworks>
 		
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.26100.0</TargetFrameworks>
 		<SelfContained>true</SelfContained>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
         <!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
@@ -47,6 +47,11 @@
         <RuntimeIdentifier Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">ios-arm64</RuntimeIdentifier>
         <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
         <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">win-x64;win-x86</RuntimeIdentifiers>
+        <PublishSingleFile>false</PublishSingleFile>
+        <PublishReadyToRun>false</PublishReadyToRun>
+        <PublishTrimmed>false</PublishTrimmed>
+        <PublishProfile>FolderProfile.pubxml</PublishProfile>
+        <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
@@ -60,9 +65,14 @@
     <PropertyGroup>
       <PublishReadyToRun>false</PublishReadyToRun>
       <PackageCertificateThumbprint>B2782CA9819B526BE85AE3A6C0BD8C93084B53F6</PackageCertificateThumbprint>
+      <WindowsPackageType>MSIX</WindowsPackageType>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|AnyCPU'">
+      <CodesignExtraArgs>269570</CodesignExtraArgs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|x64'">
       <CodesignExtraArgs>269570</CodesignExtraArgs>
     </PropertyGroup>
 

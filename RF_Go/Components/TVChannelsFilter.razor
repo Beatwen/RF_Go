@@ -13,9 +13,9 @@
     </div>
 </MudPaper>
 
-<MudGrid Spacing="3" Class="pl-6 pr-6 pb-6">
+<MudGrid Spacing="3" Class="pl-2 pr-2 pb-2">
     <MudItem xs="12" md="6" Class="table-container">
-        <MudTable Breakpoint="Breakpoint.None" Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" Height="75vh" FixedHeader="true" Bordered="true" Outlined="true" Class="border-solid border-1 mud-border-secondary">
+        <MudTable Breakpoint="Breakpoint.None" Items="@ExclusionChannelViewModel.ExclusionChannels" Dense="true" Height="72vh" FixedHeader="true" Bordered="true" Outlined="true" Class="border-solid border-1 mud-border-secondary">
             <HeaderContent>
                 <MudTh>
                     <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAll(IsChecked)" />
