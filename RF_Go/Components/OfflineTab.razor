@@ -43,7 +43,10 @@ else
             OnLockAll="LockAll"
             OnOpenQuickSync="OpenQuickSyncModal"
             OnRFCalcul="RFCalcul"
-            OnMagicSync="MagicSync" />
+            OnMagicSync="MagicSync"
+            OnAddDevice="OpenDialogToAddDeviceAsync"
+            OnImportDatabase="OpenDialogToImportDatabaseAsync"
+            OnExportDatabase="OpenDialogToExportDatabaseAsync" />
 }
 
 <div class="chart-container d-none d-md-block">
@@ -73,9 +76,11 @@ else
             if (ExclusionChannelViewModel == null)
                 throw new InvalidOperationException("ExclusionChannelViewModel is not initialized.");
 
+            Debug.WriteLine("Loading devices and groups...");
             await DevicesViewModel.LoadDevicesAsync();
             await GroupsViewModel.LoadGroupsAsync();
             await BackupFrequenciesViewModel.LoadBackupFrequenciesAsync();
+            Debug.WriteLine($"Loaded {GroupsViewModel.Groups.Count} groups");
 
             foreach (var device in DevicesViewModel.Devices)
             {
@@ -87,6 +92,7 @@ else
         catch (Exception ex)
         {
             Debug.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
             throw;
         }
     }
@@ -316,37 +322,68 @@ else
         }
     }
 
-    private async void HandleCalculationCompleted()
+    private async Task HandleCalculationCompleted()
     {
-        StateHasChanged();
-
         try
         {
+            Debug.WriteLine("Starting HandleCalculationCompleted");
+            StateHasChanged();
+
             var groupNames = GroupsViewModel.Groups.ToDictionary(
                 g => g.ID.ToString(),
                 g => g.Name
             );
 
+            Debug.WriteLine($"Updating chart with {groupNames.Count} groups");
             await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", groupNames);
+            
+            var frequencyData = FrequencyDataViewModel.FrequencyData;
+            var scans = ScansViewModel.Scans.Select(s => new
+            {
+                frequenciesJson = s.FrequenciesJson,
+                valuesJson = s.ValuesJson,
+                isVisible = ScansViewModel.IsScanVisible(s)
+            }).ToList();
+
+            Debug.WriteLine($"Initializing chart with {frequencyData.UsedFrequencies.Count} frequencies");
             await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv",
-                FrequencyDataViewModel.FrequencyData,
-                ScansViewModel.Scans.Select(s => new
-                {
-                    frequenciesJson = s.FrequenciesJson,
-                    valuesJson = s.ValuesJson,
-                    isVisible = ScansViewModel.IsScanVisible(s)
-                }).ToList());
+                frequencyData,
+                scans);
+
+            Debug.WriteLine("Chart update completed");
         }
         catch (Exception ex)
         {
-            Debug.Print($"Error calling JavaScript: {ex.Message}");
+            Debug.WriteLine($"Error in HandleCalculationCompleted: {ex.Message}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
         }
     }
 
     private async Task RFCalcul()
     {
-        await FrequencyCalculationService.CalculateFrequenciesAsync();
-        HandleCalculationCompleted();
-        await OnDeviceSaved.InvokeAsync();
+        try
+        {
+            Debug.WriteLine("Starting RFCalcul");
+            
+            // Vérifier et recharger les groupes si nécessaire
+            if (GroupsViewModel.Groups == null || !GroupsViewModel.Groups.Any())
+            {
+                Debug.WriteLine("Groups not loaded, reloading...");
+                await GroupsViewModel.LoadGroupsAsync();
+                Debug.WriteLine($"Reloaded {GroupsViewModel.Groups.Count} groups");
+            }
+
+            await FrequencyCalculationService.CalculateFrequenciesAsync();
+            Debug.WriteLine("Frequency calculation completed");
+            await HandleCalculationCompleted();
+            Debug.WriteLine("HandleCalculationCompleted finished");
+            await OnDeviceSaved.InvokeAsync();
+            Debug.WriteLine("OnDeviceSaved completed");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error in RFCalcul: {ex.Message}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
     }
 } 

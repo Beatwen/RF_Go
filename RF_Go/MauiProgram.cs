@@ -50,17 +50,17 @@ namespace RF_Go
 
 #endif
             builder.Services.AddScoped<DatabaseContext>();
-            builder.Services.AddSingleton<DevicesViewModel>();
-            builder.Services.AddTransient<GroupsViewModel>();
-            builder.Services.AddTransient<ExclusionChannelViewModel>();
+            builder.Services.AddScoped<DevicesViewModel>();
+            builder.Services.AddScoped<GroupsViewModel>();
+            builder.Services.AddScoped<ExclusionChannelViewModel>();
             builder.Services.AddHttpClient<ApiService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<MainPage>();
-            builder.Services.AddSingleton<FrequencyDataViewModel>();
+            builder.Services.AddScoped<FrequencyDataViewModel>();
             builder.Services.AddScoped<ScansViewModel>();
             builder.Services.AddScoped<ScanImportExportService>();
             builder.Services.AddScoped<BackupFrequenciesViewModel>();
-            builder.Services.AddSingleton<FrequencyCalculationService>();
+            builder.Services.AddScoped<FrequencyCalculationService>();
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(AppConfig.ApiBaseUrl) });
             builder.Services.AddSingleton<AuthService>();

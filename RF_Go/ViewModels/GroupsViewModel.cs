@@ -84,25 +84,38 @@ namespace RF_Go.ViewModels
                 }
             }
             public async Task LoadGroupsAsync()
+            {
+                try
                 {
-                    try
+                    Debug.WriteLine("Starting LoadGroupsAsync");
+                    var groups = await _context.GetAllAsync<RFGroup>();
+                    
+                    if (groups != null && groups.Any())
                     {
-                        var groups = await _context.GetAllAsync<RFGroup>();
-                        if (groups != null && groups.Any())
+                        Groups.Clear();
+                        foreach (var group in groups)
                         {
-                            Groups.Clear();
-                            foreach (var group in groups)
-                            {
-                                Groups.Add(group);
-                            }
+                            Groups.Add(group);
                         }
+                        Debug.WriteLine($"Added {Groups.Count} groups to collection");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Debug.WriteLine($"Error loading groups: {ex.Message}");
-                        throw;
+                        Debug.WriteLine("No groups found in database, creating default group");
+                        // Créer un groupe par défaut si aucun n'existe
+                        var defaultGroup = new RFGroup { Name = "Default Group" };
+                        await _context.AddItemAsync(defaultGroup);
+                        Groups.Clear();
+                        Groups.Add(defaultGroup);
                     }
                 }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error loading groups: {ex.Message}");
+                    Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                    throw;
+                }
+            }
             [RelayCommand]
             public void SetOperatingGroup(RFGroup group)
             {

@@ -263,14 +263,11 @@ namespace RF_Go.Services.NetworkProtocols
         {
             try
             {
-                // Create discovery packet
                 string commandStr = "[servicecommand]devinfo\r\n";
                 byte[] commandBytes = Encoding.ASCII.GetBytes(commandStr);
                 
-                // Create a packet with header
                 byte[] header = new byte[] { 0x12, 0x07, 0x06, 0x20, 0x00, 0x00, 0x19, 0x00 };
                 
-                // Total size is 1035 bytes
                 byte[] packet = new byte[1035];
                 
                 // Copy header
