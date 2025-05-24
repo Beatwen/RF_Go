@@ -26,15 +26,15 @@ namespace RF_Go.Models
         public int Step { get; set; }
         public int SelfSpacing { get; set; }
         public int ThirdOrderSpacing { get; set; }
-        public bool ThirdOrderSpacingEnable = true;
+        public bool ThirdOrderSpacingEnable { get; set; } = true;
         public int FifthOrderSpacing { get; set; }
-        public bool FifthOrderSpacingEnable = true;
+        public bool FifthOrderSpacingEnable { get; set; } = true;
         public int SeventhOrderSpacing { get; set; }
-        public bool SeventhOrderSpacingEnable;
+        public bool SeventhOrderSpacingEnable { get; set; }
         public int NinthOrderSpacing { get; set; }
-        public bool NinthOrderSpacingEnable;
+        public bool NinthOrderSpacingEnable { get; set; }
         public int ThirdOrderSpacing3Tx { get; set; }
-        public bool ThirdOrderSpacing3TxEnable = true;
+        public bool ThirdOrderSpacing3TxEnable { get; set; }
 
 
         public bool Checked { get; set; }
@@ -54,6 +54,7 @@ namespace RF_Go.Models
                     _isLocked = value;
                 }
             }
+
         }
         public void SetRandomFrequency(HashSet<int> UsedFrequencies, HashSet<int> TwoTX3rdOrder, HashSet<int> TwoTX5rdOrder, HashSet<int> TwoTX7rdOrder, HashSet<int> TwoTX9rdOrder, HashSet<int> ThreeTX3rdOrder, List<(float StartFrequency, float EndFrequency)> excludedRanges)
         {
@@ -195,3 +196,4 @@ namespace RF_Go.Models
         public RFChannel Clone() => MemberwiseClone() as RFChannel;
     }
 }
+

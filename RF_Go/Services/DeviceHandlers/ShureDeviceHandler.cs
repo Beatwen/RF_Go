@@ -198,10 +198,12 @@ namespace RF_Go.Services.DeviceHandlers
                             var frequencyCommand = _commandSet.SetChannelFrequencyCommand(channel.ChannelNumber, frequency);
                             var frequencyResponse = await _communicationService.SendCommandAsync(ip, Port, frequencyCommand);
                             Debug.WriteLine($"Frequency set response for channel {channel.ChannelNumber}: {frequencyResponse}");
-                            
-                            if (frequencyResponse.Contains("ERR"))
+                            if (frequencyResponse != null )
                             {
-                                errors.Add($"Error setting frequency for channel {channel.ChannelNumber}: {frequencyResponse}");
+                                if (frequencyResponse.Contains("ERR"))
+                                {
+                                    errors.Add($"Error setting frequency for channel {channel.ChannelNumber}: {frequencyResponse}");
+                                }
                             }
                         }
                         catch (FormatException)
@@ -218,15 +220,23 @@ namespace RF_Go.Services.DeviceHandlers
                     // Set channel name
                     if (!string.IsNullOrEmpty(channel.Name))
                     {
-                        var nameCommand = _commandSet.SetChannelNameCommand(channel.ChannelNumber, channel.Name);
-                        var nameResponse = await _communicationService.SendCommandAsync(ip, Port, nameCommand);
-                        Debug.WriteLine($"Name set response for channel {channel.ChannelNumber}: {nameResponse}");
-                        
-                        // Check for errors in response
-                        if (nameResponse.Contains("ERR"))
+                        try
                         {
-                            errors.Add($"Error setting name for channel {channel.ChannelNumber}: {nameResponse}");
+                            var nameCommand = _commandSet.SetChannelNameCommand(channel.ChannelNumber, channel.Name);
+                            var nameResponse = await _communicationService.SendCommandAsync(ip, Port, nameCommand);
+                            Debug.WriteLine($"Name set response for channel {channel.ChannelNumber}: {nameResponse}");
+
+                            // Check for errors in response
+                            if (nameResponse.Contains("ERR"))
+                            {
+                                errors.Add($"Error setting name for channel {channel.ChannelNumber}: {nameResponse}");
+                            }
                         }
+                        catch
+                        {
+                            errors.Add($"Error setting name for channel {channel.ChannelNumber}: No response");
+                        }
+
                     }
                 }
 

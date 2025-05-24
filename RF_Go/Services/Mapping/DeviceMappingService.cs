@@ -346,15 +346,25 @@ namespace RF_Go.Services.Mapping
 
                     try
                     {
+                        
                         DevicesViewModel.SaveDataDevicesInfo(device);
                         DevicesViewModel.SaveDataChannelsInfo(device);
                         device.IsOnline = true;
                         device.IsSynced = true;
                         var clonedDevice = device.Clone();
                         _devicesViewModel.OperatingDevice = clonedDevice;
+                        
                         await _devicesViewModel.SaveDeviceAsync();
+                        
+                        var savedDevice = _devicesViewModel.Devices.FirstOrDefault(d => d.SerialNumber == device.SerialNumber);
+                        if (savedDevice != null)
+                        {
+                            device.ID = savedDevice.ID;
+                        }
+                        
                         await SyncFromDevice(device);
                         await _discoveryService.CheckDeviceSync(device);
+                        await _devicesViewModel.UpdateDeviceAsync(device);
                     }
                     catch (Exception ex)
                     {
@@ -371,15 +381,29 @@ namespace RF_Go.Services.Mapping
         public async Task<List<string>> SyncAllToDevice()
         {
             var errors = new List<string>();
-            var devices = _devicesViewModel.Devices;
+            // Créer une copie de la collection pour éviter les erreurs d'énumération
+            var devicesList = _devicesViewModel.Devices.ToList();
 
-            foreach (RFDevice d in devices)
+            foreach (RFDevice d in devicesList)
             {
                 if (d.IsSynced)
                 {
                     try
                     {
-                        await SyncToDevice(d);
+                        // Synchroniser le périphérique
+                        var syncErrors = await SyncToDevice(d);
+                        if (syncErrors.Any())
+                        {
+                            errors.AddRange(syncErrors);
+                        }
+                        else
+                        {
+                            // La synchronisation a réussi, définir explicitement l'état correct
+                            d.IsOnline = true;
+                            d.PendingSync = false;
+                            // Sauvegarder l'état mis à jour
+                            await _devicesViewModel.UpdateDeviceAsync(d);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -387,8 +411,6 @@ namespace RF_Go.Services.Mapping
                         Debug.WriteLine(errorMessage);
                         errors.Add(errorMessage);
                     }
-                    await _discoveryService.CheckDeviceSync(d);
-
                 }
             }
 

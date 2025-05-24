@@ -49,8 +49,8 @@ namespace RF_Go
 #endif
 
 #endif
-            builder.Services.AddScoped<DatabaseContext>();
-            builder.Services.AddScoped<DevicesViewModel>();
+            builder.Services.AddSingleton<DatabaseContext>();
+            builder.Services.AddSingleton<DevicesViewModel>();
             builder.Services.AddScoped<GroupsViewModel>();
             builder.Services.AddScoped<ExclusionChannelViewModel>();
             builder.Services.AddHttpClient<ApiService>();

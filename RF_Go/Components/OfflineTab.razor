@@ -24,30 +24,32 @@
 
 @if (DevicesViewModel.Devices.Count == 0)
 {
-        <EmptyDeviceView 
-            OnImportDatabase="OpenDialogToImportDatabaseAsync"
-            OnAddDevice="OpenDialogToAddDeviceAsync"
-            OnExportDatabase="OpenDialogToExportDatabaseAsync"
-            OnMagicSync="@(() => MagicSync("FromDevices"))"
-            IsLoading="@_isMagicSyncing" />
+    <EmptyDeviceView 
+    OnImportDatabase="OpenDialogToImportDatabaseAsync"
+    OnAddDevice="OpenDialogToAddDeviceAsync"
+    OnExportDatabase="OpenDialogToExportDatabaseAsync"
+    OnMagicSync="@(() => MagicSync("FromDevices"))"
+    IsLoading="@_isMagicSyncing" />
 }
 else
 {
-        <DeviceTable 
-            DevicesViewModel="DevicesViewModel"
-            GroupsViewModel="GroupsViewModel"
-            OnDeviceSaved="OnDeviceSaved"
-            OnDeleteDevice="DeleteDevice"
-            OnDesyncDevice="DesyncDevice"
-            OnSaveDevice="SaveDeviceAsync"
-            OnDeleteAll="DeleteAll"
-            OnLockAll="LockAll"
-            OnOpenQuickSync="OpenQuickSyncModal"
-            OnRFCalcul="RFCalcul"
-            OnMagicSync="MagicSync"
-            OnAddDevice="OpenDialogToAddDeviceAsync"
-            OnImportDatabase="OpenDialogToImportDatabaseAsync"
-            OnExportDatabase="OpenDialogToExportDatabaseAsync" />
+    <DeviceTable 
+    DevicesViewModel="DevicesViewModel"
+    GroupsViewModel="GroupsViewModel"
+    OnDeviceSaved="OnDeviceSaved"
+    OnDeleteDevice="DeleteDevice"
+    OnDesyncDevice="DesyncDevice"
+    OnSaveDevice="SaveDeviceAsync"
+    OnDeleteAll="DeleteAll"
+    OnLockAll="LockAll"
+    OnOpenQuickSync="OpenQuickSyncModal"
+    OnRFCalcul="RFCalcul"
+    OnMagicSync="MagicSync"
+    OnAddDevice="OpenDialogToAddDeviceAsync"
+    OnOpenDialogOnlineDevice="OnOpenDialogOnlineDeviceAsync"
+    OnImportDatabase="OpenDialogToImportDatabaseAsync"
+    OnExportDatabase="OpenDialogToExportDatabaseAsync"
+    IsLoading="@_isMagicSyncing" />
 }
 
 <div class="chart-container d-none d-md-block">
@@ -116,8 +118,30 @@ else
             device.PropertyChanged -= Device_PropertyChanged;
         }
     }
+    private async Task OnOpenDialogOnlineDeviceAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            { "DevicesViewModel", DevicesViewModel }
+        };
 
-    // Dialog methods
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = Dialog.Show<OnlineDevicesModal>("Online Devices", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            StateHasChanged();
+            await OnDeviceSaved.InvokeAsync();
+        }
+    }
+
     private async Task OpenDialogToAddDeviceAsync()
     {
         var parameters = new DialogParameters
@@ -256,9 +280,16 @@ else
                 chan.IsLocked = !lockAll;
             }
         }
+        
+        if (!lockAll)
+        {
+            lockAll = true;
+        }
+        else
+        {
+            lockAll = false;
+        }
     }
-
-    // Sync operations
     private async Task OpenQuickSyncModal(RFDevice device)
     {
         var parameters = new DialogParameters
@@ -381,27 +412,18 @@ else
     {
         try
         {
-            Debug.WriteLine("Starting RFCalcul");
-            
-            // Vérifier et recharger les groupes si nécessaire
             if (GroupsViewModel.Groups == null || !GroupsViewModel.Groups.Any())
             {
-                Debug.WriteLine("Groups not loaded, reloading...");
                 await GroupsViewModel.LoadGroupsAsync();
-                Debug.WriteLine($"Reloaded {GroupsViewModel.Groups.Count} groups");
             }
 
             await FrequencyCalculationService.CalculateFrequenciesAsync();
-            Debug.WriteLine("Frequency calculation completed");
             await HandleCalculationCompleted();
-            Debug.WriteLine("HandleCalculationCompleted finished");
             await OnDeviceSaved.InvokeAsync();
-            Debug.WriteLine("OnDeviceSaved completed");
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error in RFCalcul: {ex.Message}");
-            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
         }
     }
 } 

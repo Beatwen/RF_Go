@@ -160,16 +160,8 @@
                 strokeThickness: 1   // Épaisseur de la bordure
             });
             
-            console.log("Box properties:", {
-                x1: boxAnnotation.x1, 
-                x2: boxAnnotation.x2, 
-                y1: boxAnnotation.y1, 
-                y2: boxAnnotation.y2,
-                fill: boxAnnotation.fill
-            });
             
             sciChartSurface.annotations.add(boxAnnotation);
-            console.log("Box added, total annotations:", sciChartSurface.annotations.size);
             
             return boxAnnotation;
         };
@@ -188,8 +180,8 @@
                     annotationData: [] // Stocke les données pour recréer les annotations, pas les références
                 };
                 
-                // Initialiser l'état de visibilité à true
-                this.chartState.annotationVisibility[groupId] = true;
+                // Initialiser l'état de visibilité à false
+                this.chartState.annotationVisibility[groupId] = false;
                 
                 // Convertir la couleur du groupe en format RGBA avec transparence
                 const groupColorRGBA = "rgba(" + 
@@ -212,7 +204,7 @@
                 // Créer une box pour CHAQUE fréquence dans CHAQUE série
                 seriesData.forEach(series => {
                     if (series.data && series.data.length > 0) {
-                        console.log(`Creating ${series.data.length} boxes for frequencies in series with level ${series.level}`);
+                        console.log(`Storing data for ${series.data.length} frequencies in series with level ${series.level}`);
                         
                         series.data.forEach(freq => {
                             // Stocker les données au lieu de la référence
@@ -222,8 +214,8 @@
                                 width: 200
                             });
                             
-                            // Créer l'annotation directement
-                            createBoxForFrequency(freq, groupColorRGBA);
+                            // Ne pas créer les annotations tout de suite
+                            // La ligne "createBoxForFrequency(freq, groupColorRGBA);" est supprimée
                         });
                     }
                     
@@ -384,7 +376,7 @@
             // Case à cocher pour les annotations (rectangles)
             const annotationsCheckbox = document.createElement('input');
             annotationsCheckbox.type = 'checkbox';
-            annotationsCheckbox.checked = true;
+            annotationsCheckbox.checked = false;
             annotationsCheckbox.style.marginRight = '5px';
             annotationsCheckbox.style.marginLeft = '10px';
             annotationsCheckbox.id = `annot-checkbox-${groupId}`;

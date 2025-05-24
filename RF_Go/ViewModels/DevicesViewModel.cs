@@ -32,6 +32,8 @@ namespace RF_Go.ViewModels
         [ObservableProperty]
         private string _busyText;
 
+        public event EventHandler DevicesChanged;
+
         public async Task LoadDevicesAsync()
         {
             try
@@ -45,7 +47,8 @@ namespace RF_Go.ViewModels
                         Devices.Add(device);
                     }
                 }
-        }
+                DevicesChanged?.Invoke(this, EventArgs.Empty);
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading devices: {ex.Message}");
@@ -108,6 +111,7 @@ namespace RF_Go.ViewModels
                 }
                 SetOperatingDeviceCommand.Execute(new());
             }, busyText);
+            DevicesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         [RelayCommand]
@@ -137,6 +141,7 @@ namespace RF_Go.ViewModels
                     }
                 }
             }, busyText);
+            DevicesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task UpdateDeviceAsync(RFDevice device)
@@ -174,6 +179,7 @@ namespace RF_Go.ViewModels
                     Debug.Print("Error", "Device update error", "Ok");
                 }
             }, busyText);
+            DevicesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         [RelayCommand]
@@ -194,6 +200,7 @@ namespace RF_Go.ViewModels
                     Debug.Print("Delete Error", "Device was not deleted", "Ok");
                 }
             }, "Deleting Device...");
+            DevicesChanged?.Invoke(this, EventArgs.Empty);
         }
         public static void SaveDataDevicesInfo(RFDevice device)
         {
@@ -244,6 +251,7 @@ namespace RF_Go.ViewModels
                     }
                 }
             }, "Deleting Devices...");
+            DevicesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private async Task ExecuteAsync(Func<Task> operation, string busyText = null)

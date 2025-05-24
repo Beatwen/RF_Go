@@ -50,13 +50,11 @@ namespace RF_Go.Services.NetworkProtocols
             Debug.WriteLine("Starting discovery process...");
             DiscoveredDevices.Clear();
             
-            // Start mDNS discovery
             _multicastService.Start();
             _serviceDiscovery.QueryServiceInstances("_ssc._udp.local");
             _serviceDiscovery.QueryServiceInstances("_ewd._http.local");
             Debug.WriteLine("mDNS discovery started");
             
-            // Start standard Sennheiser discovery
             TriggerSennheiserDiscovery();
             Debug.WriteLine("Standard Sennheiser discovery triggered");
 
@@ -476,7 +474,6 @@ namespace RF_Go.Services.NetworkProtocols
         {
             try
             {
-                // If state is an RFDevice, check only that device
                 if (state is RFDevice deviceToCheck)
                 {
                     await CheckSingleDeviceSync(deviceToCheck);

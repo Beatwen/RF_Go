@@ -122,14 +122,23 @@ namespace RF_Go.Services.DeviceHandlers
                     // Set channel frequency
                     if (!string.IsNullOrEmpty(channel.Frequency) && int.TryParse(channel.Frequency, out int frequency))
                     {
-                        var frequencyCommand = _commandSet.SetChannelFrequencyCommand(channel.ChannelNumber, frequency);
-                        var frequencyResponse = await _communicationService.SendCommandAsync(ip, Port, frequencyCommand);
-                        Debug.WriteLine($"Frequency set response for channel {channel.ChannelNumber}: {frequencyResponse}");
-                        
-                        // Check for errors in response
-                        if (frequencyResponse.Contains("error") || frequencyResponse.Contains("Error"))
+                        try
                         {
-                            errors.Add($"Error setting frequency for channel {channel.ChannelNumber}: {frequencyResponse}");
+
+
+                            var frequencyCommand = _commandSet.SetChannelFrequencyCommand(channel.ChannelNumber, frequency);
+                            var frequencyResponse = await _communicationService.SendCommandAsync(ip, Port, frequencyCommand);
+                            Debug.WriteLine($"Frequency set response for channel {channel.ChannelNumber}: {frequencyResponse}");
+                        
+                            // Check for errors in response
+                            if (frequencyResponse.Contains("error") || frequencyResponse.Contains("Error"))
+                            {
+                                errors.Add($"Error setting frequency for channel {channel.ChannelNumber}: {frequencyResponse}");
+                            }
+                        }
+                        catch
+                        {
+                            errors.Add($"Error setting frequency for channel {channel.ChannelNumber}: No response !");
                         }
                     }
                     else

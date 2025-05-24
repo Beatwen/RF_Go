@@ -3,6 +3,7 @@
 @using MudBlazor
 @using RF_Go.Components.Modal
 @using RF_Go.Services.Mapping
+@using System.ComponentModel
 
 @inject IDialogService Dialog
 @inject DeviceMappingService DeviceMappingService
@@ -32,26 +33,48 @@
         <div class="d-flex">
             <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" 
                 Icon="@Icons.Material.Filled.Add" OnClick="@(() => OnAddDevice.InvokeAsync())" 
-                Title="Add device to inventory">Open</MudIconButton>
+                Title="Add device to inventory" Disabled="@IsLoading">Open</MudIconButton>
             <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" 
                 Icon="@Icons.Material.Filled.Download" OnClick="@(() => OnImportDatabase.InvokeAsync())" 
-                Title="Import Database" />
+                Title="Import Database" Disabled="@IsLoading" />
             <MudIconButton Class="mx-1" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" 
                 Icon="@Icons.Material.Filled.Upload" OnClick="@(() => OnExportDatabase.InvokeAsync())" 
-                Title="Export Database" />
+                Title="Export Database" Disabled="@IsLoading" />
         </div>
         <div class="d-flex">
+                        @if (HasZeroFrequencies())
+            {
+                <MudTooltip Text="@GetZeroFrequenciesMessage()">
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Class="mx-1" />
+                </MudTooltip>
+            }
             <MudIconButton Icon="@Icons.Material.Filled.Calculate" title="RF Calcul" Variant="Variant.Filled" 
-                Color="Color.Primary" Class="mx-2" @onclick="() => OnRFCalcul.InvokeAsync()"/>
+                Color="Color.Primary" Class="mx-2" @onclick="() => OnRFCalcul.InvokeAsync()" Disabled="@IsLoading"/>
             <MudMenu StartIcon="@Icons.Material.Filled.SyncAlt" Dense="true" 
                 EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Class="mx-2" 
-                Color="Color.Primary" Variant="Variant.Filled">
-                <MudMenuItem Class="mx-2" @onclick="OpenDialogOnlineDevice" 
-                    Icon="@Icons.Material.Filled.Map">Map</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" 
-                    @onclick='() => OnMagicSync.InvokeAsync("FromDevices")'>Sync From</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.AutoFixHigh" 
-                    @onclick='() => OnMagicSync.InvokeAsync("ToDevices")'>Sync To</MudMenuItem>
+                Color="Color.Primary" Variant="Variant.Filled" Disabled="@IsLoading">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                        StartIcon="@Icons.Material.Filled.SyncAlt" 
+                        EndIcon="@Icons.Material.Filled.KeyboardArrowDown"
+                        Disabled="@IsLoading">
+                        Sync
+                    </MudButton>
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem OnClick="@(() => OnOpenDialogOnlineDevice.InvokeAsync())" Disabled="@IsLoading">
+                        <MudIcon Icon="@Icons.Material.Filled.Map" Class="mr-2" />
+                        Map Devices
+                    </MudMenuItem>
+                    <MudMenuItem OnClick="@(() => OnMagicSync.InvokeAsync("ToDevices"))" Disabled="@IsLoading">
+                        <MudIcon Icon="@Icons.Material.Filled.Sync" Class="mr-2" />
+                        Sync To Devices
+                    </MudMenuItem>
+                    <MudMenuItem OnClick="@(() => OnMagicSync.InvokeAsync("FromDevices"))" Disabled="@IsLoading">
+                        <MudIcon Icon="@Icons.Material.Filled.Sync" Class="mr-2" />
+                        Sync From Devices
+                    </MudMenuItem>
+                </ChildContent>
             </MudMenu>
         </div>
     </div>
@@ -113,7 +136,7 @@
                             Class="mt-0" 
                             Margin="Margin.Dense" 
                             Variant="Variant.Outlined"
-                            @onblur="() => OnSaveDevice.InvokeAsync(context)" />
+                            @onchange="() => OnSaveDevice.InvokeAsync(context)" />
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -133,13 +156,13 @@
                             Margin="Margin.Dense" 
                             FullWidth="true"
                             @onblur="() => OnSaveDevice.InvokeAsync(context)" />
-                            <MudCheckBox @bind-Value="chan.IsLocked" 
+                            <MudCheckBox Value="@chan.IsLocked"
+                            ValueChanged="@((bool value) => { chan.IsLocked = value; OnSaveDevice.InvokeAsync(context); })"
                             Dense="true" 
                             Color="Color.Secondary" 
                             CheckedIcon="@Icons.Material.Filled.Lock" 
                             UncheckedIcon="@Icons.Material.Filled.LockOpen" 
-                            Class="pl-3">
-                            </MudCheckBox>
+                            Class="pl-3" />
                             <MudIconButton Icon="@Icons.Material.Filled.Backup" 
                             Color="Color.Info" 
                             Size="Size.Small" 
@@ -204,7 +227,8 @@
                 StartIcon="@Icons.Material.Filled.Add" 
                 OnClick="@(() => OnAddDevice.InvokeAsync())"
                 FullWidth="true"
-                Class="mx-1">
+                Class="mx-1"
+                Disabled="@IsLoading">
                 Add Device
             </MudButton>
             <MudButton Variant="Variant.Filled" 
@@ -212,7 +236,8 @@
                 StartIcon="@Icons.Material.Filled.Calculate" 
                 OnClick="@(() => OnRFCalcul.InvokeAsync())"
                 FullWidth="true"
-                Class="mx-1">
+                Class="mx-1"
+                Disabled="@IsLoading">
                 RF Calcul
             </MudButton>
         </div>
@@ -222,7 +247,8 @@
                 StartIcon="@Icons.Material.Filled.Download" 
                 OnClick="@(() => OnImportDatabase.InvokeAsync())"
                 FullWidth="true"
-                Class="mx-1">
+                Class="mx-1"
+                Disabled="@IsLoading">
                 Import
             </MudButton>
             <MudButton Variant="Variant.Filled" 
@@ -230,7 +256,8 @@
                 StartIcon="@Icons.Material.Filled.Upload" 
                 OnClick="@(() => OnExportDatabase.InvokeAsync())"
                 FullWidth="true"
-                Class="mx-1">
+                Class="mx-1"
+                Disabled="@IsLoading">
                 Export
             </MudButton>
         </div>
@@ -303,12 +330,13 @@
                                                     Margin="Margin.Dense" 
                                                     FullWidth="true"
                                                     @onblur="() => OnSaveDevice.InvokeAsync(device)" />
-                                                <MudCheckBox @bind-Value="channel.IsLocked" 
-                                                    Dense="true" 
-                                                    Color="Color.Secondary" 
-                                                    CheckedIcon="@Icons.Material.Filled.Lock" 
-                                                    UncheckedIcon="@Icons.Material.Filled.LockOpen" 
-                                                    Class="pl-3" />
+                                                <MudCheckBox Value="@channel.IsLocked"
+                                                ValueChanged="@((bool value) => { channel.IsLocked = value; OnSaveDevice.InvokeAsync(device); })"
+                                                Dense="true" 
+                                                Color="Color.Secondary" 
+                                                CheckedIcon="@Icons.Material.Filled.Lock" 
+                                                UncheckedIcon="@Icons.Material.Filled.LockOpen" 
+                                                Class="pl-3" />
                                                 <MudIconButton Icon="@Icons.Material.Filled.Backup" 
                                                     Color="Color.Info" 
                                                     Size="Size.Small" 
@@ -377,11 +405,13 @@
     [Parameter] public EventCallback OnAddDevice { get; set; }
     [Parameter] public EventCallback OnImportDatabase { get; set; }
     [Parameter] public EventCallback OnExportDatabase { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
 
     private MudTable<RFDevice> mudTable;
     private int selectedRowNumber = -1;
     private bool lockAll = false;
     private List<string> clickedEvents = new();
+    private List<RFDevice> _subscribedDevices = new();
 
     private TableGroupDefinition<RFDevice> _groupDefinition = new TableGroupDefinition<RFDevice>()
     {
@@ -500,5 +530,76 @@
         {
             StateHasChanged();
         }
+    }
+
+    private bool HasZeroFrequencies()
+    {
+        return DevicesViewModel.Devices
+            .SelectMany(d => d.Channels)
+            .Any(c => c.Frequency == 0);
+    }
+
+    private string GetZeroFrequenciesMessage()
+    {
+        var count = DevicesViewModel.Devices
+            .SelectMany(d => d.Channels)
+            .Count(c => c.Frequency == 0);
+        return $"Oups, {count} frequenc{(count > 1 ? "ies" : "y")} couldn't be calculated";
+    }
+
+    protected override void OnInitialized()
+    {
+        AttachPropertyChangedHandlers();
+        DevicesViewModel.DevicesChanged += DevicesViewModel_DevicesChanged;
+        base.OnInitialized();
+    }
+
+    private void DevicesViewModel_DevicesChanged(object sender, EventArgs e)
+    {
+        // Detach handlers from old devices and attach to new devices
+        DetachPropertyChangedHandlers();
+        AttachPropertyChangedHandlers();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void AttachPropertyChangedHandlers()
+    {
+        // Store the devices we're subscribing to
+        _subscribedDevices = new List<RFDevice>(DevicesViewModel.Devices);
+        
+        foreach (var device in _subscribedDevices)
+        {
+            device.PropertyChanged += Device_PropertyChanged;
+        }
+    }
+
+    private void DetachPropertyChangedHandlers()
+    {
+        foreach (var device in _subscribedDevices)
+        {
+            device.PropertyChanged -= Device_PropertyChanged;
+        }
+        _subscribedDevices.Clear();
+    }
+
+    private void Device_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(RFDevice.IsSynced) ||
+            e.PropertyName == nameof(RFDevice.PendingSync) ||
+            e.PropertyName == nameof(RFDevice.IsOnline))
+        {
+            // Use InvokeAsync to ensure we're on the UI thread
+            InvokeAsync(() => 
+            {
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        DevicesViewModel.DevicesChanged -= DevicesViewModel_DevicesChanged;
+        DetachPropertyChangedHandlers();
     }
 } 
