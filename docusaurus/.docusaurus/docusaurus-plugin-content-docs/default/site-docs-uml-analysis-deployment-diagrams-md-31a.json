@@ -1,0 +1,24 @@
+{
+  "id": "uml-analysis/deployment-diagrams",
+  "title": "Diagrammes de Déploiement - Infrastructure et Déploiement",
+  "description": "Les diagrammes de déploiement de RF.Go illustrent l'architecture d'infrastructure et les environnements de déploiement du système. Cette modélisation détaille la distribution des composants logiciels sur l'infrastructure matérielle et les contraintes de déploiement.",
+  "source": "@site/docs/uml-analysis/deployment-diagrams.md",
+  "sourceDirName": "uml-analysis",
+  "slug": "/uml-analysis/deployment-diagrams",
+  "permalink": "/RF_Go/docs/uml-analysis/deployment-diagrams",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/deployment-diagrams.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Diagrammes de Composants - Architecture Modulaire",
+    "permalink": "/RF_Go/docs/uml-analysis/component-diagrams"
+  },
+  "next": {
+    "title": "Vue d'ensemble de l'Architecture",
+    "permalink": "/RF_Go/docs/architecture/overview"
+  }
+}

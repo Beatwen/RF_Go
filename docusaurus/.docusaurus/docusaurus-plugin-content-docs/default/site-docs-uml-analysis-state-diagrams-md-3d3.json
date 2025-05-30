@@ -1,0 +1,24 @@
+{
+  "id": "uml-analysis/state-diagrams",
+  "title": "Diagrammes d'États - Cycles de Vie et Comportements",
+  "description": "Les diagrammes d'états de RF.Go modélisent le comportement dynamique des entités principales du système. Ces modèles décrivent les transitions d'états complexes qui régissent le fonctionnement des appareils RF, des sessions utilisateur et des processus de synchronisation.",
+  "source": "@site/docs/uml-analysis/state-diagrams.md",
+  "sourceDirName": "uml-analysis",
+  "slug": "/uml-analysis/state-diagrams",
+  "permalink": "/RF_Go/docs/uml-analysis/state-diagrams",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/state-diagrams.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Diagrammes de Classes - Architecture Orientée Objet",
+    "permalink": "/RF_Go/docs/uml-analysis/class-diagrams"
+  },
+  "next": {
+    "title": "Diagrammes de Composants - Architecture Modulaire",
+    "permalink": "/RF_Go/docs/uml-analysis/component-diagrams"
+  }
+}

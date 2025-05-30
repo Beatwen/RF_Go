@@ -1,7 +1,7 @@
 {
   "id": "intro",
-  "title": "Introduction",
-  "description": "RF Go est une application professionnelle de gestion de fréquences audio, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil. Cette documentation vous guidera à travers toutes les fonctionnalités et aspects techniques de l'application.",
+  "title": "Introduction à RF.Go",
+  "description": "RF.Go est une application professionnelle de gestion de fréquences audio, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil lors d'événements de grande envergure. Cette documentation technique vous guidera à travers l'architecture, les fonctionnalités et l'analyse UML approfondie de l'application.",
   "source": "@site/docs/intro.md",
   "sourceDirName": ".",
   "slug": "/intro",

@@ -12,7 +12,22 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Architecture',
+      label: '🔍Analyse UML',
+      collapsed: false,
+      items: [
+        'uml-analysis/overview',
+        'uml-analysis/use-cases',
+        'uml-analysis/sequence-diagrams',
+        'uml-analysis/activity-diagrams',
+        'uml-analysis/class-diagrams',
+        'uml-analysis/state-diagrams',
+        'uml-analysis/component-diagrams',
+        'uml-analysis/deployment-diagrams',
+      ],
+    },
+    {
+      type: 'category',
+      label: '🏛️Architecture Technique',
       items: [
         'architecture/overview',
         'architecture/components',
@@ -23,13 +38,15 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Fonctionnalités',
+      label: '⚡Fonctionnalités Métier',
       items: [
         'features/device-management',
         'features/frequency-management',
+        'features/time-management',
         'features/frequency-visualization',
         'features/session-management',
         'features/scan-management',
+        'features/backup-frequencies',
         'features/licensing',
         'features/authentication',
         'features/workflows',
@@ -37,7 +54,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Protocoles',
+      label: '🌐 Protocoles et Intégrations',
       items: [
         'protocols/dns-discovery',
         'protocols/udp-tcp',
@@ -55,7 +72,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Configuration',
+      label: 'Configuration et Déploiement',
       items: [
         'configuration/environment',
         'configuration/database',
@@ -64,7 +81,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Développement',
+      label: '👨‍💻Guide Développeur',
       items: [
         'development/setup',
         'development/contributing',

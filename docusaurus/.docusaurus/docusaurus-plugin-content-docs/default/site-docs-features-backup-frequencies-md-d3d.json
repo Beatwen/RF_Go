@@ -11,5 +11,14 @@
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/backup-frequencies.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Gestion des scans RF",
+    "permalink": "/RF_Go/docs/features/scan-management"
+  },
+  "next": {
+    "title": "Système de Licence",
+    "permalink": "/RF_Go/docs/features/licensing"
+  }
 }
