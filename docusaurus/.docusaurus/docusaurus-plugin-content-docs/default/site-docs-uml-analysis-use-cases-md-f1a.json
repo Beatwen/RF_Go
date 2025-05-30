@@ -1,0 +1,24 @@
+{
+  "id": "uml-analysis/use-cases",
+  "title": "Use cases",
+  "description": "Diagrammes de Cas d'Utilisation - Analyse Fonctionnelle",
+  "source": "@site/docs/uml-analysis/use-cases.md",
+  "sourceDirName": "uml-analysis",
+  "slug": "/uml-analysis/use-cases",
+  "permalink": "/RF_Go/docs/uml-analysis/use-cases",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/use-cases.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Vue d'Ensemble",
+    "permalink": "/RF_Go/docs/uml-analysis/overview"
+  },
+  "next": {
+    "title": "Diagrammes de Séquence - Interactions Système",
+    "permalink": "/RF_Go/docs/uml-analysis/sequence-diagrams"
+  }
+}

@@ -9,8 +9,49 @@
     "__comp": "a7bd4aaa",
     "__props": "ac9dc873"
   },
-  "/RF_Go/docs/-d06": {
-    "__comp": "a94703ab"
+  "/RF_Go/__docusaurus/debug/content/-432": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---rf-go-docusaurus-debug-b-38-6cc"
+    },
+    "__props": "__props---rf-go-docusaurus-debug-content-5-ca-a6a"
+  },
+  "/RF_Go/__docusaurus/debug/globalData/-27e": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---rf-go-docusaurus-debug-b-38-6cc"
+    }
+  },
+  "/RF_Go/__docusaurus/debug/metadata/-f35": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---rf-go-docusaurus-debug-b-38-6cc"
+    }
+  },
+  "/RF_Go/__docusaurus/debug/registry/-708": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---rf-go-docusaurus-debug-b-38-6cc"
+    }
+  },
+  "/RF_Go/__docusaurus/debug/routes/-fef": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---rf-go-docusaurus-debug-b-38-6cc"
+    }
+  },
+  "/RF_Go/docs/-de2": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---rf-go-docs-aba-77c"
+    }
+  },
+  "/RF_Go/docs/-578": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---rf-go-docs-ac-9-50c"
+  },
+  "/RF_Go/docs/-55d": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
   },
   "/RF_Go/docs/-a15": {
     "__comp": "17896441",
@@ -100,6 +141,10 @@
     "__comp": "17896441",
     "content": "d3d886ac"
   },
+  "/RF_Go/docs/features/backup-frequencies/-7df": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-backup-frequencies-d-3-d-65c"
+  },
   "/RF_Go/docs/features/device-management/-3bc": {
     "__comp": "17896441",
     "content": "bd5c9a6a"
@@ -112,21 +157,29 @@
     "__comp": "17896441",
     "content": "3713b812"
   },
+  "/RF_Go/docs/features/frequency-visualization/-4e2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-frequency-visualization-371-b91"
+  },
   "/RF_Go/docs/features/licensing/-00a": {
     "__comp": "17896441",
     "content": "5ee59155"
   },
   "/RF_Go/docs/features/scan-management/-378": {
-    "__comp": "17896441",
-    "content": "de693747"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-scan-management-de-6-cf9"
   },
   "/RF_Go/docs/features/session-management/-c18": {
-    "__comp": "17896441",
-    "content": "b74ba5b1"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-session-management-b-74-adf"
+  },
+  "/RF_Go/docs/features/time-management/-a19": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-time-management-d-9-c-93f"
   },
   "/RF_Go/docs/features/workflows/-8ca": {
-    "__comp": "17896441",
-    "content": "5c393c03"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-workflows-5-c-3-8c5"
   },
   "/RF_Go/docs/getting-started/-354": {
     "__comp": "17896441",
@@ -145,7 +198,39 @@
     "content": "5fec1aca"
   },
   "/RF_Go/docs/protocols/udp-tcp/-008": {
-    "__comp": "17896441",
-    "content": "1723e3a0"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-protocols-udp-tcp-172-bb5"
+  },
+  "/RF_Go/docs/uml-analysis/activity-diagrams/-3e2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-activity-diagrams-efd-a0f"
+  },
+  "/RF_Go/docs/uml-analysis/class-diagrams/-619": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-class-diagrams-332-e81"
+  },
+  "/RF_Go/docs/uml-analysis/component-diagrams/-ff0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-component-diagrams-f-5-c-a13"
+  },
+  "/RF_Go/docs/uml-analysis/deployment-diagrams/-45f": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-deployment-diagrams-31-a-08c"
+  },
+  "/RF_Go/docs/uml-analysis/overview/-f2c": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-overview-401-b7d"
+  },
+  "/RF_Go/docs/uml-analysis/sequence-diagrams/-db2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-sequence-diagrams-764-496"
+  },
+  "/RF_Go/docs/uml-analysis/state-diagrams/-573": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-state-diagrams-3-d-3-3ae"
+  },
+  "/RF_Go/docs/uml-analysis/use-cases/-ab5": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-use-cases-f-1-a-77b"
   }
 }

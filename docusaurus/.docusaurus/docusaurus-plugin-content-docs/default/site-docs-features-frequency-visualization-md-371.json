@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Gestion des Fréquences",
-    "permalink": "/RF_Go/docs/features/frequency-management"
+    "title": "Gestion Temporelle - Planification RF Avancée",
+    "permalink": "/RF_Go/docs/features/time-management"
   },
   "next": {
     "title": "Session Management",

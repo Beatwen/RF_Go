@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Démarrage Rapide",
-    "permalink": "/RF_Go/docs/getting-started"
+    "title": "Diagrammes de Déploiement - Infrastructure et Déploiement",
+    "permalink": "/RF_Go/docs/uml-analysis/deployment-diagrams"
   },
   "next": {
     "title": "Composants",
