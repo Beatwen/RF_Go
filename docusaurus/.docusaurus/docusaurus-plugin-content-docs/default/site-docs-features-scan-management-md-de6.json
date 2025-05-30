@@ -1,0 +1,27 @@
+{
+  "id": "features/scan-management",
+  "title": "Gestion des scans RF",
+  "description": "RF Go permet l'importation, la visualisation et la gestion de données de scan RF provenant de divers analyseurs de spectre. Cette fonctionnalité est essentielle pour analyser l'environnement RF avant et pendant des événements afin d'identifier les fréquences disponibles et les interférences potentielles.",
+  "source": "@site/docs/features/scan-management.md",
+  "sourceDirName": "features",
+  "slug": "/features/scan-management",
+  "permalink": "/RF_Go/docs/features/scan-management",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/scan-management.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Session Management",
+    "permalink": "/RF_Go/docs/features/session-management"
+  },
+  "next": {
+    "title": "Backup Frequencies",
+    "permalink": "/RF_Go/docs/features/backup-frequencies"
+  }
+}

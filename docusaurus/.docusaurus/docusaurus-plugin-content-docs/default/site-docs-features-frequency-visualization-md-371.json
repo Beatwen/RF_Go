@@ -1,0 +1,24 @@
+{
+  "id": "features/frequency-visualization",
+  "title": "Visualisation des Fréquences",
+  "description": "Visualisation Multi-Groupes",
+  "source": "@site/docs/features/frequency-visualization.md",
+  "sourceDirName": "features",
+  "slug": "/features/frequency-visualization",
+  "permalink": "/RF_Go/docs/features/frequency-visualization",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/frequency-visualization.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Gestion Temporelle - Planification RF Avancée",
+    "permalink": "/RF_Go/docs/features/time-management"
+  },
+  "next": {
+    "title": "Session Management",
+    "permalink": "/RF_Go/docs/features/session-management"
+  }
+}

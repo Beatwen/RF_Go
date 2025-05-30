@@ -39,15 +39,15 @@ export default [
   },
   {
     path: '/RF_Go/docs/',
-    component: ComponentCreator('/RF_Go/docs/', 'b01'),
+    component: ComponentCreator('/RF_Go/docs/', 'de2'),
     routes: [
       {
         path: '/RF_Go/docs/',
-        component: ComponentCreator('/RF_Go/docs/', '614'),
+        component: ComponentCreator('/RF_Go/docs/', '578'),
         routes: [
           {
             path: '/RF_Go/docs/',
-            component: ComponentCreator('/RF_Go/docs/', '795'),
+            component: ComponentCreator('/RF_Go/docs/', '55d'),
             routes: [
               {
                 path: '/RF_Go/docs/',
@@ -171,6 +171,12 @@ export default [
                 sidebar: "tutorialSidebar"
               },
               {
+                path: '/RF_Go/docs/features/backup-frequencies/',
+                component: ComponentCreator('/RF_Go/docs/features/backup-frequencies/', '7df'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
                 path: '/RF_Go/docs/features/device-management/',
                 component: ComponentCreator('/RF_Go/docs/features/device-management/', '3bc'),
                 exact: true,
@@ -183,15 +189,40 @@ export default [
                 sidebar: "tutorialSidebar"
               },
               {
+                path: '/RF_Go/docs/features/frequency-visualization/',
+                component: ComponentCreator('/RF_Go/docs/features/frequency-visualization/', '4e2'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
                 path: '/RF_Go/docs/features/licensing/',
                 component: ComponentCreator('/RF_Go/docs/features/licensing/', '00a'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
+                path: '/RF_Go/docs/features/scan-management/',
+                component: ComponentCreator('/RF_Go/docs/features/scan-management/', '378'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/features/session-management/',
+                component: ComponentCreator('/RF_Go/docs/features/session-management/', 'c18'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/features/time-management/',
+                component: ComponentCreator('/RF_Go/docs/features/time-management/', 'a19'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
                 path: '/RF_Go/docs/features/workflows/',
-                component: ComponentCreator('/RF_Go/docs/features/workflows/', 'a26'),
-                exact: true
+                component: ComponentCreator('/RF_Go/docs/features/workflows/', '8ca'),
+                exact: true,
+                sidebar: "tutorialSidebar"
               },
               {
                 path: '/RF_Go/docs/getting-started/',
@@ -220,6 +251,54 @@ export default [
               {
                 path: '/RF_Go/docs/protocols/udp-tcp/',
                 component: ComponentCreator('/RF_Go/docs/protocols/udp-tcp/', '008'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/activity-diagrams/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/activity-diagrams/', '3e2'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/class-diagrams/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/class-diagrams/', '619'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/component-diagrams/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/component-diagrams/', 'ff0'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/deployment-diagrams/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/deployment-diagrams/', '45f'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/overview/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/overview/', 'f2c'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/sequence-diagrams/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/sequence-diagrams/', 'db2'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/state-diagrams/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/state-diagrams/', '573'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/RF_Go/docs/uml-analysis/use-cases/',
+                component: ComponentCreator('/RF_Go/docs/uml-analysis/use-cases/', 'ab5'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               }

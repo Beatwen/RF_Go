@@ -42,17 +42,17 @@
       "plugin": "plugin---rf-go-docusaurus-debug-b-38-6cc"
     }
   },
-  "/RF_Go/docs/-b01": {
+  "/RF_Go/docs/-de2": {
     "__comp": "__comp---theme-docs-root-5-e-9-0b6",
     "__context": {
       "plugin": "plugin---rf-go-docs-aba-77c"
     }
   },
-  "/RF_Go/docs/-614": {
+  "/RF_Go/docs/-578": {
     "__comp": "__comp---theme-doc-version-roota-7-b-5de",
     "__props": "__props---rf-go-docs-ac-9-50c"
   },
-  "/RF_Go/docs/-795": {
+  "/RF_Go/docs/-55d": {
     "__comp": "__comp---theme-doc-roota-94-67a"
   },
   "/RF_Go/docs/-a15": {
@@ -139,6 +139,10 @@
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---rf-go-docs-features-authentication-cc-0-b69"
   },
+  "/RF_Go/docs/features/backup-frequencies/-7df": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-backup-frequencies-d-3-d-65c"
+  },
   "/RF_Go/docs/features/device-management/-3bc": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---rf-go-docs-features-device-management-bd-5-1a0"
@@ -147,11 +151,27 @@
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---rf-go-docs-features-frequency-management-c-3-e-a90"
   },
+  "/RF_Go/docs/features/frequency-visualization/-4e2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-frequency-visualization-371-b91"
+  },
   "/RF_Go/docs/features/licensing/-00a": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---rf-go-docs-features-licensing-5-ee-c92"
   },
-  "/RF_Go/docs/features/workflows/-a26": {
+  "/RF_Go/docs/features/scan-management/-378": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-scan-management-de-6-cf9"
+  },
+  "/RF_Go/docs/features/session-management/-c18": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-session-management-b-74-adf"
+  },
+  "/RF_Go/docs/features/time-management/-a19": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-features-time-management-d-9-c-93f"
+  },
+  "/RF_Go/docs/features/workflows/-8ca": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---rf-go-docs-features-workflows-5-c-3-8c5"
   },
@@ -174,5 +194,37 @@
   "/RF_Go/docs/protocols/udp-tcp/-008": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---rf-go-docs-protocols-udp-tcp-172-bb5"
+  },
+  "/RF_Go/docs/uml-analysis/activity-diagrams/-3e2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-activity-diagrams-efd-a0f"
+  },
+  "/RF_Go/docs/uml-analysis/class-diagrams/-619": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-class-diagrams-332-e81"
+  },
+  "/RF_Go/docs/uml-analysis/component-diagrams/-ff0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-component-diagrams-f-5-c-a13"
+  },
+  "/RF_Go/docs/uml-analysis/deployment-diagrams/-45f": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-deployment-diagrams-31-a-08c"
+  },
+  "/RF_Go/docs/uml-analysis/overview/-f2c": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-overview-401-b7d"
+  },
+  "/RF_Go/docs/uml-analysis/sequence-diagrams/-db2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-sequence-diagrams-764-496"
+  },
+  "/RF_Go/docs/uml-analysis/state-diagrams/-573": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-state-diagrams-3-d-3-3ae"
+  },
+  "/RF_Go/docs/uml-analysis/use-cases/-ab5": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---rf-go-docs-uml-analysis-use-cases-f-1-a-77b"
   }
 }

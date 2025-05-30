@@ -1,7 +1,7 @@
 {
   "id": "features/frequency-management",
   "title": "Gestion des Fréquences",
-  "description": "Documentation de la gestion des fréquences dans RF Go.",
+  "description": "La gestion des fréquences est une fonctionnalité centrale de RF Go, permettant aux utilisateurs de gérer efficacement les spectres de fréquences pour leurs appareils audio sans fil. Ce module assure une allocation optimale des fréquences tout en évitant les interférences.",
   "source": "@site/docs/features/frequency-management.md",
   "sourceDirName": "features",
   "slug": "/features/frequency-management",
@@ -18,7 +18,7 @@
     "permalink": "/RF_Go/docs/features/device-management"
   },
   "next": {
-    "title": "Système de Licence",
-    "permalink": "/RF_Go/docs/features/licensing"
+    "title": "Gestion Temporelle - Planification RF Avancée",
+    "permalink": "/RF_Go/docs/features/time-management"
   }
 }

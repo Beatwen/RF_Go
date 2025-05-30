@@ -1,0 +1,24 @@
+{
+  "id": "uml-analysis/sequence-diagrams",
+  "title": "Diagrammes de Séquence - Interactions Système",
+  "description": "Les diagrammes de séquence de RF.Go illustrent les interactions temporelles complexes entre les différents composants du système. Cette modélisation détaille les flux de communication critiques, depuis la découverte des appareils jusqu'à la synchronisation finale.",
+  "source": "@site/docs/uml-analysis/sequence-diagrams.md",
+  "sourceDirName": "uml-analysis",
+  "slug": "/uml-analysis/sequence-diagrams",
+  "permalink": "/RF_Go/docs/uml-analysis/sequence-diagrams",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/sequence-diagrams.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Use cases",
+    "permalink": "/RF_Go/docs/uml-analysis/use-cases"
+  },
+  "next": {
+    "title": "Diagrammes d'Activités - Processus et Algorithmes",
+    "permalink": "/RF_Go/docs/uml-analysis/activity-diagrams"
+  }
+}

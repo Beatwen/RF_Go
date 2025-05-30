@@ -1,0 +1,24 @@
+{
+  "id": "uml-analysis/component-diagrams",
+  "title": "Diagrammes de Composants - Architecture Modulaire",
+  "description": "Les diagrammes de composants de RF.Go illustrent l'architecture modulaire du système et les dépendances entre composants. Cette modélisation révèle la structure technique organisée en couches et l'extensibilité du système par l'ajout de nouveaux handlers et protocoles.",
+  "source": "@site/docs/uml-analysis/component-diagrams.md",
+  "sourceDirName": "uml-analysis",
+  "slug": "/uml-analysis/component-diagrams",
+  "permalink": "/RF_Go/docs/uml-analysis/component-diagrams",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/component-diagrams.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Diagrammes d'États - Cycles de Vie et Comportements",
+    "permalink": "/RF_Go/docs/uml-analysis/state-diagrams"
+  },
+  "next": {
+    "title": "Diagrammes de Déploiement - Infrastructure et Déploiement",
+    "permalink": "/RF_Go/docs/uml-analysis/deployment-diagrams"
+  }
+}

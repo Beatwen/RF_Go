@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Authentification",
-    "permalink": "/RF_Go/docs/features/authentication"
+    "title": "Workflows de l'Application",
+    "permalink": "/RF_Go/docs/features/workflows"
   },
   "next": {
     "title": "Protocoles UDP/TCP",

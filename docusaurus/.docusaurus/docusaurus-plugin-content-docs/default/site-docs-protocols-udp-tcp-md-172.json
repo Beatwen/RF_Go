@@ -1,7 +1,7 @@
 {
   "id": "protocols/udp-tcp",
   "title": "Protocoles UDP/TCP",
-  "description": "Documentation des protocoles UDP et TCP utilisés dans RF Go.",
+  "description": "RF Go utilise plusieurs protocoles de communication réseau pour interagir avec les appareils audio sans fil. Cette section décrit en détail les protocoles UDP et TCP implémentés dans l'application.",
   "source": "@site/docs/protocols/udp-tcp.md",
   "sourceDirName": "protocols",
   "slug": "/protocols/udp-tcp",

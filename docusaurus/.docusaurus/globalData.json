@@ -107,6 +107,11 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "features/backup-frequencies",
+              "path": "/RF_Go/docs/features/backup-frequencies",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "features/device-management",
               "path": "/RF_Go/docs/features/device-management",
               "sidebar": "tutorialSidebar"
@@ -117,13 +122,34 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "features/frequency-visualization",
+              "path": "/RF_Go/docs/features/frequency-visualization",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "features/licensing",
               "path": "/RF_Go/docs/features/licensing",
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "features/scan-management",
+              "path": "/RF_Go/docs/features/scan-management",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "features/session-management",
+              "path": "/RF_Go/docs/features/session-management",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "features/time-management",
+              "path": "/RF_Go/docs/features/time-management",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "features/workflows",
-              "path": "/RF_Go/docs/features/workflows"
+              "path": "/RF_Go/docs/features/workflows",
+              "sidebar": "tutorialSidebar"
             },
             {
               "id": "getting-started",
@@ -152,6 +178,46 @@
             {
               "id": "protocols/udp-tcp",
               "path": "/RF_Go/docs/protocols/udp-tcp",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/activity-diagrams",
+              "path": "/RF_Go/docs/uml-analysis/activity-diagrams",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/class-diagrams",
+              "path": "/RF_Go/docs/uml-analysis/class-diagrams",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/component-diagrams",
+              "path": "/RF_Go/docs/uml-analysis/component-diagrams",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/deployment-diagrams",
+              "path": "/RF_Go/docs/uml-analysis/deployment-diagrams",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/overview",
+              "path": "/RF_Go/docs/uml-analysis/overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/sequence-diagrams",
+              "path": "/RF_Go/docs/uml-analysis/sequence-diagrams",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/state-diagrams",
+              "path": "/RF_Go/docs/uml-analysis/state-diagrams",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "uml-analysis/use-cases",
+              "path": "/RF_Go/docs/uml-analysis/use-cases",
               "sidebar": "tutorialSidebar"
             }
           ],

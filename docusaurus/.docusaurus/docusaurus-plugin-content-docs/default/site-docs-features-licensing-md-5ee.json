@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Gestion des Fréquences",
-    "permalink": "/RF_Go/docs/features/frequency-management"
+    "title": "Backup Frequencies",
+    "permalink": "/RF_Go/docs/features/backup-frequencies"
   },
   "next": {
     "title": "Authentification",

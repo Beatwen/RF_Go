@@ -1,0 +1,24 @@
+{
+  "id": "features/session-management",
+  "title": "Session Management",
+  "description": "Database Import & Export",
+  "source": "@site/docs/features/session-management.md",
+  "sourceDirName": "features",
+  "slug": "/features/session-management",
+  "permalink": "/RF_Go/docs/features/session-management",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/session-management.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Visualisation des Fréquences",
+    "permalink": "/RF_Go/docs/features/frequency-visualization"
+  },
+  "next": {
+    "title": "Gestion des scans RF",
+    "permalink": "/RF_Go/docs/features/scan-management"
+  }
+}
