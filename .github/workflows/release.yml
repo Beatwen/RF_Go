@@ -41,16 +41,10 @@ jobs:
         $TAG = $env:GITHUB_REF.Replace('refs/tags/', '')
         echo "VERSION=$TAG" >> $env:GITHUB_OUTPUT
     
-    - name: Install Inno Setup
-      shell: pwsh
-      run: |
-        Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile "innosetup.exe"
-        Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT" -Wait
-    
     - name: Publish Windows
       shell: pwsh
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/win-x64 -p:PublishReadyToRun=false
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.26100.0 -r win-x64 --self-contained -o ./publish/win-x64 -p:PublishReadyToRun=false
         
         if (Test-Path "./publish/win-x64") {
           if ((Get-ChildItem -Path "./publish/win-x64" | Measure-Object).Count -gt 0) {
@@ -63,7 +57,7 @@ jobs:
           Write-Host "Windows build directory not found"
         }
     
-    - name: Create Windows Installer
+    - name: Prepare Inno Setup Script
       shell: pwsh
       run: |
         # Mettre à jour le script Inno Setup avec la version
@@ -71,14 +65,22 @@ jobs:
         $innoScript = Get-Content "installer.iss" -Raw
         $innoScript = $innoScript -replace '#define MyAppVersion "1.0"', "#define MyAppVersion `"$version`""
         $innoScript | Out-File -FilePath "installer-versioned.iss" -Encoding UTF8
-        
-        # Compiler l'installateur
-        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer-versioned.iss"
-        
+    
+    - name: Build Installer with Inno Setup
+      uses: nadeemjazmawe/inno-setup-action-cli@v6.0.5
+      with:
+        filepath: installer-versioned.iss
+    
+    - name: Rename Installer
+      shell: pwsh
+      run: |
         # Renommer le fichier de sortie
-        if (Test-Path "installer/RF_Go-Setup.exe") {
-          Move-Item "installer/RF_Go-Setup.exe" "./RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe"
+        if (Test-Path "Output/RF_Go-Setup.exe") {
+          Move-Item "Output/RF_Go-Setup.exe" "./RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe"
           Write-Host "Installateur Windows créé avec succès"
+        } else {
+          Write-Host "Installer not found in Output directory"
+          Get-ChildItem -Recurse -Filter "*.exe" | ForEach-Object { Write-Host "Found EXE: $($_.FullName)" }
         }
     
     - name: Publish Android
@@ -179,10 +181,16 @@ jobs:
     - name: Create GitHub Release with available files
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ steps.collect_files.outputs.FILES }}
+        tag_name: ${{ github.ref }}
         name: RF_Go ${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
+        files: |
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-osx-x64.zip
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-osx-arm64.zip
         body_path: ./release-notes.md
         fail_on_unmatched_files: false
       env:
