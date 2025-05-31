@@ -76,6 +76,11 @@
       <CodesignExtraArgs>269570</CodesignExtraArgs>
     </PropertyGroup>
 
+    <!-- Désactiver AOT pour Android -->
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+      <RunAOTCompilation>false</RunAOTCompilation>
+    </PropertyGroup>
+
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" />
