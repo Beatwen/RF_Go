@@ -22,18 +22,17 @@ jobs:
     - name: Install MAUI Workloads
       run: |
         dotnet workload install maui
-        dotnet workload install android
+        dotnet workload install android ios maccatalyst macos
         dotnet workload restore
     
     - name: Restore dependencies
       run: dotnet restore
     
-    - name: Build Windows only
-      run: dotnet build --no-restore --configuration Release --framework net8.0-windows10.0.19041.0
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
     
-    - name: Test Windows
-      run: dotnet test --no-build --verbosity normal --configuration Release --framework net8.0-windows10.0.19041.0
-      continue-on-error: true
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Release
     
     - name: Extract Version
       id: get_version
@@ -47,54 +46,24 @@ jobs:
       run: |
         Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile "innosetup.exe"
         Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT" -Wait
-        
-    - name: Publish Windows Portable and Full
+    
+    - name: Publish Windows
       shell: pwsh
       run: |
-        # Version portable (un seul fichier exécutable)
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/win-x64-portable -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:IncludeNativeLibrariesForSelfExtract=true
-        
-        if (Test-Path "./publish/win-x64-portable") {
-          if ((Get-ChildItem -Path "./publish/win-x64-portable" | Measure-Object).Count -gt 0) {
-            # Créer un dossier propre pour la version portable
-            New-Item -ItemType Directory -Path "./RF_Go-Portable" -Force | Out-Null
-            Copy-Item "./publish/win-x64-portable/RF_Go.exe" -Destination "./RF_Go-Portable/"
-            
-            # Ajouter un README pour la version portable
-            $readmeContent = @"
-        # RF_Go - Version Portable
-        
-        ## Installation
-        1. Téléchargez le fichier RF_Go.exe
-        2. Placez-le dans un dossier de votre choix
-        3. Exécutez directement RF_Go.exe
-        
-        ## Caractéristiques
-        - Aucune installation requise
-        - Fichier unique autonome
-        - Compatible Windows 10/11 (x64)
-        - Développé dans le cadre d'un Travail de Fin d'Étude
-        
-        ## Configuration système requise
-        - Windows 10 version 1903 ou supérieure
-        - Architecture x64
-        - 4 Go de RAM recommandés
-        
-        Version: ${{ steps.get_version.outputs.VERSION }}
-        Date: $(Get-Date -Format 'yyyy-MM-dd')
-        "@
-            
-            $readmeContent | Out-File -FilePath "./RF_Go-Portable/README.txt" -Encoding UTF8
-            
-            Compress-Archive -Path ./RF_Go-Portable/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-portable-windows-x64.zip
-            Write-Host "Version portable créée avec succès"
-          }
-        }
-        
-        # Version complète pour l'installateur
         dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/win-x64 -p:PublishReadyToRun=false
         
-    - name: Create Windows Installer with Inno Setup
+        if (Test-Path "./publish/win-x64") {
+          if ((Get-ChildItem -Path "./publish/win-x64" | Measure-Object).Count -gt 0) {
+            Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip -ErrorAction SilentlyContinue
+            Write-Host "Windows build archived successfully"
+          } else {
+            Write-Host "Windows build directory is empty"
+          }
+        } else {
+          Write-Host "Windows build directory not found"
+        }
+    
+    - name: Create Windows Installer
       shell: pwsh
       run: |
         # Mettre à jour le script Inno Setup avec la version
@@ -112,28 +81,76 @@ jobs:
           Write-Host "Installateur Windows créé avec succès"
         }
     
+    - name: Publish Android
+      shell: pwsh
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-android -r android-arm64 --self-contained -o ./publish/android -p:PublishReadyToRun=false -p:PublishTrimmed=true
+        
+        New-Item -ItemType Directory -Path "./android-output" -Force | Out-Null
+        
+        $apkFiles = Get-ChildItem -Path "./publish/android" -Filter "*.apk" -ErrorAction SilentlyContinue
+        if ($apkFiles.Count -gt 0) {
+          foreach ($file in $apkFiles) {
+            Copy-Item $file.FullName -Destination "./android-output/" -ErrorAction SilentlyContinue
+            Write-Host "Copied APK: $($file.Name)"
+          }
+          
+          if ((Get-ChildItem -Path "./android-output" | Measure-Object).Count -gt 0) {
+            Compress-Archive -Path ./android-output/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip -ErrorAction SilentlyContinue
+            Write-Host "Android build archived successfully"
+          } else {
+            Write-Host "Android output directory is empty"
+          }
+        } else {
+          Write-Host "No APK files found"
+        }
+      continue-on-error: true
+    
+    - name: Publish macOS
+      shell: pwsh
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst-x64 -p:PublishReadyToRun=false
+        
+        if (Test-Path "./publish/maccatalyst-x64") {
+          if ((Get-ChildItem -Path "./publish/maccatalyst-x64" | Measure-Object).Count -gt 0) {
+            Compress-Archive -Path ./publish/maccatalyst-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip -ErrorAction SilentlyContinue
+            Write-Host "macOS build archived successfully"
+          } else {
+            Write-Host "macOS build directory is empty"
+          }
+        } else {
+          Write-Host "macOS build directory not found"
+        }
+      continue-on-error: true
+    
+    - name: Publish iOS
+      shell: pwsh
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false
+        
+        if (Test-Path "./publish/ios-arm64") {
+          if ((Get-ChildItem -Path "./publish/ios-arm64" | Measure-Object).Count -gt 0) {
+            Compress-Archive -Path ./publish/ios-arm64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip -ErrorAction SilentlyContinue
+            Write-Host "iOS build archived successfully"
+          } else {
+            Write-Host "iOS build directory is empty"
+          }
+        } else {
+          Write-Host "iOS build directory not found"
+        }
+      continue-on-error: true
+    
     - name: Create release notes
       run: |
         $content = "# RF_Go v${{ steps.get_version.outputs.VERSION }}`n`n"
         $content += "Date de sortie: $(Get-Date -Format 'yyyy-MM-dd')`n`n"
-        $content += "## 📦 Fichiers disponibles`n`n"
-        $content += "### Windows`n"
-        $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe** : Installateur Windows complet`n"
-        $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-portable-windows-x64.zip** : Version portable (un seul fichier)`n`n"
-        $content += "## 🚀 Installation`n`n"
-        $content += "### Windows - Installateur`n"
-        $content += "1. Téléchargez le fichier .exe`n"
-        $content += "2. Exécutez-le en tant qu'administrateur`n"
-        $content += "3. Suivez les instructions d'installation`n`n"
-        $content += "### Windows - Portable`n"
-        $content += "1. Téléchargez et décompressez le fichier .zip`n"
-        $content += "2. Exécutez RF_Go.exe directement`n`n"
-        $content += "## ⚠️ Notes importantes`n"
-        $content += "- Version développée dans le cadre d'un Travail de Fin d'Étude`n"
-        $content += "- Compatible Windows 10/11 (x64)`n"
-        $content += "- L'installateur Windows peut déclencher un avertissement de sécurité (normal pour un logiciel non signé)`n`n"
-        $content += "## 🔧 Configuration système requise`n"
-        $content += "- **Windows**: 10/11, 4 Go RAM, .NET 8.0 (inclus)`n"
+        $content += "## Nouveautés`n"
+        $content += "- Version initiale de RF_Go`n"
+        $content += "- Fonctionnalité de gestion des scans`n"
+        $content += "- Capacités d'import/export`n`n"
+        $content += "## Notes importantes`n"
+        $content += "- Cette version nécessite .NET 8.0 ou supérieur`n"
+        $content += "- Compatible avec Windows 10/11`n"
         Set-Content -Path "./release-notes.md" -Value $content
     
     - name: List and collect available files
@@ -141,17 +158,17 @@ jobs:
       shell: pwsh
       run: |
         $files = @()
-        Write-Host "Fichiers de release disponibles:"
+        Write-Host "Available release files:"
         
         # Fichiers exe et zip
         $releaseFiles = Get-ChildItem -Path . -File | Where-Object { $_.Name -match "RF_Go-.*\.(exe|zip)$" }
         foreach ($file in $releaseFiles) {
-          Write-Host "Trouvé: $($file.Name)"
+          Write-Host "Found: $($file.Name)"
           $files += "./$($file.Name)"
         }
         
         if ($files.Count -eq 0) {
-          Write-Host "ATTENTION: Aucun fichier de release trouvé!"
+          Write-Host "WARNING: No release files found!"
         }
         
         $filesString = $files -join "`n"
@@ -159,7 +176,7 @@ jobs:
         echo "$filesString" >> $env:GITHUB_OUTPUT
         echo "EOF" >> $env:GITHUB_OUTPUT
 
-    - name: Create GitHub Release
+    - name: Create GitHub Release with available files
       uses: softprops/action-gh-release@v1
       with:
         files: ${{ steps.collect_files.outputs.FILES }}
