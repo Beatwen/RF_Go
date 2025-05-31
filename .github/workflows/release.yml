@@ -41,44 +41,93 @@ jobs:
         $TAG = $env:GITHUB_REF.Replace('refs/tags/', '')
         echo "VERSION=$TAG" >> $env:GITHUB_OUTPUT
     
-    - name: Publish Windows
+    - name: Install Inno Setup
       shell: pwsh
       run: |
+        Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile "innosetup.exe"
+        Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT" -Wait
+        
+    - name: Publish Windows Portable and Full
+      shell: pwsh
+      run: |
+        # Version portable (un seul fichier exécutable)
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/win-x64-portable -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:IncludeNativeLibrariesForSelfExtract=true
+        
+        if (Test-Path "./publish/win-x64-portable") {
+          if ((Get-ChildItem -Path "./publish/win-x64-portable" | Measure-Object).Count -gt 0) {
+            # Créer un dossier propre pour la version portable
+            New-Item -ItemType Directory -Path "./RF_Go-Portable" -Force | Out-Null
+            Copy-Item "./publish/win-x64-portable/RF_Go.exe" -Destination "./RF_Go-Portable/"
+            
+            # Ajouter un README pour la version portable
+            $readmeContent = @"
+        # RF_Go - Version Portable
+        
+        ## Installation
+        1. Téléchargez le fichier RF_Go.exe
+        2. Placez-le dans un dossier de votre choix
+        3. Exécutez directement RF_Go.exe
+        
+        ## Caractéristiques
+        - Aucune installation requise
+        - Fichier unique autonome
+        - Compatible Windows 10/11 (x64)
+        - Développé dans le cadre d'un Travail de Fin d'Étude
+        
+        ## Configuration système requise
+        - Windows 10 version 1903 ou supérieure
+        - Architecture x64
+        - 4 Go de RAM recommandés
+        
+        Version: ${{ steps.get_version.outputs.VERSION }}
+        Date: $(Get-Date -Format 'yyyy-MM-dd')
+        "@
+            
+            $readmeContent | Out-File -FilePath "./RF_Go-Portable/README.txt" -Encoding UTF8
+            
+            Compress-Archive -Path ./RF_Go-Portable/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-portable-windows-x64.zip
+            Write-Host "Version portable créée avec succès"
+          }
+        }
+        
+        # Version complète pour l'installateur
         dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-windows10.0.19041.0 -r win-x64 --self-contained -o ./publish/win-x64 -p:PublishReadyToRun=false
         
-        if (Test-Path "./publish/win-x64") {
-          if ((Get-ChildItem -Path "./publish/win-x64" | Measure-Object).Count -gt 0) {
-            Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip -ErrorAction SilentlyContinue
-            Write-Host "Windows build archived successfully"
-          } else {
-            Write-Host "Windows build directory is empty"
-          }
-        } else {
-          Write-Host "Windows build directory not found"
+    - name: Create Windows Installer with Inno Setup
+      shell: pwsh
+      run: |
+        # Mettre à jour le script Inno Setup avec la version
+        $version = "${{ steps.get_version.outputs.VERSION }}".TrimStart('v')
+        $innoScript = Get-Content "installer.iss" -Raw
+        $innoScript = $innoScript -replace '#define MyAppVersion "1.0"', "#define MyAppVersion `"$version`""
+        $innoScript | Out-File -FilePath "installer-versioned.iss" -Encoding UTF8
+        
+        # Compiler l'installateur
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer-versioned.iss"
+        
+        # Renommer le fichier de sortie
+        if (Test-Path "installer/RF_Go-Setup.exe") {
+          Move-Item "installer/RF_Go-Setup.exe" "./RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe"
+          Write-Host "Installateur Windows créé avec succès"
         }
     
-    - name: Publish Android
+    - name: Publish Android APK
       shell: pwsh
       run: |
         dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-android -r android-arm64 --self-contained -o ./publish/android -p:PublishReadyToRun=false
         
         New-Item -ItemType Directory -Path "./android-output" -Force | Out-Null
         
-        $apkFiles = Get-ChildItem -Path "./publish/android" -Filter "*.apk" -ErrorAction SilentlyContinue
+        # Chercher tous les fichiers APK
+        $apkFiles = Get-ChildItem -Path "./publish/android" -Filter "*.apk" -Recurse -ErrorAction SilentlyContinue
         if ($apkFiles.Count -gt 0) {
           foreach ($file in $apkFiles) {
-            Copy-Item $file.FullName -Destination "./android-output/" -ErrorAction SilentlyContinue
-            Write-Host "Copied APK: $($file.Name)"
-          }
-          
-          if ((Get-ChildItem -Path "./android-output" | Measure-Object).Count -gt 0) {
-            Compress-Archive -Path ./android-output/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.zip -ErrorAction SilentlyContinue
-            Write-Host "Android build archived successfully"
-          } else {
-            Write-Host "Android output directory is empty"
+            $newName = "RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk"
+            Copy-Item $file.FullName -Destination "./android-output/$newName" -ErrorAction SilentlyContinue
+            Write-Host "APK créé: $newName"
           }
         } else {
-          Write-Host "No APK files found"
+          Write-Host "Aucun fichier APK trouvé"
         }
       continue-on-error: true
     
@@ -90,29 +139,8 @@ jobs:
         if (Test-Path "./publish/maccatalyst-x64") {
           if ((Get-ChildItem -Path "./publish/maccatalyst-x64" | Measure-Object).Count -gt 0) {
             Compress-Archive -Path ./publish/maccatalyst-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip -ErrorAction SilentlyContinue
-            Write-Host "macOS build archived successfully"
-          } else {
-            Write-Host "macOS build directory is empty"
+            Write-Host "Build macOS archivé avec succès"
           }
-        } else {
-          Write-Host "macOS build directory not found"
-        }
-      continue-on-error: true
-    
-    - name: Publish iOS
-      shell: pwsh
-      run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false
-        
-        if (Test-Path "./publish/ios-arm64") {
-          if ((Get-ChildItem -Path "./publish/ios-arm64" | Measure-Object).Count -gt 0) {
-            Compress-Archive -Path ./publish/ios-arm64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip -ErrorAction SilentlyContinue
-            Write-Host "iOS build archived successfully"
-          } else {
-            Write-Host "iOS build directory is empty"
-          }
-        } else {
-          Write-Host "iOS build directory not found"
         }
       continue-on-error: true
     
@@ -120,13 +148,31 @@ jobs:
       run: |
         $content = "# RF_Go v${{ steps.get_version.outputs.VERSION }}`n`n"
         $content += "Date de sortie: $(Get-Date -Format 'yyyy-MM-dd')`n`n"
-        $content += "## Nouveautés`n"
-        $content += "- Version initiale de RF_Go`n"
-        $content += "- Fonctionnalité de gestion des scans`n"
-        $content += "- Capacités d'import/export`n`n"
-        $content += "## Notes importantes`n"
-        $content += "- Cette version nécessite .NET 8.0 ou supérieur`n"
-        $content += "- Compatible avec Windows 10/11`n"
+        $content += "## 📦 Fichiers disponibles`n`n"
+        $content += "### Windows`n"
+        $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe** : Installateur Windows complet`n"
+        $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-portable-windows-x64.zip** : Version portable (un seul fichier)`n`n"
+        $content += "### Android`n"
+        $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk** : Application Android (installation manuelle requise)`n`n"
+        $content += "## 🚀 Installation`n`n"
+        $content += "### Windows - Installateur`n"
+        $content += "1. Téléchargez le fichier .exe`n"
+        $content += "2. Exécutez-le en tant qu'administrateur`n"
+        $content += "3. Suivez les instructions d'installation`n`n"
+        $content += "### Windows - Portable`n"
+        $content += "1. Téléchargez et décompressez le fichier .zip`n"
+        $content += "2. Exécutez RF_Go.exe directement`n`n"
+        $content += "### Android`n"
+        $content += "1. Activez 'Sources inconnues' dans les paramètres`n"
+        $content += "2. Téléchargez et installez le fichier .apk`n`n"
+        $content += "## ⚠️ Notes importantes`n"
+        $content += "- Version développée dans le cadre d'un Travail de Fin d'Étude`n"
+        $content += "- Compatible Windows 10/11 (x64)`n"
+        $content += "- Android 7.0+ requis pour la version mobile`n"
+        $content += "- L'installateur Windows peut déclencher un avertissement de sécurité (normal pour un logiciel non signé)`n`n"
+        $content += "## 🔧 Configuration système requise`n"
+        $content += "- **Windows**: 10/11, 4 Go RAM, .NET 8.0 (inclus)`n"
+        $content += "- **Android**: Version 7.0+, 2 Go RAM`n"
         Set-Content -Path "./release-notes.md" -Value $content
     
     - name: List and collect available files
@@ -134,16 +180,24 @@ jobs:
       shell: pwsh
       run: |
         $files = @()
-        Write-Host "Available release files:"
+        Write-Host "Fichiers de release disponibles:"
         
-        $zipFiles = Get-ChildItem -Path . -File -Filter "*.zip" -ErrorAction SilentlyContinue
-        foreach ($file in $zipFiles) {
-          Write-Host "Found: $($file.Name)"
+        # Fichiers exe et zip
+        $releaseFiles = Get-ChildItem -Path . -File | Where-Object { $_.Name -match "RF_Go-.*\.(exe|zip|apk)$" }
+        foreach ($file in $releaseFiles) {
+          Write-Host "Trouvé: $($file.Name)"
           $files += "./$($file.Name)"
         }
         
+        # Fichiers APK dans android-output
+        $apkFiles = Get-ChildItem -Path "./android-output" -File -Filter "*.apk" -ErrorAction SilentlyContinue
+        foreach ($file in $apkFiles) {
+          Write-Host "Trouvé APK: $($file.Name)"
+          $files += "./android-output/$($file.Name)"
+        }
+        
         if ($files.Count -eq 0) {
-          Write-Host "WARNING: No release files found!"
+          Write-Host "ATTENTION: Aucun fichier de release trouvé!"
         }
         
         $filesString = $files -join "`n"
@@ -151,7 +205,7 @@ jobs:
         echo "$filesString" >> $env:GITHUB_OUTPUT
         echo "EOF" >> $env:GITHUB_OUTPUT
 
-    - name: Create GitHub Release with available files
+    - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         files: ${{ steps.collect_files.outputs.FILES }}
