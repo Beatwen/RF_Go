@@ -26,20 +26,11 @@
         <ApplicationVersion>1</ApplicationVersion>
 
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
-
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-        <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
-        <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-        <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-        <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-        <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
-        <GenerateTestArtifacts>True</GenerateTestArtifacts>
-        <AppInstallerUri>C:\Users\c_bou\source\repos\RF_Go\Installers</AppInstallerUri>
-        <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
         
         <!-- RuntimeIdentifiers pour toutes les plateformes -->
         <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
@@ -64,8 +55,21 @@
     <!-- Désactivation de ReadyToRun pour éviter les problèmes de compilation -->
     <PropertyGroup>
       <PublishReadyToRun>false</PublishReadyToRun>
+      <WindowsPackageType>None</WindowsPackageType>
+    </PropertyGroup>
+
+    <!-- Signature MSIX uniquement en local (pas sur GitHub Actions) -->
+    <PropertyGroup Condition="'$(CI)' != 'true'">
       <PackageCertificateThumbprint>B2782CA9819B526BE85AE3A6C0BD8C93084B53F6</PackageCertificateThumbprint>
       <WindowsPackageType>MSIX</WindowsPackageType>
+      <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+      <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+      <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+      <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
+      <GenerateTestArtifacts>True</GenerateTestArtifacts>
+      <AppInstallerUri>C:\Users\c_bou\source\repos\RF_Go\Installers</AppInstallerUri>
+      <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+      <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|AnyCPU'">
