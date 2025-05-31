@@ -1,5 +1,6 @@
 ﻿using MudBlazor;
 using SQLite;
+using System.Text.Json.Serialization;
 
 public class TimePeriod
 {
@@ -83,7 +84,7 @@ public class TimePeriod
         get => _range;
         set
         {
-            if (value.Start == null || value.End == null)
+            if (value?.Start == null || value?.End == null)
             {
                 throw new ArgumentException("Both start and end must be set.");
             }
@@ -99,6 +100,14 @@ public class TimePeriod
         }
     }
 
+    // Constructeur sans paramètres pour la désérialisation JSON
+    public TimePeriod()
+    {
+        _startTime = DateTime.Now;
+        _endTime = DateTime.Now.AddHours(1);
+        _range = new DateRange(_startTime, _endTime);
+    }
+
     public TimePeriod(DateTime start, DateTime end)
     {
         _startTime = start;
@@ -108,7 +117,10 @@ public class TimePeriod
 
     private void UpdateRange()
     {
-        _range = new DateRange(_startTime, _endTime);
+        if (_startTime != default(DateTime) && _endTime != default(DateTime))
+        {
+            _range = new DateRange(_startTime, _endTime);
+        }
     }
 
     public override string ToString()
