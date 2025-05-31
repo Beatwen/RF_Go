@@ -1,11 +1,11 @@
 {
   "id": "uml-analysis/activity-diagrams",
-  "title": "Diagrammes d'Activités - Processus et Algorithmes",
-  "description": "Les diagrammes d'activités de RF.Go modélisent les processus métier complexes et les algorithmes RF avancés qui constituent le cœur technique de l'application. Cette section détaille les workflows critiques depuis l'initialisation du système jusqu'aux calculs d'optimisation spectrale.",
+  "title": "Diagramme d'activité complémentaires",
+  "description": "Les diagrammes d'activité présentés ici complètent ceux des use-cases en se concentrant sur les processus cross-fonctionnels de haut niveau, les patterns algorithmiques système et les flux d'orchestration complexes.",
   "source": "@site/docs/uml-analysis/activity-diagrams.md",
   "sourceDirName": "uml-analysis",
   "slug": "/uml-analysis/activity-diagrams",
-  "permalink": "/RF_Go/docs/uml-analysis/activity-diagrams",
+  "permalink": "/RF_Go/uml-analysis/activity-diagrams",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/activity-diagrams.md",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Diagrammes de Séquence - Interactions Système",
-    "permalink": "/RF_Go/docs/uml-analysis/sequence-diagrams"
+    "title": "Diagramme de séquence complémentaires",
+    "permalink": "/RF_Go/uml-analysis/sequence-diagrams"
   },
   "next": {
-    "title": "Diagrammes de Classes - Architecture Orientée Objet",
-    "permalink": "/RF_Go/docs/uml-analysis/class-diagrams"
+    "title": "Diagrammes de classes",
+    "permalink": "/RF_Go/uml-analysis/class-diagrams"
   }
 }

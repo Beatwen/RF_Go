@@ -5,7 +5,7 @@
   "source": "@site/docs/architecture.md",
   "sourceDirName": ".",
   "slug": "/architecture",
-  "permalink": "/RF_Go/docs/architecture",
+  "permalink": "/RF_Go/architecture",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/architecture.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Introduction à RF.Go",
-    "permalink": "/RF_Go/docs/intro"
+    "permalink": "/RF_Go/intro"
   },
   "next": {
-    "title": "Démarrage Rapide",
-    "permalink": "/RF_Go/docs/getting-started"
+    "title": "Démarrage rapide",
+    "permalink": "/RF_Go/getting-started"
   }
 }

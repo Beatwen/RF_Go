@@ -5,7 +5,7 @@
   "source": "@site/docs/features/frequency-visualization.md",
   "sourceDirName": "features",
   "slug": "/features/frequency-visualization",
-  "permalink": "/RF_Go/docs/features/frequency-visualization",
+  "permalink": "/RF_Go/features/frequency-visualization",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/frequency-visualization.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Gestion Temporelle - Planification RF Avancée",
-    "permalink": "/RF_Go/docs/features/time-management"
+    "permalink": "/RF_Go/features/time-management"
   },
   "next": {
     "title": "Session Management",
-    "permalink": "/RF_Go/docs/features/session-management"
+    "permalink": "/RF_Go/features/session-management"
   }
 }

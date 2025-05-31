@@ -1,8 +1,8 @@
-# Gestion des Appareils
+# Gestion des appareils
 
-RF Go offre une solution complète de gestion des appareils audio sans fil, permettant aux utilisateurs de découvrir, configurer et surveiller leurs équipements de diverses marques à partir d'une interface centrale.
+RF.Go offre une solution complète de gestion des appareils audio sans fil, permettant aux utilisateurs de découvrir, configurer et surveiller leurs équipements de diverses marques à partir d'une interface centrale.
 
-## Fonctionnalités Principales
+## Fonctionnalités principales
 
 - **Découverte automatique** : Détection des appareils sur le réseau via divers protocoles (mDNS, UDP multicast)
 - **Configuration centralisée** : Interface unifiée pour gérer des appareils de différentes marques

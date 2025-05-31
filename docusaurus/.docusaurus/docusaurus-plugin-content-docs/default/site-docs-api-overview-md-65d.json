@@ -1,15 +1,24 @@
 {
   "id": "api/overview",
-  "title": "API Documentation",
+  "title": "API Licensing",
   "description": "Vue d'ensemble",
   "source": "@site/docs/api/overview.md",
   "sourceDirName": "api",
   "slug": "/api/overview",
-  "permalink": "/RF_Go/docs/api/overview",
+  "permalink": "/RF_Go/api/overview",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/api/overview.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Protocoles Spécifiques aux Appareils",
+    "permalink": "/RF_Go/protocols/device-specific"
+  },
+  "next": {
+    "title": "Configuration de l'Environnement de Développement",
+    "permalink": "/RF_Go/development/setup"
+  }
 }

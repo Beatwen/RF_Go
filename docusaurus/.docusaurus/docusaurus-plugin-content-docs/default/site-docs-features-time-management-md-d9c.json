@@ -5,7 +5,7 @@
   "source": "@site/docs/features/time-management.md",
   "sourceDirName": "features",
   "slug": "/features/time-management",
-  "permalink": "/RF_Go/docs/features/time-management",
+  "permalink": "/RF_Go/features/time-management",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/time-management.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Gestion des Fréquences",
-    "permalink": "/RF_Go/docs/features/frequency-management"
+    "permalink": "/RF_Go/features/frequency-management"
   },
   "next": {
     "title": "Visualisation des Fréquences",
-    "permalink": "/RF_Go/docs/features/frequency-visualization"
+    "permalink": "/RF_Go/features/frequency-visualization"
   }
 }

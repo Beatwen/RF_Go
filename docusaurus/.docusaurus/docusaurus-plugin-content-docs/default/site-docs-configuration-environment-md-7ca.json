@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "API Interne - Interfaces",
-    "permalink": "/RF_Go/docs/api/interfaces"
+    "title": "API Licensing",
+    "permalink": "/RF_Go/docs/api/overview"
   },
   "next": {
     "title": "Configuration de la Base de Données",

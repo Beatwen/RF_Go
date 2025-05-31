@@ -5,7 +5,7 @@
   "source": "@site/docs/features/workflows.md",
   "sourceDirName": "features",
   "slug": "/features/workflows",
-  "permalink": "/RF_Go/docs/features/workflows",
+  "permalink": "/RF_Go/features/workflows",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/workflows.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Authentification",
-    "permalink": "/RF_Go/docs/features/authentication"
+    "permalink": "/RF_Go/features/authentication"
   },
   "next": {
     "title": "Protocoles DNS et Découverte",
-    "permalink": "/RF_Go/docs/protocols/dns-discovery"
+    "permalink": "/RF_Go/protocols/dns-discovery"
   }
 }

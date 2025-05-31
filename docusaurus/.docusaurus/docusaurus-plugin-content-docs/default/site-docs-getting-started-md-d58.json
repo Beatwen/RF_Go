@@ -1,11 +1,11 @@
 {
   "id": "getting-started",
-  "title": "Démarrage Rapide",
+  "title": "Démarrage rapide",
   "description": "Cette section vous guidera à travers les premières étapes pour commencer à utiliser RF Go.",
   "source": "@site/docs/getting-started.md",
   "sourceDirName": ".",
   "slug": "/getting-started",
-  "permalink": "/RF_Go/docs/getting-started",
+  "permalink": "/RF_Go/getting-started",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/getting-started.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Architecture",
-    "permalink": "/RF_Go/docs/architecture"
+    "permalink": "/RF_Go/architecture"
   },
   "next": {
-    "title": "Vue d'Ensemble",
-    "permalink": "/RF_Go/docs/uml-analysis/overview"
+    "title": "Vue d'ensemble",
+    "permalink": "/RF_Go/uml-analysis/overview"
   }
 }

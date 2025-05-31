@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Diagramme de Classes",
+    "title": "Diagramme de classes",
     "permalink": "/RF_Go/docs/architecture/class-diagram"
   },
   "next": {
-    "title": "Gestion des Appareils",
+    "title": "Gestion des appareils",
     "permalink": "/RF_Go/docs/features/device-management"
   }
 }

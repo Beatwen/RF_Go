@@ -61,9 +61,9 @@ classDiagram
     Services --> Network
 ```
 
-## Composants Principaux
+## Composants principaux
 
-### 1. Interface Utilisateur (UI)
+### 1. Interface utilisateur (UI)
 
 - **Blazor Pages** : Composants principaux de l'interface utilisateur
   - Pages de gestion des appareils
@@ -191,7 +191,7 @@ classDiagram
   - Retry policies
   - Timeout handling
 
-## Flux de Données
+## Flux de données
 
 ```mermaid
 sequenceDiagram
@@ -251,7 +251,7 @@ L'architecture est conçue pour être extensible :
   - Style system
   - Theme support
 
-## Dépendances Principales
+## Dépendances principales
 
 - .NET MAUI
 - Blazor
@@ -264,4 +264,4 @@ L'architecture est conçue pour être extensible :
 - MAUI Community Toolkit
 - Refit
 - Polly
-- Serilog 
+- Serilog

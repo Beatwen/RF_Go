@@ -46,7 +46,3 @@ Veuillez consulter [docs/VERSIONING.md](./docs/VERSIONING.md) pour connaître le
 ## Licence
 
 [MIT](./LICENSE)
-
-## Contact
-
-[Votre contact] 

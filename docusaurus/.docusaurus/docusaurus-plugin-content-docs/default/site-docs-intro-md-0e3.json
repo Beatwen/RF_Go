@@ -1,11 +1,11 @@
 {
   "id": "intro",
   "title": "Introduction à RF.Go",
-  "description": "RF.Go est une application professionnelle de gestion de fréquences audio, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil lors d'événements de grande envergure. Cette documentation technique vous guidera à travers l'architecture, les fonctionnalités et l'analyse UML approfondie de l'application.",
+  "description": "RF.Go est une application professionnelle de gestion de fréquences audio multiplateforme et offline-first, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil lors d'événements de grande envergure. Cette documentation technique complète présente l'analyse UML rigoureuse, l'architecture technique réelle et les choix d'implémentation du projet TFE.",
   "source": "@site/docs/intro.md",
   "sourceDirName": ".",
   "slug": "/intro",
-  "permalink": "/RF_Go/docs/intro",
+  "permalink": "/RF_Go/intro",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/intro.md",
@@ -15,6 +15,6 @@
   "sidebar": "tutorialSidebar",
   "next": {
     "title": "Architecture",
-    "permalink": "/RF_Go/docs/architecture"
+    "permalink": "/RF_Go/architecture"
   }
 }

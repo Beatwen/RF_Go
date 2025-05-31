@@ -5,7 +5,7 @@
   "source": "@site/docs/features/licensing.md",
   "sourceDirName": "features",
   "slug": "/features/licensing",
-  "permalink": "/RF_Go/docs/features/licensing",
+  "permalink": "/RF_Go/features/licensing",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/licensing.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Backup Frequencies",
-    "permalink": "/RF_Go/docs/features/backup-frequencies"
+    "permalink": "/RF_Go/features/backup-frequencies"
   },
   "next": {
     "title": "Authentification",
-    "permalink": "/RF_Go/docs/features/authentication"
+    "permalink": "/RF_Go/features/authentication"
   }
 }

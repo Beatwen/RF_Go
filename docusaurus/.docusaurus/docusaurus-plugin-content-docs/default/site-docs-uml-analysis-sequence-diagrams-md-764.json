@@ -1,11 +1,11 @@
 {
   "id": "uml-analysis/sequence-diagrams",
-  "title": "Diagrammes de Séquence - Interactions Système",
-  "description": "Les diagrammes de séquence de RF.Go illustrent les interactions temporelles complexes entre les différents composants du système. Cette modélisation détaille les flux de communication critiques, depuis la découverte des appareils jusqu'à la synchronisation finale.",
+  "title": "Diagramme de séquence complémentaires",
+  "description": "Les diagrammes de séquence présentés ici complètent ceux des use-cases en se concentrant sur les interactions cross-fonctionnelles, les patterns d'architecture système et les flux d'intégration complexes qui transcendent les fonctionnalités individuelles.",
   "source": "@site/docs/uml-analysis/sequence-diagrams.md",
   "sourceDirName": "uml-analysis",
   "slug": "/uml-analysis/sequence-diagrams",
-  "permalink": "/RF_Go/docs/uml-analysis/sequence-diagrams",
+  "permalink": "/RF_Go/uml-analysis/sequence-diagrams",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/sequence-diagrams.md",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Use cases",
-    "permalink": "/RF_Go/docs/uml-analysis/use-cases"
+    "title": "UC-010: Gestion des sessions RF",
+    "permalink": "/RF_Go/uml-analysis/use-cases/uc-010"
   },
   "next": {
-    "title": "Diagrammes d'Activités - Processus et Algorithmes",
-    "permalink": "/RF_Go/docs/uml-analysis/activity-diagrams"
+    "title": "Diagramme d'activité complémentaires",
+    "permalink": "/RF_Go/uml-analysis/activity-diagrams"
   }
 }

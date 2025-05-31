@@ -35,12 +35,10 @@ export default {
       {
         "docs": {
           "sidebarPath": "C:\\Users\\c_bou\\source\\repos\\RF_Go\\docusaurus\\sidebars.js",
+          "routeBasePath": "/",
           "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/"
         },
-        "blog": {
-          "showReadingTime": true,
-          "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/"
-        },
+        "blog": false,
         "theme": {
           "customCss": "C:\\Users\\c_bou\\source\\repos\\RF_Go\\docusaurus\\src\\css\\custom.css"
         }
@@ -50,10 +48,10 @@ export default {
   "themeConfig": {
     "image": "img/docusaurus-social-card.jpg",
     "navbar": {
-      "title": "RF Go",
       "logo": {
         "alt": "RF Go Logo",
-        "src": "img/logo.svg"
+        "src": "img/logo.svg",
+        "srcDark": "img/logo-dark.svg"
       },
       "items": [
         {
@@ -61,11 +59,6 @@ export default {
           "sidebarId": "tutorialSidebar",
           "position": "left",
           "label": "Documentation"
-        },
-        {
-          "to": "/blog",
-          "label": "Blog",
-          "position": "left"
         },
         {
           "href": "https://github.com/Beatwen/rf_go",
@@ -79,46 +72,50 @@ export default {
       "style": "dark",
       "links": [
         {
-          "title": "Docs",
+          "title": "Documentation",
           "items": [
             {
-              "label": "Documentation",
-              "to": "/docs/intro"
+              "label": "Introduction",
+              "to": "/intro"
+            },
+            {
+              "label": "Analyse UML",
+              "to": "/uml-analysis/overview"
+            },
+            {
+              "label": "Architecture",
+              "to": "/architecture/overview"
             }
           ]
         },
         {
-          "title": "Community",
+          "title": "Ressources",
           "items": [
             {
-              "label": "Stack Overflow",
-              "href": "https://stackoverflow.com/questions/tagged/rf-go"
-            },
-            {
-              "label": "Discord",
-              "href": "https://discordapp.com/invite/rf-go"
-            },
-            {
-              "label": "Twitter",
-              "href": "https://twitter.com/rf-go"
-            }
-          ]
-        },
-        {
-          "title": "More",
-          "items": [
-            {
-              "label": "Blog",
-              "to": "/blog"
+              "label": "API Licensing",
+              "to": "/api/overview"
             },
             {
               "label": "GitHub",
               "href": "https://github.com/Beatwen/rf_go"
             }
           ]
+        },
+        {
+          "title": "Projet TFE",
+          "items": [
+            {
+              "label": "RF.Go Application",
+              "href": "https://github.com/Beatwen/rf_go"
+            },
+            {
+              "label": "Documentation Source",
+              "href": "https://github.com/Beatwen/RF_Go/tree/main/docusaurus"
+            }
+          ]
         }
       ],
-      "copyright": "Copyright © 2025 RF Go. Built with Docusaurus."
+      "copyright": "Copyright © 2025 RF Go - Documentation TFE. Built with Docusaurus."
     },
     "prism": {
       "theme": {
