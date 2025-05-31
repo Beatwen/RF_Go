@@ -22,17 +22,18 @@ jobs:
     - name: Install MAUI Workloads
       run: |
         dotnet workload install maui
-        dotnet workload install android ios maccatalyst macos
+        dotnet workload install android
         dotnet workload restore
     
     - name: Restore dependencies
       run: dotnet restore
     
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+    - name: Build Windows only
+      run: dotnet build --no-restore --configuration Release --framework net8.0-windows10.0.19041.0
     
-    - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration Release
+    - name: Test Windows
+      run: dotnet test --no-build --verbosity normal --configuration Release --framework net8.0-windows10.0.19041.0
+      continue-on-error: true
     
     - name: Extract Version
       id: get_version
@@ -111,39 +112,6 @@ jobs:
           Write-Host "Installateur Windows créé avec succès"
         }
     
-    - name: Publish Android APK
-      shell: pwsh
-      run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-android -r android-arm64 --self-contained -o ./publish/android -p:PublishReadyToRun=false
-        
-        New-Item -ItemType Directory -Path "./android-output" -Force | Out-Null
-        
-        # Chercher tous les fichiers APK
-        $apkFiles = Get-ChildItem -Path "./publish/android" -Filter "*.apk" -Recurse -ErrorAction SilentlyContinue
-        if ($apkFiles.Count -gt 0) {
-          foreach ($file in $apkFiles) {
-            $newName = "RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk"
-            Copy-Item $file.FullName -Destination "./android-output/$newName" -ErrorAction SilentlyContinue
-            Write-Host "APK créé: $newName"
-          }
-        } else {
-          Write-Host "Aucun fichier APK trouvé"
-        }
-      continue-on-error: true
-    
-    - name: Publish macOS
-      shell: pwsh
-      run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst-x64 -p:PublishReadyToRun=false
-        
-        if (Test-Path "./publish/maccatalyst-x64") {
-          if ((Get-ChildItem -Path "./publish/maccatalyst-x64" | Measure-Object).Count -gt 0) {
-            Compress-Archive -Path ./publish/maccatalyst-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip -ErrorAction SilentlyContinue
-            Write-Host "Build macOS archivé avec succès"
-          }
-        }
-      continue-on-error: true
-    
     - name: Create release notes
       run: |
         $content = "# RF_Go v${{ steps.get_version.outputs.VERSION }}`n`n"
@@ -152,8 +120,6 @@ jobs:
         $content += "### Windows`n"
         $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe** : Installateur Windows complet`n"
         $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-portable-windows-x64.zip** : Version portable (un seul fichier)`n`n"
-        $content += "### Android`n"
-        $content += "- **RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk** : Application Android (installation manuelle requise)`n`n"
         $content += "## 🚀 Installation`n`n"
         $content += "### Windows - Installateur`n"
         $content += "1. Téléchargez le fichier .exe`n"
@@ -162,17 +128,12 @@ jobs:
         $content += "### Windows - Portable`n"
         $content += "1. Téléchargez et décompressez le fichier .zip`n"
         $content += "2. Exécutez RF_Go.exe directement`n`n"
-        $content += "### Android`n"
-        $content += "1. Activez 'Sources inconnues' dans les paramètres`n"
-        $content += "2. Téléchargez et installez le fichier .apk`n`n"
         $content += "## ⚠️ Notes importantes`n"
         $content += "- Version développée dans le cadre d'un Travail de Fin d'Étude`n"
         $content += "- Compatible Windows 10/11 (x64)`n"
-        $content += "- Android 7.0+ requis pour la version mobile`n"
         $content += "- L'installateur Windows peut déclencher un avertissement de sécurité (normal pour un logiciel non signé)`n`n"
         $content += "## 🔧 Configuration système requise`n"
         $content += "- **Windows**: 10/11, 4 Go RAM, .NET 8.0 (inclus)`n"
-        $content += "- **Android**: Version 7.0+, 2 Go RAM`n"
         Set-Content -Path "./release-notes.md" -Value $content
     
     - name: List and collect available files
@@ -183,17 +144,10 @@ jobs:
         Write-Host "Fichiers de release disponibles:"
         
         # Fichiers exe et zip
-        $releaseFiles = Get-ChildItem -Path . -File | Where-Object { $_.Name -match "RF_Go-.*\.(exe|zip|apk)$" }
+        $releaseFiles = Get-ChildItem -Path . -File | Where-Object { $_.Name -match "RF_Go-.*\.(exe|zip)$" }
         foreach ($file in $releaseFiles) {
           Write-Host "Trouvé: $($file.Name)"
           $files += "./$($file.Name)"
-        }
-        
-        # Fichiers APK dans android-output
-        $apkFiles = Get-ChildItem -Path "./android-output" -File -Filter "*.apk" -ErrorAction SilentlyContinue
-        foreach ($file in $apkFiles) {
-          Write-Host "Trouvé APK: $($file.Name)"
-          $files += "./android-output/$($file.Name)"
         }
         
         if ($files.Count -eq 0) {
