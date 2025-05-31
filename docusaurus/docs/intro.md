@@ -1,136 +1,187 @@
 # Introduction à RF.Go
 
-RF.Go est une application professionnelle de gestion de fréquences audio, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil lors d'événements de grande envergure. Cette documentation technique vous guidera à travers l'architecture, les fonctionnalités et l'analyse UML approfondie de l'application.
+RF.Go est une application professionnelle de gestion de fréquences audio **multiplateforme et offline-first**, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil lors d'événements de grande envergure. Cette documentation technique complète présente l'analyse UML rigoureuse, l'architecture technique réelle et les choix d'implémentation du projet TFE.
 
-## Vision et Contexte du Projet
+## Vision et contexte du projet
 
-RF.Go répond à un besoin critique du secteur professionnel de l'audio : **unifier la gestion multimarque des équipements RF** dans une interface moderne et intuitive. Contrairement aux solutions existantes (Shure Workbench, Sennheiser WSM) qui sont limitées à leurs écosystèmes respectifs, RF.Go offre une plateforme ouverte et extensible.
+RF.Go répond à un besoin critique du secteur professionnel de l'audio : **unifier la gestion multimarque des équipements RF** dans une interface moderne et intuitive. Contrairement aux solutions existantes (Shure Workbench, Sennheiser WSM) qui sont limitées à leurs écosystèmes respectifs, RF.Go offre une plateforme ouverte et **entièrement fonctionnelle offline**.
 
-### Problématiques Adressées
+### Problématiques adressées
 
 - **Fragmentation des outils** : Chaque marque impose son logiciel propriétaire
-- **Gestion temporelle insuffisante** : Impossibilité de planifier les fréquences dans le temps
-- **Complexité des intermodulations** : Calculs manuels fastidieux et sources d'erreurs
+- **Gestion temporelle insuffisante** : Impossibilité de planifier les fréquences dans le temps  
+- **Complexité des intermodulations** : Calculs manuels fastidieux et sources d'erreurs (jusqu'au 9ème ordre)
+- **Dépendance réseau** : Solutions cloud inutilisables sans connexion
 - **Portabilité limitée** : Applications souvent liées à un seul OS
 
-## Architecture de cette Documentation
+### Innovation clé : Offline-first
 
-Cette documentation est organisée pour accompagner votre compréhension progressive du système :
+RF.Go fonctionne **entièrement sans connexion internet** une fois l'authentification effectuée :
 
-### 🔍 **[Analyse UML](./uml-analysis/overview.md)**
+- ✅ Découverte locale des devices (mDNS)
+- ✅ Calculs d'intermodulations en temps réel
+- ✅ Base de données SQLite embarquée
+- ✅ Synchronisation directe avec les équipements RF
 
-- **[Diagrammes de cas d'utilisation](./uml-analysis/use-cases.md)** - Scénarios nominaux et alternatifs détaillés
-- **[Diagrammes de séquence](./uml-analysis/sequence-diagrams.md)** - Flux d'interactions temporels
-- **[Diagrammes d'activités](./uml-analysis/activity-diagrams.md)** - Processus métier et algorithmes
-- **[Diagrammes de classes](./uml-analysis/class-diagrams.md)** - Architecture orientée objet
-- **[Diagrammes d'états](./uml-analysis/state-diagrams.md)** - Cycle de vie des entités principales
-- **[Diagrammes de composants](./uml-analysis/component-diagrams.md)** - Architecture technique modulaire
-- **[Diagrammes de déploiement](./uml-analysis/deployment-diagrams.md)** - Infrastructure et déploiement
+## Architecture de cette documentation
 
-### 🏛️ **[Architecture Technique](./architecture/overview.md)**
+Cette documentation technique accompagne l'évaluation TFE et guide les développeurs :
 
-- **[Vue d'ensemble](./architecture/overview.md)** - Architecture globale MVVM
-- **[Composants métier](./architecture/components.md)** - Services et handlers
-- **[Flux de données](./architecture/data-flow.md)** - Circulation de l'information
+### 🔍 **[Analyse UML Complète](../uml-analysis/overview)**
 
-### ⚡ **[Fonctionnalités Métier](./features/device-management.md)**
+Modélisation rigoureuse selon UML 2.5 avec matrices de cohérence :
 
-- **[Gestion des appareils](./features/device-management.md)** - Découverte et synchronisation
-- **[Calcul des fréquences](./features/frequency-management.md)** - Algorithmes d'optimisation RF
-- **[Gestion temporelle](./features/time-management.md)** - Planification par créneaux
-- **[Visualisation avancée](./features/frequency-visualization.md)** - Interfaces graphiques
-- **[Système de licences](./features/licensing.md)** - Modèle économique et sécurité
+- **[Use Cases détaillés](../uml-analysis/use-cases/overview)** - 10 UC avec scénarios nominaux/alternatifs complets
+- **[Diagrammes de séquence](../uml-analysis/sequence-diagrams)** - Flux temporels end-to-end avec gestion d'erreurs
+- **[Diagrammes d'activités](../uml-analysis/activity-diagrams)** - Algorithmes RF complexes (calculs intermodulations, Magic Sync)
+- **[Diagrammes d'états](../uml-analysis/state-diagrams)** - Machines à états avec matrices de transition
+- **[Diagrammes de classes](../uml-analysis/class-diagrams)** - Architecture OO avec patterns appliqués
+- **[Diagrammes de déploiement](../uml-analysis/deployment-diagrams)** - Architecture cross-platform réelle
 
-### 🌐 **[Protocoles et Intégrations](./protocols/dns-discovery.md)**
+### 🏛️ **[Architecture Technique](../architecture/overview)**
 
-- **[Découverte réseau](./protocols/dns-discovery.md)** - mDNS, UDP, TCP
-- **[Protocoles propriétaires](./protocols/device-specific.md)** - Sennheiser, Shure, Wisycom
+Documentation de l'implémentation réelle :
 
-### 👨‍💻 **[Guide Développeur](./development/setup.md)**
+- **[Déploiement](../architecture/deployment)** - GitHub Actions, exécutables self-contained
+- **[Patterns de conception](../architecture/design-patterns)** - MVVM, Repository, Command réellement utilisés
+- **[Architecture données](../architecture/data-architecture)** - SQLite avec 8 tables, sérialisation JSON
+- **[Choix technologiques](../architecture/technology-choices)** - Blazor Hybrid, motivations offline-first
 
-- **[Configuration environnement](./development/setup.md)** - .NET MAUI, Blazor, SQLite
-- **[Tests et validation](./development/testing.md)** - Stratégie de tests
-- **[Contribution](./development/contributing.md)** - Standards de développement
+### ⚡ **[Fonctionnalités Métier](../features/device-management)**
 
-## Cas d'Usage Métier
+Capacités techniques détaillées :
 
-### Événements Live
+- **[Gestion des appareils](../features/device-management)** - Découverte multi-protocoles, synchronisation Magic Sync
+- **[Calcul des fréquences]../(features/frequency-management)** - Algorithmes d'optimisation RF avec HashSet O(1)
+- **[Gestion temporelle](../features/time-management)** - Planification par créneaux avec réutilisation spectrale
+- **[Sauvegarde et scans](../features/scan-management)** - Import/export fichiers SDB2, visualisation spectrale
+- **[Fréquences de secours](../features/backup-frequencies)** - Génération automatique par type d'équipement
+- **[Authentification](../features/authentication)** - Tokens JWT, SecureStorage cross-platform
 
-RF.Go a été créé pour la gestion d'événements nécessitant une coordination RF :
+### 🌐 **[Protocoles et Intégrations](../protocols/dns-discovery)**
 
-- **🎭 Festivals simple ou multi-scènes** : Réutilisation intelligente du spectre entre scènes
-- **🎪 Spectacles** : Gestion des changements de configuration temporels
-- **🏢 Conférences** : Adaptation aux réglementations locales
-- **📺 Productions TV/Radio** : Intégration avec infrastructures broadcast
+Implémentation des protocols RF propriétaires :
 
-## Technologies utilisées
+- **[Découverte mDNS](../protocols/dns-discovery)** - Bonjour/Avahi, multicast local
+- **[UDP/TCP natifs](../protocols/udp-tcp)** - Sockets .NET performants  
+- **[Protocoles spécifiques](../protocols/device-specific)** - Sennheiser (UDP:45), Shure (TCP:2202), Wisycom, MiPro
 
-RF.Go s'appuie sur un stack technologique moderne :
+### 🔑 **[API Licensing](../api/overview)**
+
+Documentation de l'API externe réelle :
+
+- **Authentication** - Register, Login, Refresh, Logout
+- **License Management** - Activation et validation
+- **Offline après auth** - Fonctionnement sans réseau
+
+### 👨‍💻 **[Guide Développeur] ( en construction ) (../development/setup)**
+
+- **[Configuration environnement](../development/setup)** - .NET MAUI 8.0, Blazor Hybrid
+- **[Tests et validation](../development/testing)** - Stratégie de tests
+- **[Contribution](../development/contributing)** - Standards de développement
+
+## Stack technologique réel
+
+RF.Go utilise un stack moderne optimisé pour la performance offline :
 
 ```mermaid
 graph TB
     A[.NET MAUI 8.0] --> B[Blazor Hybrid]
-    A --> C[SQLite-net-PCL]
-    B --> D[MudBlazor UI]
-    C --> E[SQLite Embarqué]
-    F[Services Réseau] --> G[mDNS/Bonjour]
-    F --> H[TCP/UDP Sockets]
-    F --> I[REST APIs HTTPS]
+    A --> C[sqlite-net-pcl]
+    B --> D[MudBlazor]
+    B --> E[WebView natif]
+    C --> F[SQLite embarqué]
+    G[Networking] --> H[mDNS Discovery]
+    G --> I[UDP Sockets]
+    G --> J[TCP Sockets]
+    K[MVVM] --> L[CommunityToolkit.Mvvm]
+    M[Licensing API] --> N[HTTPS REST]
 ```
 
-## Public Cible de cette Documentation
+### Choix architecturaux clés
 
-### 👨‍💼 **Jury TFE et Évaluateurs**
+| Technologie | Justification | Alternative rejetée |
+|-------------|---------------|-------------------|
+| **.NET MAUI** | Cross-platform + offline absolu | Web app (impossible offline) |
+| **Blazor Hybrid** | Réutilisation acquis cours + UI web | XAML (courbe apprentissage) |
+| **SQLite local** | Performance + offline garantie | Cloud DB (dépendance réseau) |
+| **Protocols propriétaires** | Imposés par fabricants RF | Aucune alternative possible |
 
-- Analyse UML
-- Architecture technique détaillée
-- Justifications des choix technologiques
-- Démonstration de maîtrise des concepts avancés
+## Cas d'usage métier professionnels
 
-### 👨‍💻 **Développeurs et Contributeurs**
+### Événements live supportés
 
-- Standards de développement .NET
-- Patterns d'architecture enterprise
-- Guides d'extension et de maintenance
-- Documentation API
+RF.Go gère les contraintes RF spécifiques aux événements :
 
-### 🎧 **Ingénieurs du Son Techniques**
+- **🎭 Festivals multi-scènes** : Réutilisation spectrale intelligente entre zones
+- **🎪 Spectacles temporels** : Gestion des changements de configuration par créneaux
+- **🏢 Conférences internationales** : Adaptation aux réglementations TV locales  
+- **📺 Productions broadcast** : Intégration avec infrastructures existantes
 
-- Workflows métier détaillés
-- Algorithmes de calcul RF expliqués
-- Guides de déploiement sur site
-- Troubleshooting et optimisations
+### Calculs RF avancés
 
-## Prérequis Techniques
+- **Intermodulations 2TX** : 3ème, 5ème, 7ème, 9ème ordre
+- **Intermodulations 3TX** : 3ème ordre (6 produits par combinaison)
+- **Exclusions TV** : Canaux 21-69 UHF par pays (6-8 MHz)
+- **Espacements personnalisés** : Configuration par ordre d'intermodulation
 
-### Environnement de Développement
+## Public cible de cette documentation
+
+### 👨‍🎓 **Jury TFE et évaluateurs académiques**
+
+- **Analyse UML rigoureuse** avec matrices de cohérence et métriques qualité
+- **Architecture technique justifiée** avec comparaisons et trade-offs
+- **Maîtrise des patterns** enterprise et domaine RF
+- **Innovation technique** démontrée (offline-first, multi-marques)
+
+### 👨‍💻 **Développeurs et architectes**
+
+- **Standards .NET MAUI** et bonnes pratiques Blazor Hybrid
+- **Patterns concrets** utilisés avec exemples de code
+- **Architecture extensible** pour nouveaux fabricants
+- **Performance optimisée** avec structures de données adaptées
+
+### 🎧 **Ingénieurs du son et intégrateurs**
+
+- **Workflows métier** détaillés par type d'événement
+- **Algorithmes RF expliqués** sans jargon technique excessif
+- **Déploiement sur site** avec prérequis réseau
+- **Troubleshooting** et résolution de conflits RF
+
+## Environnement technique
+
+### Développement
 
 ```bash
-# .NET 8.0 SDK minimum
-dotnet --version  # >= 8.0.0
+# .NET 8.0 SDK
+dotnet --version  # >= 8.0.100
 
-# Visual Studio 2022 17.8+ ou VS Code
-# Workloads MAUI installés
+# Workloads MAUI requis
 dotnet workload install maui
+
+# IDE supportés
+# Visual Studio 2022 17.8+
+# VS Code avec extensions C# + MAUI
 ```
 
-### Environnement de Production
+### Production
 
-- **OS** : Windows 10+, macOS 12+
-- **RAM** : 4GB minimum, 8GB recommandé
+- **OS** : Windows 10/11, macOS 12+, iOS 15+, Android 8+
+- **RAM** : 4GB minimum (calculs intermodulations intensifs)
 - **Réseau** : Multicast activé pour découverte automatique
-- **Matériel RF** : Équipements compatibles (Sennheiser EW-DX, Shure ULXD, etc.)
+- **Équipements** : Sennheiser EW-DX/G3/G4, Shure ULXD/AD, Wisycom, MiPro
 
 ---
 
-## Navigation Rapide
+## Navigation optimisée
 
-| Section | Description | Public |
-|---------|-------------|--------|
-| **[🔍 Analyse UML](./uml-analysis/overview.md)** | Modélisation du système | Jury TFE, Architectes |
-| **[🏛️ Architecture du software](./architecture/overview.md)** | Design technique | Développeurs |
-| **[⚡ Fonctionnalités](./features/device-management.md)** | Capacités métier | Utilisateurs finaux |
-| **[🌐 Protocoles](./protocols/dns-discovery.md)** | Intégrations réseau | Intégrateurs |
-| **[👨‍💻 Développement](./development/setup.md)** | Guides techniques | Contributeurs |
+| Section | Focus | Audience |
+|---------|-------|----------|
+| **[🔍 Analyse UML](../uml-analysis/overview)** | Modélisation académique | **Jury TFE** |
+| **[🏛️ Architecture](../architecture/overview)** | Implémentation technique | **Développeurs** |
+| **[⚡ Fonctionnalités](../features/device-management)** | Capacités métier | **Utilisateurs** |
+| **[🌐 Protocoles](../protocols/dns-discovery)** | Intégrations RF | **Intégrateurs** |
+| **[🔑 API](../api/overview)** | Licensing externe | **DevOps** |
+| **[👨‍💻 Développement](../development/setup)** | Contribution | **Contributeurs** |
 
-Cette documentation reflète l'évolution continue de RF.Go et constitue le complément technique essentiel au TFE présenté.
+Cette documentation technique constitue le complément indispensable au rapport TFE, démontrant la maîtrise complète des technologies modernes et des enjeux métier du domaine RF professionnel.

@@ -5,7 +5,7 @@
   "source": "@site/docs/protocols/dns-discovery.md",
   "sourceDirName": "protocols",
   "slug": "/protocols/dns-discovery",
-  "permalink": "/RF_Go/docs/protocols/dns-discovery",
+  "permalink": "/RF_Go/protocols/dns-discovery",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/protocols/dns-discovery.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Workflows de l'Application",
-    "permalink": "/RF_Go/docs/features/workflows"
+    "permalink": "/RF_Go/features/workflows"
   },
   "next": {
     "title": "Protocoles UDP/TCP",
-    "permalink": "/RF_Go/docs/protocols/udp-tcp"
+    "permalink": "/RF_Go/protocols/udp-tcp"
   }
 }

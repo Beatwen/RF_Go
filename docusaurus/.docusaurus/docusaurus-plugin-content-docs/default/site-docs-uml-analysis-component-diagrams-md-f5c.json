@@ -1,7 +1,7 @@
 {
   "id": "uml-analysis/component-diagrams",
-  "title": "Diagrammes de Composants - Architecture Modulaire",
-  "description": "Les diagrammes de composants de RF.Go illustrent l'architecture modulaire du système et les dépendances entre composants. Cette modélisation révèle la structure technique organisée en couches et l'extensibilité du système par l'ajout de nouveaux handlers et protocoles.",
+  "title": "component-diagrams",
+  "description": "",
   "source": "@site/docs/uml-analysis/component-diagrams.md",
   "sourceDirName": "uml-analysis",
   "slug": "/uml-analysis/component-diagrams",

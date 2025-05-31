@@ -1,6 +1,6 @@
 {
   "id": "architecture/class-diagram",
-  "title": "Diagramme de Classes",
+  "title": "Diagramme de classes",
   "description": "Vue d'ensemble",
   "source": "@site/docs/architecture/class-diagram.md",
   "sourceDirName": "architecture",

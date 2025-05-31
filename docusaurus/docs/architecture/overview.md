@@ -1,81 +1,200 @@
-# Vue d'ensemble de l'Architecture
+# Architecture système RF.Go
 
-## Architecture Générale
+## 🎯 **Vision architecturale**
 
-RF Go suit une architecture modulaire basée sur le pattern MVVM (Model-View-ViewModel), avec une séparation claire des responsabilités. L'application est construite en utilisant .NET MAUI avec Blazor pour l'interface utilisateur.
+RF.Go implémente une **architecture en couches modulaire** optimisée pour la gestion temps réel des fréquences RF, avec une extensibilité multi-marques et une synchronisation bidirectionnelle avancée.
 
-```mermaid
-graph TD
-    A[Interface Utilisateur] --> B[ViewModels]
-    B --> C[Services]
-    C --> D[Models]
-    C --> E[Database]
-    C --> F[Network Protocols]
-```
+### **Principes architecturaux**
 
-## Composants Principaux
+| Principe | Implémentation | Bénéfice |
+|----------|----------------|----------|
+| **Separation of Concerns** | Pattern MVVM strict | Maintenabilité, testabilité |
+| **Single Responsibility** | Services spécialisés | Code focalisé, réutilisable |
+| **Dependency Injection** | .NET DI Container | Couplage faible, testabilité |
+| **Open/Closed** | Handlers extensibles | Ajout marques sans modification |
+| **Protocol Abstraction** | Command Pattern | Support multi-protocoles |
 
-### 1. Interface Utilisateur (UI)
-- **Pages** : Composants principaux de l'interface
-- **Components** : Composants réutilisables
-- **Shared** : Composants partagés entre les pages
-
-### 2. ViewModels
-- Gestion de la logique de présentation
-- Communication avec les services
-- Gestion de l'état de l'application
-
-### 3. Services
-- **DeviceHandlers** : Gestion des appareils spécifiques
-- **NetworkProtocols** : Implémentation des protocoles réseau
-- **Mapping** : Mapping des données entre les modèles
-- **Licensing** : Gestion des licences
-
-### 4. Models
-- Représentation des données
-- Validation des données
-- Logique métier
-
-### 5. Data
-- Gestion de la base de données SQLite
-- Accès aux données
-- Migration des données
-
-### 6. Network
-- Découverte des appareils via DNS/Bonjour
-- Communication UDP/TCP
-- Protocoles spécifiques aux appareils
-
-## Flux de Données
+## 🏗️ **Architecture système**
 
 ```mermaid
-sequenceDiagram
-    participant UI as Interface Utilisateur
-    participant VM as ViewModel
-    participant S as Service
-    participant D as Device
-    participant DB as Database
+graph TB
+    subgraph "🎨 Presentation Layer"
+        UI[Blazor UI Components]
+        VM[ViewModels MVVM]
+    end
+    
+    subgraph "💼 Business Layer"
+        FS[FrequencyCalculationService]
+        DS[DiscoveryService]
+        MS[DeviceMappingService]
+        LS[LicensingService]
+    end
+    
+    subgraph "🔌 Integration Layer"
+        DH[Device Handlers]
+        CS[Command Sets]
+        NS[Network Services]
+    end
+    
+    subgraph "💾 Data Layer"
+        EF[Entity Framework Core]
+        SQ[SQLite Database]
+        FS2[File System]
+    end
+    
+    subgraph "🌐 Network Layer"
+        UDP[UDP Communication]
+        TCP[TCP Communication]
+        MDNS[mDNS Discovery]
+        HTTP[HTTP Services]
+    end
+    
+    subgraph "🎛️ External Devices"
+        SENN[Sennheiser]
+        SHURE[Shure]
+    end
 
-    UI->>VM: Action Utilisateur
-    VM->>S: Requête Service
-    S->>D: Communication Device
-    D-->>S: Réponse Device
-    S->>DB: Persistance Données
-    DB-->>S: Confirmation
-    S-->>VM: Résultat
-    VM-->>UI: Mise à jour UI
+    UI --> VM
+    VM --> FS
+    VM --> DS
+    VM --> MS
+    VM --> LS
+    
+    FS --> EF
+    DS --> DH
+    MS --> DH
+    DH --> CS
+    DH --> NS
+    NS --> UDP
+    NS --> TCP
+    NS --> MDNS
+    
+    EF --> SQ
+    LS --> FS2
+    
+    UDP --> SENN
+    TCP --> SHURE
 ```
 
-## Sécurité
+## 🛠️ **Stack technologique**
 
-- Authentification des utilisateurs
-- Gestion des licences
-- Communication sécurisée avec les appareils
-- Stockage sécurisé des données
+### **Frontend & UI**
 
-## Extensibilité
+```mermaid
+graph LR
+    A[.NET MAUI 8.0] --> B[Blazor Server]
+    B --> C[Bootstrap 5.3]
+    C --> D[Mermaid.js]
+    D --> E[Chart.js]
+    E --> F[SignalR]
+```
 
-L'architecture est conçue pour être extensible :
-- Nouveaux types d'appareils
-- Nouveaux protocoles de communication
-- Nouvelles fonctionnalités 
+### **Backend & Services**
+
+```mermaid
+graph LR
+    A[.NET 8.0] --> B[Entity Framework Core 8.0]
+    B --> C[SQLite 3.45]
+    C --> D[System.Text.Json]
+    D --> E[Serilog]
+    E --> F[FluentValidation]
+```
+
+### **Networking & Protocols**
+
+```mermaid
+graph LR
+    A[mDNS/Bonjour] --> B[UDP Sockets]
+    B --> C[TCP Sockets]
+    C --> D[JSON-RPC]
+    D --> E[Proprietary Protocols]
+```
+
+## 🔧 **Patterns architecturaux**
+
+### **1. MVVM (Model-View-ViewModel)**
+
+```csharp
+// Séparation stricte des responsabilités
+View (Blazor) → ViewModel → Service → Model → Data
+```
+
+### **2. Repository Pattern**
+
+```csharp
+// Abstraction de l'accès aux données
+IRepository<T> → EF Core → SQLite
+```
+
+### **3. Factory Pattern**
+
+```csharp
+// Création dynamique de handlers
+DeviceHandlerFactory → IDeviceHandler → Concrete Handler
+```
+
+### **4. Command Pattern**
+
+```csharp
+// Abstraction des protocoles
+IDeviceCommandSet → Brand Specific Commands
+```
+
+### **5. Observer Pattern**
+
+```csharp
+// Notifications temps réel
+DeviceDiscovered → Event → UI Update
+```
+
+### **Stratégie de cache**
+
+- **L1 Cache** : In-memory ViewModels
+- **L2 Cache** : SQLite with indexes
+- **L3 Cache** : Frequency calculation results
+
+## 🔄 **Architecture d'intégration**
+
+### **Support multi-protocoles**
+
+```mermaid
+graph TB
+    subgraph "Protocol Abstraction"
+        IHandler[IDeviceHandler]
+        ICommand[IDeviceCommandSet]
+    end
+    
+    subgraph "Sennheiser Stack"
+        SH[SennheiserHandler]
+        G4H[G4Handler]
+        SC[SennheiserCommands]
+        G4C[G4Commands]
+    end
+    
+    subgraph "Shure Stack"
+        SHU[ShureHandler]
+        SHUC[ShureCommands]
+    end
+    
+    IHandler -.-> SH
+    IHandler -.-> G4H
+    IHandler -.-> SHU
+    ICommand -.-> SC
+    ICommand -.-> G4C
+    ICommand -.-> SHUC
+```
+
+## 📈 **Extensibilité et évolutivité**
+
+### **Ajout de nouvelles marques**
+
+1. Implémenter `IDeviceHandler`
+2. Créer `BrandCommandSet`
+3. Enregistrer dans DI Container
+4. Aucune modification du core
+
+### **Nouveaux protocoles**
+
+1. Hériter de `NetworkService`
+2. Implémenter la découverte
+3. Définir le format de communication

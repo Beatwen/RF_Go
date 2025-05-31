@@ -1,239 +1,291 @@
-# API Documentation
+# API Licensing
 
 ## Vue d'ensemble
 
-RF Go expose plusieurs APIs pour l'interaction avec les appareils et la gestion des données. Cette documentation couvre à la fois les APIs internes utilisées par l'application et les APIs externes pour l'intégration avec d'autres systèmes.
+RF.Go utilise une **API de licensing externe** uniquement pour l'authentification utilisateur et la gestion des licenses. L'application fonctionne **entièrement offline** pour toutes les fonctionnalités RF - l'API sert exclusivement au licensing.
 
-## APIs Internes
+**Base URL** : `https://api.licensing.noobastudio.be`  
+**API Key** : Fournie dans les headers `X-API-KEY`
 
-### Device API
+## Authentication
 
-```csharp
-public interface IDeviceService
-{
-    Task<List<Device>> DiscoverDevicesAsync();
-    Task<Device> GetDeviceAsync(string deviceId);
-    Task UpdateDeviceAsync(Device device);
-    Task DeleteDeviceAsync(string deviceId);
-    Task<List<Frequency>> GetDeviceFrequenciesAsync(string deviceId);
-    Task SetDeviceFrequencyAsync(string deviceId, Frequency frequency);
-}
-```
+### 1. Register User
 
-### Frequency API
-
-```csharp
-public interface IFrequencyService
-{
-    Task<List<Frequency>> GetAvailableFrequenciesAsync();
-    Task<FrequencyAnalysis> AnalyzeFrequenciesAsync(List<Device> devices);
-    Task<Frequency> AssignFrequencyAsync(Device device, FrequencyRange range);
-    Task<bool> ValidateFrequencyAsync(Frequency frequency, List<Device> devices);
-}
-```
-
-### Group API
-
-```csharp
-public interface IGroupService
-{
-    Task<List<Group>> GetGroupsAsync();
-    Task<Group> CreateGroupAsync(Group group);
-    Task UpdateGroupAsync(Group group);
-    Task DeleteGroupAsync(string groupId);
-    Task AddDeviceToGroupAsync(string groupId, string deviceId);
-    Task RemoveDeviceFromGroupAsync(string groupId, string deviceId);
-}
-```
-
-### Timeperiod API
-
-```csharp
-public interface ITimeperiodService
-{
-    Task<List<Timeperiod>> GetTimeperiodsAsync();
-    Task<Timeperiod> CreateTimeperiodAsync(Timeperiod timeperiod);
-    Task UpdateTimeperiodAsync(Timeperiod timeperiod);
-    Task DeleteTimeperiodAsync(string timeperiodId);
-    Task AssignDeviceToTimeperiodAsync(string timeperiodId, string deviceId);
-    Task RemoveDeviceFromTimeperiodAsync(string timeperiodId, string deviceId);
-}
-```
-
-## APIs Externes
-
-### Device Protocols
-
-#### Sennheiser Protocol
+**Endpoint** : `POST /auth/register`  
+**Usage** : Création d'un nouveau compte utilisateur
 
 ```http
-GET /api/v1/devices
-Host: device-ip:8080
-Accept: application/json
-
-Response:
-{
-    "id": "string",
-    "name": "string",
-    "type": "string",
-    "frequencies": [
-        {
-            "value": "number",
-            "unit": "string",
-            "status": "string"
-        }
-    ]
-}
-```
-
-#### Shure Protocol
-
-```http
-POST /api/v1/frequency
-Host: device-ip:2202
+POST /auth/register
 Content-Type: application/json
+X-API-KEY: {apiKey}
+X-DEVICE-ID: {deviceIdentifier}
 
 {
-    "frequency": {
-        "value": "number",
-        "unit": "string"
-    }
+    "firstName": "string",
+    "lastName": "string", 
+    "email": "string",
+    "password": "string",
+    "acceptedTerms": true
 }
 ```
 
-### REST API
-
-#### Authentication
-
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-    "username": "string",
-    "password": "string"
-}
-
-Response:
-{
-    "token": "string",
-    "expiresIn": "number",
-    "refreshToken": "string"
-}
-```
-
-#### Devices
-
-```http
-GET /api/devices
-Authorization: Bearer {token}
-
-Response:
-{
-    "devices": [
-        {
-            "id": "string",
-            "name": "string",
-            "type": "string",
-            "status": "string",
-            "frequencies": [
-                {
-                    "value": "number",
-                    "unit": "string",
-                    "status": "string"
-                }
-            ]
-        }
-    ]
-}
-```
-
-#### Groups
-
-```http
-POST /api/groups
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-    "name": "string",
-    "devices": ["string"],
-    "settings": {
-        "frequencyRange": {
-            "min": "number",
-            "max": "number"
-        }
-    }
-}
-```
-
-## WebSocket API
-
-### Real-time Updates
-
-```javascript
-const ws = new WebSocket('wss://api.rfgo.com/ws');
-
-ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    switch (data.type) {
-        case 'deviceUpdate':
-            // Handle device update
-            break;
-        case 'frequencyUpdate':
-            // Handle frequency update
-            break;
-        case 'groupUpdate':
-            // Handle group update
-            break;
-    }
-};
-```
-
-## Error Handling
-
-### Error Responses
-
+**Response** :
 ```json
 {
-    "error": {
-        "code": "string",
-        "message": "string",
-        "details": {
-            "field": "string",
-            "reason": "string"
-        }
+    "message": "User registered successfully",
+    "user": {
+        "id": 123,
+        "userName": "user@example.com",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "user@example.com",
+        "emailConfirmed": false,
+        "createdAt": "2024-01-15T10:30:00Z"
+    },
+    "client": {
+        "clientId": "client-uuid",
+        "clientSecret": "secret-string"
     }
 }
 ```
 
-### Error Codes
+### 2. Login User
 
-- `400`: Bad Request
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `409`: Conflict
-- `500`: Internal Server Error
+**Endpoint** : `POST /auth/login`  
+**Usage** : Authentification utilisateur et récupération du token
 
-## Rate Limiting
+```http
+POST /auth/login
+Content-Type: application/x-www-form-urlencoded
+X-API-KEY: {apiKey}
+X-DEVICE-ID: {deviceIdentifier}
 
-- 100 requests per minute per IP
-- 1000 requests per hour per user
-- WebSocket connections: 10 per user
+email={email}&password={password}&username={email}&client_id={clientId}&client_secret={clientSecret}&grant_type=password
+```
 
-## Security
+**Response** :
+```json
+{
+    "message": "Login successful",
+    "user": {
+        "id": 123,
+        "userName": "user@example.com",
+        "firstName": "John",
+        "lastName": "Doe"
+    },
+    "token": {
+        "accessToken": "jwt-access-token",
+        "refreshToken": "jwt-refresh-token",
+        "expiresIn": 3600,
+        "tokenType": "Bearer"
+    },
+    "redirectTo": "/license"
+}
+```
 
-- All APIs require authentication
-- HTTPS required for all endpoints
-- JWT tokens for authentication
-- Rate limiting to prevent abuse
-- Input validation and sanitization
-- CORS configuration for web clients
+### 3. Refresh Token
 
-## Versioning
+**Endpoint** : `POST /auth/refresh`  
+**Usage** : Renouvellement du token d'accès
 
-- API version in URL: `/api/v1/`
-- Version header: `X-API-Version: 1.0`
-- Backward compatibility maintained
-- Deprecation notices in headers 
+```http
+POST /auth/refresh
+Content-Type: application/json
+X-API-KEY: {apiKey}
+X-DEVICE-ID: {deviceIdentifier}
+Authorization: Bearer {expiredAccessToken}
+
+{
+    "refreshToken": "jwt-refresh-token"
+}
+```
+
+**Response** :
+```json
+{
+    "accessToken": "new-jwt-access-token",
+    "refreshToken": "new-jwt-refresh-token",
+    "expiresIn": 3600
+}
+```
+
+### 4. Logout
+
+**Endpoint** : `POST /auth/logout`  
+**Usage** : Déconnexion et invalidation des tokens
+
+```http
+POST /auth/logout
+Content-Type: application/json
+X-API-KEY: {apiKey}
+Authorization: Bearer {accessToken}
+
+{
+    "token": "jwt-refresh-token"
+}
+```
+
+## License Management
+
+### 1. Activate License
+
+**Endpoint** : `POST /licenses/activate-and-validate`  
+**Usage** : Activation d'une license sur un device
+
+```http
+POST /licenses/activate-and-validate
+Content-Type: application/json
+X-API-KEY: {apiKey}
+X-DEVICE-ID: {deviceIdentifier}
+X-USER-KEY: {userId}
+Authorization: Bearer {accessToken}
+
+{
+    "licenseKey": "license-key-string"
+}
+```
+
+**Response** :
+```json
+{
+    "valid": true,
+    "message": "License activated successfully"
+}
+```
+
+### 2. Validate License
+
+**Endpoint** : `POST /licenses/validate`  
+**Usage** : Validation d'une license existante au démarrage
+
+```http
+POST /licenses/validate
+Content-Type: application/json
+X-API-KEY: {apiKey}
+X-USER-KEY: {userId}
+X-DEVICE-ID: {deviceIdentifier}
+X-LICENSE-KEY: {licenseKey}
+Authorization: Bearer {accessToken}
+
+{
+    "licenseKey": "license-key-string",
+    "deviceId": "device-identifier"
+}
+```
+
+**Response** :
+```json
+{
+    "valid": true,
+    "message": "License is valid",
+    "deviceId": "device-identifier",
+    "licenseType": "Standard"
+}
+```
+
+## Headers Standard
+
+Tous les appels API utilisent ces headers :
+
+| Header | Description | Obligatoire |
+|--------|-------------|-------------|
+| `X-API-KEY` | Clé API statique | ✅ Toujours |
+| `X-DEVICE-ID` | Identifiant unique du device | ✅ Toujours |
+| `X-USER-KEY` | ID utilisateur | ⚠️ Après login |
+| `X-LICENSE-KEY` | Clé de license | ⚠️ Après activation |
+| `Authorization` | Bearer token JWT | ⚠️ Après login |
+
+## Implementation
+
+### ApiService
+
+Service centralisé pour tous les appels API :
+
+```csharp
+public class ApiService
+{
+    private readonly HttpClient _httpClient;
+
+    public ApiService(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+        _httpClient.BaseAddress = new Uri(AppConfig.ApiBaseUrl);
+        _httpClient.DefaultRequestHeaders.Add("X-API-KEY", AppConfig.ApiKey);
+    }
+
+    private async Task AddSecureStorageHeadersAsync()
+    {
+        var userKey = await SecureStorage.GetAsync("userKey");
+        var licenseKey = await SecureStorage.GetAsync("licenseKey");
+        var deviceIdentifier = await GUID.GetOrCreateDeviceIdentifier();
+        var token = await SecureStorage.GetAsync("access_token");
+
+        // Dynamic headers based on available data
+        if (!string.IsNullOrEmpty(userKey))
+            _httpClient.DefaultRequestHeaders.Add("X-USER-KEY", userKey);
+        if (!string.IsNullOrEmpty(licenseKey))
+            _httpClient.DefaultRequestHeaders.Add("X-LICENSE-KEY", licenseKey);
+        if (!string.IsNullOrEmpty(deviceIdentifier))
+            _httpClient.DefaultRequestHeaders.Add("X-DEVICE-ID", deviceIdentifier);
+        if (!string.IsNullOrEmpty(token))
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+}
+```
+
+### Token Storage
+
+Gestion sécurisée des tokens :
+
+```csharp
+public static class TokenStorage
+{
+    public static async Task SaveAccessTokenAsync(string token) 
+        => await SecureStorage.SetAsync("access_token", token);
+    
+    public static async Task<string> GetAccessTokenAsync() 
+        => await SecureStorage.GetAsync("access_token");
+    
+    public static async Task SaveRefreshTokenAsync(string token) 
+        => await SecureStorage.SetAsync("refresh_token", token);
+    
+    public static async Task<string> GetRefreshTokenAsync() 
+        => await SecureStorage.GetAsync("refresh_token");
+}
+```
+
+## Flux d'authentification
+
+```mermaid
+sequenceDiagram
+    participant App as RF.Go App
+    participant API as Licensing API
+    participant Storage as SecureStorage
+
+    App->>API: POST /auth/register (new user)
+    API-->>App: client credentials
+    App->>Storage: Save client credentials
+
+    App->>API: POST /auth/login
+    API-->>App: access + refresh tokens
+    App->>Storage: Save tokens + user data
+
+    App->>API: POST /licenses/activate-and-validate
+    API-->>App: license validation
+    App->>Storage: Save license key
+
+    App->>API: POST /licenses/validate (startup)
+    API-->>App: license status
+    App->>App: Start offline RF functions
+```
+
+## Gestion offline
+
+**Important** : Seule l'authentification nécessite une connexion internet. Une fois la license validée, RF.Go fonctionne **entièrement offline** :
+
+- ✅ Découverte des devices RF (mDNS local)
+- ✅ Calculs d'intermodulations (algorithmes locaux)  
+- ✅ Configuration des devices (protocols directs)
+- ✅ Base de données locale (SQLite)
+
+L'API n'est **jamais** sollicitée pour les fonctionnalités RF principales. 

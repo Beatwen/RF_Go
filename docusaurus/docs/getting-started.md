@@ -1,4 +1,4 @@
-# Démarrage Rapide
+# Démarrage rapide
 
 Cette section vous guidera à travers les premières étapes pour commencer à utiliser RF Go.
 
@@ -72,9 +72,9 @@ Cette section vous guidera à travers les premières étapes pour commencer à u
    dotnet build
    ```
 
-## Configuration Initiale
+## Configuration initiale
 
-### Configuration du Réseau
+### Configuration du réseau
 
 1. Vérifiez que le multicast est activé sur votre réseau
 2. Configurez les paramètres réseau dans l'application :
@@ -83,21 +83,21 @@ Cette section vous guidera à travers les premières étapes pour commencer à u
    - Passerelle par défaut
    - DNS
 
-### Configuration de la Base de Données
+### Configuration de la base de données
 
 1. La base de données SQLite est créée automatiquement au premier lancement
 2. Les migrations sont appliquées automatiquement
 3. Les données de test sont chargées si nécessaire
 
-### Configuration des Appareils
+### Configuration des appareils
 
 1. Assurez-vous que vos appareils sont sur le même réseau
 2. Activez le mode découverte sur les appareils
 3. Lancez la découverte dans l'application
 
-## Premiers Pas
+## Premiers pas
 
-### Découverte des Appareils
+### Découverte des appareils
 
 1. Ouvrez l'application
 2. Accédez à la section "Appareils"
@@ -105,14 +105,14 @@ Cette section vous guidera à travers les premières étapes pour commencer à u
 4. Attendez que les appareils soient détectés
 5. Les appareils apparaissent dans la liste
 
-### Gestion des Fréquences
+### Gestion des fréquences
 
 1. Sélectionnez un appareil dans la liste
 2. Accédez à l'onglet "Fréquences"
 3. Analysez les fréquences disponibles
 4. Assignez une fréquence à l'appareil
 
-### Création de Groupes
+### Création de groupes
 
 1. Accédez à la section "Groupes"
 2. Cliquez sur "Nouveau Groupe"
@@ -122,7 +122,7 @@ Cette section vous guidera à travers les premières étapes pour commencer à u
 
 ## Dépannage
 
-### Problèmes Courants
+### Problèmes courants
 
 A COMPLETER
 

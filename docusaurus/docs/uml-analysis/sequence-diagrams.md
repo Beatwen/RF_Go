@@ -1,428 +1,505 @@
-# Diagrammes de Séquence - Interactions Système
+# Diagramme de séquence complémentaires
 
-Les diagrammes de séquence de RF.Go illustrent les **interactions temporelles complexes** entre les différents composants du système. Cette modélisation détaille les flux de communication critiques, depuis la découverte des appareils jusqu'à la synchronisation finale.
+Les diagrammes de séquence présentés ici complètent ceux des use-cases en se concentrant sur les **interactions cross-fonctionnelles**, les **patterns d'architecture système** et les **flux d'intégration complexes** qui transcendent les fonctionnalités individuelles.
 
-## 1. Séquence Complète : Calcul et Synchronisation RF
+> **Note** : Les diagrammes de séquence spécifiques à chaque fonctionnalité sont détaillés dans leurs use-cases respectifs (UC-001 à UC-010). Cette section se concentre sur les interactions système de haut niveau.
 
-### Scénario Principal de Calcul des Fréquences
+## 1. Architecture cross-fonctionnelle : flux de bout en bout
+
+### Orchestration complète : de la découverte à la production
 
 ```mermaid
 sequenceDiagram
-    participant U as Utilisateur
-    participant VM as DevicesViewModel
-    participant FS as FrequencyService
-    participant FD as FrequencyData
+    participant IS as Ingénieur Son
+    participant APP as Application
     participant DS as DiscoveryService
-    participant DH as DeviceHandler
-    participant DB as Database
-    participant UI as Interface
+    participant FCS as FrequencyCalculationService
+    participant DMS as DeviceMappingService
+    participant AUTH as AuthService
+    participant DB as DatabaseContext
+    participant NET as NetworkLayer
 
-    Note over U,UI: Phase 1: Initialisation et Découverte
-    U->>VM: Démarrer Discovery
-    VM->>DS: StartDiscovery()
+    Note over IS,NET: 🔄 Session Complète RF.Go
     
-    DS->>DH: InitializeHandlers()
-    DH-->>DS: Handlers Ready
-    DS->>DH: TriggerDiscovery()
-    
-    loop Discovery Multi-Protocoles
-        DH->>DH: mDNS Discovery
-        DH->>DH: SLP Discovery
-        DH->>DH: UDP Discovery
-        DH-->>DS: DeviceDiscovered Events
+    rect rgb(255, 248, 220)
+        Note over IS,NET: Phase 1: Initialisation Système
+        IS->>APP: Lance RF.Go
+        APP->>AUTH: ValidateSession()
+        AUTH->>AUTH: CheckTokens() + ValidateLicense()
+        AUTH-->>APP: Session validée
+        APP->>DS: StartDiscovery() [Auto]
+        APP->>DB: LoadUserData()
+        APP-->>IS: Interface prête
     end
     
-    DS-->>VM: DiscoveredDevices Updated
-    VM-->>UI: Refresh Device List
-    
-    Note over U,UI: Phase 2: Configuration et Import
-    U->>VM: Sélectionner Appareils
-    VM->>DB: SaveSelectedDevices()
-    DB-->>VM: Devices Saved
-    
-    Note over U,UI: Phase 3: Calcul des Fréquences
-    U->>VM: Calculer Plan RF
-    VM->>FS: CalculateFrequencyPlan()
-    
-    FS->>FD: InitializeFrequencyData()
-    FD-->>FS: Data Initialized
-    
-    FS->>FS: GroupDevicesByTimePeriod()
-    
-    loop Pour Chaque Groupe Temporel
-        FS->>FS: ProcessLockedFrequencies()
-        FS->>FS: ProcessUnlockedFrequencies()
+    rect rgb(240, 255, 240)
+        Note over IS,NET: Phase 2: Workflow Découverte → Import → Calcul
+        IS->>APP: Déclenche workflow complet
         
-        loop Pour Chaque Canal
-            FS->>FS: GenerateRandomFrequency()
-            FS->>FD: CheckFrequencyAvailability()
-            FD-->>FS: Availability Status
-            
-            alt Fréquence Disponible
-                FS->>FD: CalculateAllIntermodulations()
-                FD->>FD: Calculate 2Tx 3rd, 5th, 7th Order
-                FD->>FD: Calculate 3Tx 3rd Order
-                FD-->>FS: Intermodulations Calculated
-                FS->>FD: AddUsedFrequency()
-            else Fréquence Occupée
-                FS->>FS: RetryWithNewFrequency()
+        par Découverte Continue
+            DS->>NET: Multi-protocole discovery
+            NET-->>DS: Appareils physiques
+            DS-->>APP: DevicesDiscovered [continu]
+        and Import Sélectif
+            IS->>APP: Import appareils (UC-003)
+            APP->>DB: SaveImportedDevices()
+        and Configuration RF
+            IS->>APP: Configure groupes (UC-005)
+            APP->>DB: SaveGroups()
+        end
+        
+        IS->>APP: Déclenche calcul global
+        APP->>FCS: CalculateFrequenciesAsync() [UC-002]
+        FCS->>FCS: Orchestration calcul multi-groupe
+        FCS-->>APP: Plan RF optimisé
+        APP->>DB: SaveCalculationResults()
+    end
+    
+    rect rgb(255, 240, 240)
+        Note over IS,NET: Phase 3: Synchronisation Production
+        IS->>APP: Magic Sync All Devices
+        APP->>DMS: SyncAllToDevices() [UC-004]
+        
+        par Sync Parallèle Marques
+            DMS->>NET: Sync Sennheiser devices
+            DMS->>NET: Sync Shure devices  
+            DMS->>NET: Sync Generic devices
+        end
+        
+        NET-->>DMS: Résultats sync
+        DMS->>DB: UpdateDeviceStates()
+        DMS-->>APP: Sync Report
+        APP-->>IS: Production ready!
+    end
+    
+    rect rgb(240, 240, 255)
+        Note over IS,NET: Phase 4: Monitoring Opérationnel
+        loop Session de travail
+            APP->>DS: CheckDeviceStatus() [continu]
+            APP->>DMS: VerifySync() [périodique]
+            alt Changements détectés
+                APP-->>IS: Notifications alertes
+                IS->>APP: Actions correctives
             end
         end
     end
-    
-    FS-->>VM: Calculation Complete
-    VM->>DB: SaveCalculationResults()
-    DB-->>VM: Results Saved
-    VM-->>UI: Update Frequency Display
-    
-    Note over U,UI: Phase 4: Synchronisation Appareils
-    U->>VM: Magic Sync To Devices
-    VM->>DS: SyncAllDevices()
-    
-    loop Pour Chaque Appareil
-        DS->>DH: SyncDevice(device, frequencies)
-        DH->>DH: BuildCommands()
-        DH->>DH: SendTCPCommands()
-        
-        alt Sync Réussi
-            DH-->>DS: SyncSuccess
-            DS->>DB: UpdateDeviceStatus(Synchronized)
-        else Sync Échoué
-            DH-->>DS: SyncFailed
-            DS->>DB: UpdateDeviceStatus(Error)
-        end
-    end
-    
-    DS-->>VM: Sync Results
-    VM-->>UI: Update Device Status
-    VM-->>U: Synchronisation Terminée
 ```
 
-## 2. Discovery Réseau Multi-Protocoles
+## 2. Patterns d'architecture : injection de dépendances & services
 
-### Orchestration des Handlers de Découverte
+### Orchestration des services via dependency injection
+
+```mermaid
+sequenceDiagram
+    participant MP as MauiProgram
+    participant DI as ServiceContainer
+    participant VM as ViewModels
+    participant SRV as Services
+    participant HAND as Handlers
+    participant COMM as Communication
+
+    Note over MP,COMM: 🏗️ Architecture Pattern Implementation
+    
+    rect rgb(248, 248, 255)
+        Note over MP,COMM: Bootstrap & Service Registration
+        MP->>DI: ConfigureServices()
+        
+        MP->>DI: RegisterViewModels()
+        Note right of DI: DevicesViewModel<br/>GroupsViewModel<br/>FrequencyDataViewModel
+        
+        MP->>DI: RegisterServices()
+        Note right of DI: FrequencyCalculationService<br/>DiscoveryService<br/>DeviceMappingService
+        
+        MP->>DI: RegisterHandlers()
+        Note right of DI: SennheiserDeviceHandler<br/>SennheiserG4DeviceHandler<br/>ShureDeviceHandler
+        
+        MP->>DI: RegisterCommunication()
+        Note right of DI: UDPCommunicationService<br/>TCPCommunicationService<br/>DatabaseContext
+    end
+    
+    rect rgb(240, 255, 240)
+        Note over MP,COMM: Runtime Dependency Resolution
+        
+        VM->>DI: Request FrequencyCalculationService
+        DI->>SRV: Create with dependencies
+        Note right of SRV: Inject:<br/>- DevicesViewModel<br/>- GroupsViewModel<br/>- ExclusionChannelViewModel
+        
+        SRV->>DI: Request DiscoveryService  
+        DI->>SRV: Create with handlers
+        Note right of SRV: Inject:<br/>- IDeviceHandler[]<br/>- DevicesViewModel<br/>- MulticastService
+        
+        SRV->>DI: Request DeviceHandlers
+        DI->>HAND: Create with communication
+        Note right of HAND: Inject:<br/>- UDPCommunicationService<br/>- CommandSets<br/>- DeviceData
+        
+        HAND->>DI: Request Communication Services
+        DI->>COMM: Provide instances
+        Note right of COMM: Singleton pattern<br/>for network services
+    end
+    
+    rect rgb(255, 248, 240)
+        Note over MP,COMM: Cross-Cutting Concerns
+        
+        Note over DI: Observer Pattern
+        VM->>VM: PropertyChanged events
+        VM->>SRV: DevicesChanged events
+        SRV->>HAND: DeviceDiscovered events
+        
+        Note over DI: Strategy Pattern
+        SRV->>HAND: GetHandler(deviceType)
+        HAND->>COMM: SelectProtocol(brand)
+        
+        Note over DI: Repository Pattern
+        SRV->>COMM: DatabaseContext.GetAllAsync<T>()
+        COMM-->>SRV: Uniform data access
+    end
+```
+
+## 3. Patterns de communication : multi-protocole & recovery
+
+### Orchestration network avec fallback strategy
 
 ```mermaid
 sequenceDiagram
     participant DS as DiscoveryService
+    participant NS as NetworkStrategy
+    participant MP as MultiProtocolManager
     participant SH as SennheiserHandler
+    participant SG as SennheiserG4Handler  
     participant SHU as ShureHandler
-    participant GH as GenericHandler
-    participant N as Network
+    participant NET as NetworkLayer
+    participant ER as ErrorRecovery
+
+    Note over DS,ER: 🌐 Network Communication Patterns
+    
+    rect rgb(255, 253, 240)
+        Note over DS,ER: Multi-Protocol Discovery Pattern
+        DS->>MP: InitializeProtocols()
+        
+        par Protocol Initialization
+            MP->>SH: Initialize(mDNS, Port 45)
+            MP->>SG: Initialize(UDP Proprietary, Port 53212)
+            MP->>SHU: Initialize(SLP, Port 8427)
+        end
+        
+        MP-->>DS: Protocols Ready
+    end
+    
+    rect rgb(240, 255, 248)
+        Note over DS,ER: Concurrent Discovery with Timeouts
+        DS->>NS: StartConcurrentDiscovery()
+        
+        par Sennheiser Standard
+            NS->>SH: TriggerDiscovery(timeout: 3s)
+            SH->>NET: mDNS Query "_ssc._udp.local"
+            NET-->>SH: mDNS Responses
+            SH->>SH: ParseResponses()
+            SH-->>NS: StandardDevices[]
+        and Sennheiser G4
+            NS->>SG: TriggerG4Discovery(timeout: 10s)
+            SG->>NET: UDP to 224.0.0.251:8133
+            NET-->>SG: G4 Responses
+            SG->>SG: ParseG4Responses()
+            SG-->>NS: G4Devices[]
+        and Shure SLP
+            NS->>SHU: TriggerSLPDiscovery(timeout: 10s)
+            SHU->>NET: Multicast to 239.255.254.253:8427
+            NET-->>SHU: SLP Responses
+            SHU->>SHU: ParseSLPResponses()
+            SHU-->>NS: ShureDevices[]
+        end
+        
+        NS->>NS: AggregateResults() + Deduplicate()
+        NS-->>DS: ConsolidatedDeviceList
+    end
+    
+    rect rgb(255, 240, 240)
+        Note over DS,ER: Error Recovery & Circuit Breaker Pattern
+        
+        alt Network Timeout
+            NET-->>SH: Timeout Exception
+            SH->>ER: NetworkTimeout(protocol: mDNS)
+            ER->>ER: IncrementFailureCount()
+            
+            alt Failure Threshold Reached
+                ER->>NS: CircuitBreaker.Open(mDNS)
+                NS->>NS: DisableProtocol(mDNS)
+                NS-->>DS: ProtocolDisabled: mDNS
+            else Retry Available
+                ER->>NS: ScheduleRetry(mDNS, delay: 5s)
+                NS-->>DS: RetryScheduled
+            end
+            
+        else Connection Refused
+            NET-->>SG: ConnectionRefused
+            SG->>ER: ConnectionError(device: ip_address)
+            ER->>ER: MarkDeviceOffline(device)
+            ER-->>DS: DeviceUnavailable
+            
+        else Parse Error
+            SHU->>ER: ParseError(response: malformed)
+            ER->>ER: LogParseError()
+            ER->>SHU: SkipResponse()
+            SHU-->>NS: ContinueProcessing
+        end
+    end
+    
+    rect rgb(248, 248, 255)
+        Note over DS,ER: Health Monitoring & Auto-Recovery
+        
+        loop Continuous Monitoring
+            ER->>NS: CheckProtocolHealth()
+            NS->>NET: PingTestEndpoints()
+            
+            alt Protocol Recovered
+                NET-->>NS: Success Response
+                NS->>ER: ProtocolHealthy(protocol)
+                ER->>ER: ResetFailureCount()
+                ER->>NS: CircuitBreaker.Close(protocol)
+                NS-->>DS: ProtocolRestored
+            else Still Failing
+                NET-->>NS: Still Failing
+                ER->>ER: ExtendRetryDelay()
+            end
+        end
+    end
+```
+
+## 4. Data flow architecture : MVVM + repository + cache
+
+### Pattern d'architecture des données
+
+```mermaid
+sequenceDiagram
+    participant V as View (UI)
     participant VM as ViewModel
+    participant SRV as Service Layer
+    participant REPO as Repository
+    participant CACHE as CacheManager
+    participant DB as SQLite Database
+    participant MEM as MemoryCache
 
-    Note over DS,VM: Initialisation Discovery Service
-    DS->>SH: Initialize()
-    DS->>SHU: Initialize()  
-    DS->>GH: Initialize()
+    Note over V,MEM: 📊 Data Architecture Patterns
     
-    SH-->>DS: mDNS Handler Ready
-    SHU-->>DS: SLP Handler Ready
-    GH-->>DS: UDP Handler Ready
-    
-    Note over DS,VM: Démarrage Discovery Parallèle
-    par Discovery mDNS (Sennheiser)
-        DS->>SH: StartDiscovery()
-        SH->>N: Subscribe to _sennheiser._tcp
-        N-->>SH: mDNS Response
-        SH->>SH: ParseSennheiserDevice()
-        SH-->>DS: DeviceDiscovered(sennheiser_device)
-    and Discovery SLP (Shure)
-        DS->>SHU: StartDiscovery()
-        SHU->>N: Multicast to 239.255.254.253:8427
-        N-->>SHU: SLP Response
-        SHU->>SHU: ParseShureDevice()
-        SHU-->>DS: DeviceDiscovered(shure_device)
-    and Discovery UDP (Generic)
-        DS->>GH: StartDiscovery()
-        GH->>N: UDP Broadcast Scan
-        N-->>GH: UDP Response
-        GH->>GH: ParseGenericDevice()
-        GH-->>DS: DeviceDiscovered(generic_device)
+    rect rgb(240, 248, 255)
+        Note over V,MEM: MVVM Data Binding Pattern
+        V->>VM: PropertyChanged subscription
+        VM->>VM: ObservableCollection<RFDevice>
+        
+        Note over VM: Two-way data binding<br/>Command pattern<br/>INotifyPropertyChanged
+        
+        V->>VM: UserAction(command)
+        VM->>SRV: BusinessLogic.Execute()
     end
     
-    Note over DS,VM: Agrégation et Déduplication
-    DS->>DS: DeduplicateDevices()
-    DS->>DS: ValidateDevices()
-    
-    loop Pour Chaque Appareil Découvert
-        DS->>DS: FetchDetailedInfo()
-        alt Fetch Réussi
-            DS-->>VM: DeviceAdded Event
-        else Fetch Échoué
-            DS->>DS: RetryFetch()
+    rect rgb(248, 255, 240)
+        Note over V,MEM: Repository Pattern with Caching
+        SRV->>CACHE: CheckCache(key: "devices")
+        
+        alt Cache Hit
+            CACHE-->>SRV: CachedDevices[]
+            SRV-->>VM: DevicesData
+        else Cache Miss
+            CACHE->>REPO: GetAllAsync<RFDevice>()
+            REPO->>DB: SELECT * FROM RFDevice
+            DB-->>REPO: RawDeviceData
+            REPO->>REPO: MapToRFDevice()
+            REPO-->>CACHE: RFDevice[]
+            CACHE->>MEM: Store(key, data, ttl: 5min)
+            CACHE-->>SRV: FreshDevices[]
         end
     end
     
-    DS-->>VM: Discovery Complete
+    rect rgb(255, 248, 240)
+        Note over V,MEM: Change Tracking & Persistence
+        VM->>SRV: ModifyDevice(device)
+        SRV->>CACHE: InvalidateCache("devices")
+        SRV->>REPO: UpdateItemAsync<RFDevice>(device)
+        
+        par Database Update
+            REPO->>DB: UPDATE RFDevice SET...
+            DB-->>REPO: RowsAffected: 1
+            REPO-->>SRV: UpdateSuccess
+        and Cache Refresh
+            CACHE->>MEM: Remove("devices")
+            CACHE->>REPO: PreloadCache()
+            REPO-->>CACHE: RefreshedData
+        end
+        
+        SRV->>VM: DevicesChanged event
+        VM->>VM: OnPropertyChanged("Devices")
+        VM-->>V: UI automatically updates
+    end
+    
+    rect rgb(248, 248, 255)
+        Note over V,MEM: Transaction & Consistency Patterns
+        
+        Note over SRV: Unit of Work Pattern
+        SRV->>REPO: BeginTransaction()
+        
+        loop Batch Operations
+            SRV->>REPO: AddItem<RFDevice>(device)
+            SRV->>REPO: UpdateItem<RFGroup>(group)
+            SRV->>REPO: DeleteItem<RFChannel>(channel)
+        end
+        
+        alt All Operations Success
+            SRV->>REPO: CommitTransaction()
+            REPO->>DB: COMMIT
+            CACHE->>CACHE: InvalidateAll()
+            VM-->>V: Success notification
+        else Any Operation Fails
+            SRV->>REPO: RollbackTransaction()
+            REPO->>DB: ROLLBACK
+            VM-->>V: Error message + retry option
+        end
+    end
 ```
 
-## 3. Authentification et Gestion des Licences
+## 5. Métriques & performance : monitoring des interactions
 
-### Processus Complet d'Authentification
+### Dashboard des performances système
+
+| Pattern d'Interaction | Complexité | Performance Moyenne | SLA Cible | Points Critiques |
+|------------------------|------------|---------------------|-----------|------------------|
+| **Cross-UC Discovery→Calc→Sync** | Très Haute | 45-120s | 180s | Network latency, Algo optimization |
+| **DI Container Resolution** | Moyenne | 50-200ms | 500ms | Service graph complexity |
+| **Multi-Protocol Network** | Haute | 10-30s | 60s | Timeout management, Circuit breakers |
+| **MVVM Data Binding** | Faible | 10-50ms | 100ms | Collection size, PropertyChanged frequency |
+| **Repository + Cache** | Moyenne | 5-20ms | 50ms | Cache hit ratio, SQLite performance |
+
+### Optimization patterns appliqués
+
+1. **Async/Await Pattern** : Toutes les opérations I/O sont asynchrones
+2. **Observer Pattern** : Évite les polling inutiles
+3. **Circuit Breaker** : Prevent cascade failures
+4. **Cache-Aside** : Réduction des accès base
+5. **Command Pattern** : Undo/Redo et transactionnalité
+6. **Strategy Pattern** : Handlers interchangeables par marque
+
+## 6. Architecture de resilience : fault tolerance
+
+### Patterns de résilience cross-fonctionnels
 
 ```mermaid
 sequenceDiagram
-    participant U as Utilisateur
-    participant AVM as AuthViewModel
-    participant AS as AuthService
-    participant LS as LicenseService
-    participant SS as StorageService
-    participant API as License API
-    participant DB as Database
+    participant APP as Application
+    participant RM as ResilienceManager
+    participant CB as CircuitBreaker
+    participant RT as RetryManager
+    participant FB as FallbackService
+    participant LOG as LoggingService
 
-    Note over U,DB: Phase 1: Authentification Utilisateur
-    U->>AVM: Login(email, password)
-    AVM->>AS: AuthenticateUser(credentials)
+    Note over APP,LOG: 🛡️ Resilience Architecture Patterns
     
-    AS->>SS: CheckStoredCredentials()
-    alt Credentials Cached & Valid
-        SS-->>AS: Cached Credentials Valid
-        AS-->>AVM: Authentication Success
-    else Credentials Not Cached or Invalid
-        AS->>API: ValidateCredentials(email, password)
-        API->>API: Hash & Compare Password
+    rect rgb(255, 248, 248)
+        Note over APP,LOG: Circuit Breaker Pattern
+        APP->>RM: ExecuteWithResilience(operation)
+        RM->>CB: CheckCircuitState()
         
-        alt Credentials Valid
-            API-->>AS: User Validated + JWT Token
-            AS->>SS: StoreCachedCredentials()
-            AS-->>AVM: Authentication Success
-        else Credentials Invalid
-            API-->>AS: Authentication Failed
-            AS-->>AVM: Authentication Failed
-            AVM-->>U: Show Error Message
-        end
-    end
-    
-    Note over U,DB: Phase 2: Validation Licence
-    AVM->>LS: ValidateLicense()
-    LS->>SS: GetStoredLicense()
-    
-    alt License Stored & Valid
-        SS-->>LS: Valid License Found
-        LS-->>AVM: License Valid
-    else No License or Expired
-        LS->>API: CheckLicenseStatus(user_id)
-        
-        alt License Available
-            API-->>LS: License Details
-            LS->>SS: StoreLicense()
-            LS-->>AVM: License Activated
-        else No Valid License
-            LS-->>AVM: License Required
-            AVM-->>U: Request License Key
+        alt Circuit Closed (Healthy)
+            CB-->>RM: Allow execution
+            RM->>APP: Execute(operation)
             
-            U->>AVM: EnterLicenseKey(key)
-            AVM->>LS: ActivateLicense(key)
-            LS->>API: ValidateLicenseKey(key)
+            alt Operation Success
+                APP-->>RM: Success result
+                RM->>CB: RecordSuccess()
+            else Operation Fails
+                APP-->>RM: Exception
+                RM->>CB: RecordFailure()
+                CB->>CB: IncrementFailureCount()
+                
+                alt Threshold Reached
+                    CB->>CB: OpenCircuit(timeout: 30s)
+                    CB-->>RM: Circuit OPEN
+                end
+            end
             
-            alt License Key Valid
-                API-->>LS: License Activated
-                LS->>SS: StoreLicense()
-                LS->>DB: UpdateUserLicense()
-                LS-->>AVM: License Success
-                AVM-->>U: License Activated
-            else License Key Invalid
-                API-->>LS: Invalid License
-                LS-->>AVM: License Invalid
-                AVM-->>U: Invalid License Key
+        else Circuit Open (Failing)
+            CB-->>RM: Reject execution
+            RM->>FB: ExecuteFallback(operation)
+            FB-->>RM: Fallback result
+            
+        else Circuit Half-Open (Testing)
+            CB-->>RM: Allow single test
+            RM->>APP: Execute(test_operation)
+            
+            alt Test Success
+                CB->>CB: CloseCircuit()
+            else Test Fails
+                CB->>CB: ReOpenCircuit()
             end
         end
     end
     
-    Note over U,DB: Phase 3: Initialisation Session
-    AVM->>DB: CreateUserSession()
-    AVM->>AS: InitializeServices()
-    AS-->>AVM: Services Ready
-    AVM-->>U: Redirect to Main App
-```
-
-## 4. Synchronisation Bidirectionnelle des Appareils
-
-### Magic Sync - Synchronisation Complexe
-
-```mermaid
-sequenceDiagram
-    participant U as Utilisateur
-    participant VM as DevicesViewModel
-    participant MS as MappingService
-    participant DH as DeviceHandler
-    participant D as Device (Network)
-    participant DB as Database
-
-    Note over U,DB: Phase 1: Préparation Synchronisation
-    U->>VM: Magic Sync To Devices
-    VM->>VM: ValidateSelectedDevices()
-    VM->>MS: PrepareSyncOperations()
-    
-    MS->>DB: GetDeviceConfigurations()
-    DB-->>MS: Device Configs
-    MS->>MS: BuildSyncCommands()
-    MS-->>VM: Sync Operations Ready
-    
-    Note over U,DB: Phase 2: Synchronisation Parallèle
-    par Device 1 Sync
-        VM->>DH: SyncDevice(device1)
-        DH->>DH: GetHandler(Sennheiser)
-        DH->>D: TCP Connect(device1_ip)
+    rect rgb(248, 255, 248)
+        Note over APP,LOG: Retry Pattern with Exponential Backoff
+        RM->>RT: ConfigureRetry(maxAttempts: 3, backoff: exponential)
         
-        alt Connection Success
-            DH->>D: Send SET_FREQUENCY Command
-            D-->>DH: ACK Response
-            DH->>D: Send SET_NAME Command  
-            D-->>DH: ACK Response
-            DH->>D: Send STORE_CONFIG Command
-            D-->>DH: ACK Response
-            DH-->>VM: Device1 Sync Success
-        else Connection Failed
-            DH-->>VM: Device1 Sync Failed
-        end
-    and Device 2 Sync
-        VM->>DH: SyncDevice(device2)
-        DH->>DH: GetHandler(Shure)
-        DH->>D: TCP Connect(device2_ip)
+        RM->>APP: AttemptOperation() [Attempt 1]
         
-        alt Connection Success
-            DH->>D: Send ULXD Frequency Command
-            D-->>DH: Command Response
-            DH->>D: Send ULXD Name Command
-            D-->>DH: Command Response
-            DH-->>VM: Device2 Sync Success
-        else Connection Failed
-            DH-->>VM: Device2 Sync Failed
-        end
-    end
-    
-    Note over U,DB: Phase 3: Mise à Jour États
-    VM->>DB: UpdateDeviceStates(sync_results)
-    DB-->>VM: States Updated
-    
-    VM->>MS: LogSyncResults()
-    MS->>DB: StoreSyncLog()
-    
-    VM-->>U: Sync Complete Report
-    
-    Note over U,DB: Phase 4: Synchronisation Inverse (From Device)
-    VM->>DH: CheckDeviceChanges()
-    
-    loop Pour Chaque Appareil
-        DH->>D: Fetch Current Config
-        D-->>DH: Device Config
-        DH->>MS: CompareWithLocal(config)
-        
-        alt Differences Detected
-            MS-->>VM: Changes Detected
-            VM-->>U: Propose Sync From Device
-            U->>VM: Accept/Reject Changes
+        alt Success on First Try
+            APP-->>RM: Success
+            RM-->>LOG: Operation Completed
+        else Transient Failure
+            APP-->>RM: TransientException
+            RM->>RT: CalculateDelay(attempt: 1)
+            RT-->>RM: Delay: 1 second
+            RM->>RM: Wait(1s)
             
-            alt Accept Changes
-                VM->>DB: UpdateLocalConfig()
-                DB-->>VM: Local Updated
-            else Reject Changes
-                VM->>DH: Overwrite Device Config
-                DH->>D: Send Corrected Config
+            RM->>APP: AttemptOperation() [Attempt 2]
+            
+            alt Success on Second Try
+                APP-->>RM: Success
+                RM-->>LOG: Operation Completed After Retry
+            else Still Failing
+                APP-->>RM: TransientException
+                RM->>RT: CalculateDelay(attempt: 2)
+                RT-->>RM: Delay: 2 seconds
+                RM->>RM: Wait(2s)
+                
+                RM->>APP: AttemptOperation() [Attempt 3]
+                
+                alt Success on Third Try
+                    APP-->>RM: Success
+                    RM-->>LOG: Operation Completed After Multiple Retries
+                else Max Retries Reached
+                    APP-->>RM: Still Failing
+                    RM->>LOG: Operation Failed After Max Retries
+                    RM->>FB: ExecuteFallback()
+                end
             end
+        else Permanent Failure
+            APP-->>RM: PermanentException
+            RM->>LOG: Permanent Failure - No Retry
+            RM->>FB: ExecuteFallback()
         end
+    end
+    
+    rect rgb(248, 248, 255)
+        Note over APP,LOG: Bulkhead Pattern (Isolation)
+        
+        Note over RM: Resource Isolation
+        par Discovery Thread Pool
+            RM->>APP: DiscoveryOperations (Pool: 2 threads)
+        and Calculation Thread Pool  
+            RM->>APP: CalculationOperations (Pool: 1 thread)
+        and Sync Thread Pool
+            RM->>APP: SyncOperations (Pool: 3 threads)
+        end
+        
+        Note over RM: Prevents resource starvation<br/>Isolates failure domains
+    end
+    
+    rect rgb(255, 255, 240)
+        Note over APP,LOG: Comprehensive Monitoring
+        RM->>LOG: LogResilienceMetrics()
+        
+        Note right of LOG: Metrics collected:<br/>- Circuit breaker states<br/>- Retry attempts<br/>- Fallback usage<br/>- Thread pool utilization<br/>- Error rates by operation
+        
+        LOG->>LOG: AggregateMetrics()
+        LOG->>LOG: TriggerAlertsIfNeeded()
     end
 ```
 
-## 5. Gestion des Erreurs et Recovery
-
-### Stratégies de Récupération Automatique
-
-```mermaid
-sequenceDiagram
-    participant S as System
-    participant EH as ErrorHandler
-    participant L as Logger
-    participant R as Recovery
-    participant N as Notification
-    participant U as User
-
-    Note over S,U: Détection et Classification d'Erreur
-    S->>EH: Exception Thrown
-    EH->>EH: ClassifyError()
-    
-    alt Network Error
-        EH->>EH: Analyze Network Issue
-        EH->>R: InitiateNetworkRecovery()
-        
-        R->>R: CheckConnectivity()
-        alt Network Available
-            R->>R: RetryOperation()
-            R-->>EH: Recovery Success
-            EH-->>S: Resume Operation
-        else Network Unavailable
-            R->>R: EnableOfflineMode()
-            R-->>EH: Offline Mode Activated
-            EH->>N: NotifyUser("Offline Mode")
-            N-->>U: Offline Notification
-        end
-        
-    else Database Error
-        EH->>EH: Analyze Database Issue
-        EH->>R: InitiateDatabaseRecovery()
-        
-        R->>R: CheckDatabaseIntegrity()
-        alt Database Corrupt
-            R->>R: RestoreFromBackup()
-            alt Backup Available
-                R-->>EH: Database Restored
-                EH-->>S: Resume Operation
-            else No Backup
-                R->>R: InitializeNewDatabase()
-                R-->>EH: New Database Created
-                EH->>N: NotifyUser("Data Reset")
-                N-->>U: Data Loss Warning
-            end
-        else Database Locked
-            R->>R: WaitAndRetry()
-            R-->>EH: Database Access Restored
-        end
-        
-    else Business Logic Error
-        EH->>EH: AnalyzeBusinessError()
-        EH->>L: LogBusinessError()
-        EH->>N: NotifyUser("Business Error")
-        N-->>U: Error Details + Suggestions
-        
-    else Unknown Error
-        EH->>L: LogUnknownError()
-        EH->>N: NotifyUser("Unexpected Error")
-        N-->>U: Generic Error Message
-        EH->>R: GracefulDegradation()
-        R-->>EH: Fallback Mode Activated
-    end
-    
-    Note over S,U: Logging et Monitoring
-    EH->>L: LogRecoveryAction()
-    L->>L: EnrichWithContext()
-    L->>L: PersistLog()
-    
-    alt Critical Error
-        L->>N: TriggerAlert()
-        N-->>U: Critical Error Alert
-    end
-```
-
-## 6. Performance et Optimisation
-
-### Métriques des Interactions
-
-| Séquence | Acteurs | Temps Moyen | Temps Critique | Points d'Optimisation |
-|----------|---------|-------------|----------------|----------------------|
-| **Discovery Complète** | 5-8 composants | 15-30s | 60s | Cache DNS, Timeouts |
-| **Calcul RF Global** | 3-4 composants | 3-8s | 15s | Algorithmes parallèles |
-| **Sync Single Device** | 2-3 composants | 1-2s | 5s | Batch commands |
-| **Auth + License** | 4-6 composants | 2-5s | 10s | Token caching |
-| **Error Recovery** | 3-5 composants | 1-3s | 8s | Predictive recovery |
-
-### Patterns d'Interaction Identifiés
-
-1. **Request-Response Asynchrone** : Utilisé pour les commandes réseau
-2. **Observer Pattern** : Pour les notifications d'état
-3. **Command Pattern** : Pour les opérations de synchronisation
-4. **Circuit Breaker** : Pour la gestion des pannes réseau
-5. **Saga Pattern** : Pour les transactions complexes multi-étapes
-
-Ces diagrammes de séquence révèlent la sophistication des interactions dans RF.Go et démontrent une architecture robuste capable de gérer des scénarios complexes avec une gestion d'erreur appropriée. 
+Cette architecture cross-fonctionnelle démontre comment RF.Go utilise des patterns architecturaux sophistiqués pour créer un système robuste, performant et résilient qui transcende les fonctionnalités individuelles documentées dans les use-cases.

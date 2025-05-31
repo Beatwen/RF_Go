@@ -1,11 +1,11 @@
 {
   "id": "architecture/overview",
-  "title": "Vue d'ensemble de l'Architecture",
-  "description": "Architecture Générale",
+  "title": "Architecture système RF.Go",
+  "description": "🎯 Vision architecturale",
   "source": "@site/docs/architecture/overview.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/overview",
-  "permalink": "/RF_Go/docs/architecture/overview",
+  "permalink": "/RF_Go/architecture/overview",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/architecture/overview.md",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Diagrammes de Déploiement - Infrastructure et Déploiement",
-    "permalink": "/RF_Go/docs/uml-analysis/deployment-diagrams"
+    "title": "Diagrammes de Déploiement",
+    "permalink": "/RF_Go/uml-analysis/deployment-diagrams"
   },
   "next": {
-    "title": "Composants",
-    "permalink": "/RF_Go/docs/architecture/components"
+    "title": "Architecture de déploiement",
+    "permalink": "/RF_Go/architecture/deployment"
   }
 }

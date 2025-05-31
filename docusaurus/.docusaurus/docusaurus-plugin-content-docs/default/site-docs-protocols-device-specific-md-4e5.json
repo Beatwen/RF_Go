@@ -5,7 +5,7 @@
   "source": "@site/docs/protocols/device-specific.md",
   "sourceDirName": "protocols",
   "slug": "/protocols/device-specific",
-  "permalink": "/RF_Go/docs/protocols/device-specific",
+  "permalink": "/RF_Go/protocols/device-specific",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/protocols/device-specific.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Protocoles UDP/TCP",
-    "permalink": "/RF_Go/docs/protocols/udp-tcp"
+    "permalink": "/RF_Go/protocols/udp-tcp"
   },
   "next": {
-    "title": "API Interne - Services",
-    "permalink": "/RF_Go/docs/api/services"
+    "title": "🔑 API Licensing",
+    "permalink": "/RF_Go/api/overview"
   }
 }

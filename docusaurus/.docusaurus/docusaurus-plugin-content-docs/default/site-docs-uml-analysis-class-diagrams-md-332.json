@@ -1,11 +1,11 @@
 {
   "id": "uml-analysis/class-diagrams",
-  "title": "Diagrammes de Classes - Architecture Orientée Objet",
-  "description": "Les diagrammes de classes de RF.Go illustrent l'architecture orientée objet complète du système. Cette modélisation détaille la structure statique, les relations entre classes, et les patterns de conception utilisés pour créer une architecture robuste et extensible.",
+  "title": "Diagrammes de classes",
+  "description": "Les diagrammes de classes de RF.Go illustrent l'architecture orientée objet complète du système. Cette modélisation détaille la structure statique, les relations entre classes, et les patterns de conception utilisés pour créer une architecture robuste et extensible basée sur l'analyse du code source réel.",
   "source": "@site/docs/uml-analysis/class-diagrams.md",
   "sourceDirName": "uml-analysis",
   "slug": "/uml-analysis/class-diagrams",
-  "permalink": "/RF_Go/docs/uml-analysis/class-diagrams",
+  "permalink": "/RF_Go/uml-analysis/class-diagrams",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/class-diagrams.md",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Diagrammes d'Activités - Processus et Algorithmes",
-    "permalink": "/RF_Go/docs/uml-analysis/activity-diagrams"
+    "title": "Diagramme d'activité complémentaires",
+    "permalink": "/RF_Go/uml-analysis/activity-diagrams"
   },
   "next": {
-    "title": "Diagrammes d'États - Cycles de Vie et Comportements",
-    "permalink": "/RF_Go/docs/uml-analysis/state-diagrams"
+    "title": "Diagrammes d'états",
+    "permalink": "/RF_Go/uml-analysis/state-diagrams"
   }
 }

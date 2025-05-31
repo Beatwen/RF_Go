@@ -5,7 +5,7 @@
   "source": "@site/docs/features/scan-management.md",
   "sourceDirName": "features",
   "slug": "/features/scan-management",
-  "permalink": "/RF_Go/docs/features/scan-management",
+  "permalink": "/RF_Go/features/scan-management",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/scan-management.md",
@@ -18,10 +18,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Session Management",
-    "permalink": "/RF_Go/docs/features/session-management"
+    "permalink": "/RF_Go/features/session-management"
   },
   "next": {
     "title": "Backup Frequencies",
-    "permalink": "/RF_Go/docs/features/backup-frequencies"
+    "permalink": "/RF_Go/features/backup-frequencies"
   }
 }

@@ -1,31 +1,31 @@
-# Vue d'Ensemble
+# Vue d'ensemble
 
 Cette section présente l'analyse UML approfondie de RF.Go, élaborée selon les standards de modélisation orientée objet. L'analyse couvre tous les aspects du système depuis la capture des besoins jusqu'à l'architecture technique détaillée.
 
-## Méthodologie d'Analyse
+## Méthodologie d'analyse
 
 L'analyse UML de RF.Go suit une approche **orientée objet** :
 
-### 1. **Analyse des Besoins**
+### 1. **Analyse des besoins**
 
 - Interviews approfondies avec les ingénieurs du son professionnels
 - Étude comparative des solutions existantes (Workbench, WSM, SiFM)
 - Identification des gaps fonctionnels du marché
 
-### 2. **Modélisation Progressive**
+### 2. **Modélisation progressive**
 
 - **Phase statique** : Diagrammes de classes et d'objets
 - **Phase dynamique** : Diagrammes de séquence et d'activités
 - **Phase comportementale** : Diagrammes d'états-transitions
 - **Phase architecturale** : Diagrammes de composants et de déploiement
 
-### 3. **Validation Itérative**
+### 3. **Validation itérative**
 
 - Reviews avec le client (Greg Maloche - WaveCoord)
 - Prototypage rapide pour validation des concepts
 - Tests utilisateur sur des événements réels
 
-## Structure de l'Analyse UML
+## Structure de l'analyse UML
 
 ```mermaid
 mindmap
@@ -72,9 +72,9 @@ mindmap
         Contraintes Hardware
 ```
 
-## Niveaux d'Abstraction
+## Niveaux d'abstraction
 
-### 🎯 **Niveau Métier**
+### 🎯 **Niveau métier**
 
 Focus sur les **processus métier** de l'ingénierie du son :
 
@@ -83,7 +83,7 @@ Focus sur les **processus métier** de l'ingénierie du son :
 - Gestion des interférences et intermodulations
 - Workflows événementiels, c'est à dire un workflow le plus simple possible
 
-### ⚙️ **Niveau Application**
+### ⚙️ **Niveau application**
 
 Focus sur les **fonctionnalités logicielles** :
 
@@ -92,7 +92,7 @@ Focus sur les **fonctionnalités logicielles** :
 - Gestion des sessions et persistence
 - Synchronisation réseau
 
-### 🔧 **Niveau Technique**
+### 🔧 **Niveau technique**
 
 Focus sur l'**implémentation technique** :
 
@@ -102,16 +102,15 @@ Focus sur l'**implémentation technique** :
 - Base de données SQLite
 - Patterns MVVM et DI
 
-## Modèles UML Utilisés
+## Modèles UML utilisés
 
 | Type de Diagramme | Objectif Principal
 |-------------------|-------------------
-| **[Cas d'Utilisation](./use-cases.md)** | Capture des besoins fonctionnels
+| **[Cas d'Utilisation](./use-cases/overview.md)** | Capture des besoins fonctionnels
 | **[Séquence](./sequence-diagrams.md)** | Flux d'interactions temporelles
 | **[Activités](./activity-diagrams.md)** | Processus et algorithmes métier
 | **[Classes](./class-diagrams.md)** | Structure orientée objet
 | **[États](./state-diagrams.md)** | Comportements dynamiques
-| **[Composants](./component-diagrams.md)** | Architecture modulaire
 | **[Déploiement](./deployment-diagrams.md)** | Infrastructure technique
 
 ```mermaid
@@ -122,8 +121,7 @@ graph LR
     C --> E[Diagrammes de Classes]
     D --> E
     E --> F[Diagrammes d'États]
-    E --> G[Diagrammes de Composants]
-    G --> H[Diagrammes de Déploiement]
+    H[Diagrammes de Déploiement]
     
     style A fill:#e1f5fe
     style E fill:#fff3e0
@@ -132,26 +130,26 @@ graph LR
 
 ## Spécificités RF.Go
 
-### Complexités Métier Modélisées
+### Complexités métier modélisées
 
-1. **Calculs d'Intermodulation**
+1. **Calculs d'intermodulation**
    - Algorithmes jusqu'au 7ème ordre
    - Gestion des intermodulations à 3 émetteurs
    - Optimisation du spectre disponible
 
-2. **Gestion Multi-Protocoles**
+2. **Gestion multi-protocoles**
    - Handlers spécialisés par marque
    - Discovery réseau hétérogène
    - Synchronisation bidirectionnelle
 
-3. **Architecture Temporelle**
+3. **Architecture temporelle**
    - Planification par créneaux horaires
    - Réutilisation dynamique des fréquences
    - Gestion des conflits temporels
 
-## Outils et Standards
+## Outils et standards
 
-### Outils de Modélisation Utilisés
+### Outils de modélisation utilisés
 
 - **StarUML** : Diagrammes de classes complexes
 - **Draw.io** : Diagrammes de workflow

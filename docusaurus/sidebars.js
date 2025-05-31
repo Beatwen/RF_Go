@@ -16,24 +16,39 @@ const sidebars = {
       collapsed: false,
       items: [
         'uml-analysis/overview',
-        'uml-analysis/use-cases',
+        {
+          type: 'category',
+          label: 'Use Cases',
+          items: [
+            'uml-analysis/use-cases/overview',
+            'uml-analysis/use-cases/uc-001',
+            'uml-analysis/use-cases/uc-002',
+            'uml-analysis/use-cases/uc-003',
+            'uml-analysis/use-cases/uc-004',
+            'uml-analysis/use-cases/uc-005',
+            'uml-analysis/use-cases/uc-006',
+            'uml-analysis/use-cases/uc-007',
+            'uml-analysis/use-cases/uc-008',
+            'uml-analysis/use-cases/uc-010',
+            
+          ],
+        },
         'uml-analysis/sequence-diagrams',
         'uml-analysis/activity-diagrams',
         'uml-analysis/class-diagrams',
         'uml-analysis/state-diagrams',
-        'uml-analysis/component-diagrams',
         'uml-analysis/deployment-diagrams',
       ],
     },
     {
       type: 'category',
-      label: '🏛️Architecture Technique',
+      label: '🏛️Architecture technique',
       items: [
         'architecture/overview',
-        'architecture/components',
-        'architecture/data-flow',
-        'architecture/class-diagram',
-        'architecture/use-cases',
+        'architecture/deployment',
+        'architecture/design-patterns',
+        'architecture/data-architecture',
+        'architecture/technology-choices',
       ],
     },
     {
@@ -62,22 +77,9 @@ const sidebars = {
       ],
     },
     {
-      type: 'category',
-      label: 'API Interne',
-      items: [
-        'api/services',
-        'api/models',
-        'api/interfaces',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Configuration et Déploiement',
-      items: [
-        'configuration/environment',
-        'configuration/database',
-        'configuration/licensing',
-      ],
+      type: 'doc',
+      id: 'api/overview',
+      label: '🔑 API Licensing'
     },
     {
       type: 'category',

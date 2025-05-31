@@ -1,11 +1,11 @@
 {
   "id": "uml-analysis/overview",
-  "title": "Vue d'Ensemble",
+  "title": "Vue d'ensemble",
   "description": "Cette section présente l'analyse UML approfondie de RF.Go, élaborée selon les standards de modélisation orientée objet. L'analyse couvre tous les aspects du système depuis la capture des besoins jusqu'à l'architecture technique détaillée.",
   "source": "@site/docs/uml-analysis/overview.md",
   "sourceDirName": "uml-analysis",
   "slug": "/uml-analysis/overview",
-  "permalink": "/RF_Go/docs/uml-analysis/overview",
+  "permalink": "/RF_Go/uml-analysis/overview",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/uml-analysis/overview.md",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Démarrage Rapide",
-    "permalink": "/RF_Go/docs/getting-started"
+    "title": "Démarrage rapide",
+    "permalink": "/RF_Go/getting-started"
   },
   "next": {
-    "title": "Use cases",
-    "permalink": "/RF_Go/docs/uml-analysis/use-cases"
+    "title": "Vue d'ensemble",
+    "permalink": "/RF_Go/uml-analysis/use-cases/overview"
   }
 }

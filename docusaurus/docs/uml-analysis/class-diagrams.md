@@ -1,27 +1,405 @@
-# Diagrammes de Classes - Architecture Orientée Objet
+# Diagrammes de classes
 
-Les diagrammes de classes de RF.Go illustrent l'**architecture orientée objet** complète du système. Cette modélisation détaille la structure statique, les relations entre classes, et les patterns de conception utilisés pour créer une architecture robuste et extensible.
+Les diagrammes de classes de RF.Go illustrent l'**architecture orientée objet** complète du système. Cette modélisation détaille la structure statique, les relations entre classes, et les patterns de conception utilisés pour créer une architecture robuste et extensible basée sur l'analyse du code source réel.
 
-## 1. Vue d'Ensemble de l'Architecture OO
+## Vue d'ensemble de l'application
 
-### Architecture en Couches avec Séparation des Responsabilités
+```mermaid
+classDiagram
+    %% Modèles de Base de Données (Réels)
+    class RFDevice {
+        +int ID
+        +string SerialNumber
+        +bool Selected
+        +string Brand
+        +string Model
+        +string Name
+        +string Frequency
+        +List~int~ Range
+        +string RangeSerialized
+        +List~RFChannel~ Channels
+        +string ChannelsSerialized
+        +string IpAddress
+        +string Calendar
+        +string Stage
+        +bool IsSynced
+        +bool IsOnline
+        +bool PendingSync
+        +int NumberOfChannels
+        +int GroupID
+        +RFGroup Group
+        +int Step
+        +Clone() RFDevice
+        +Validate() (bool IsValid, string ErrorMessage)
+        +OnPropertyChanged(string propertyName)
+    }
+
+    class RFChannel {
+        +int ID
+        +bool Selected
+        +int chanNumber
+        +int Frequency
+        +List~int~ Range
+        +string RangeSerialized
+        +int Step
+        +int SelfSpacing
+        +int ThirdOrderSpacing
+        +bool ThirdOrderSpacingEnable
+        +int FifthOrderSpacing
+        +bool FifthOrderSpacingEnable
+        +int SeventhOrderSpacing
+        +bool SeventhOrderSpacingEnable
+        +int NinthOrderSpacing
+        +bool NinthOrderSpacingEnable
+        +int ThirdOrderSpacing3Tx
+        +bool ThirdOrderSpacing3TxEnable
+        +bool Checked
+        +string ChannelName
+        +bool IsLocked
+        +SetRandomFrequency(HashSet~int~ usedFreqs, HashSet~int~ intermod3rd, HashSet~int~ intermod5th, HashSet~int~ intermod7th, HashSet~int~ intermod9th, HashSet~int~ intermod3tx, List excludedRanges)
+        +GetRandomFrequency(int min, int max, int step) int
+        +LoopForFreeFrequency(HashSet~int~ usedFreqs, HashSet~int~ intermodulations, List excludedRanges) bool
+        +CheckFreeFrequency(int frequency, HashSet~int~ usedFreqs, HashSet~int~ intermodulations) bool
+        +SpacingEnable() bool
+        +CalculAllIntermod(int frequency, HashSet~int~ usedFreqs) (HashSet~int~, HashSet~int~, HashSet~int~, HashSet~int~, HashSet~int~)
+        +Clone() RFChannel
+    }
+
+    class RFGroup {
+        +int ID
+        +string Name
+        +IReadOnlyList~TimePeriod~ TimePeriods
+        +string TimePeriodsSerialized
+        +IReadOnlyList~RFDevice~ Devices
+        +AddTimePeriod(TimePeriod period)
+        +DeleteTimePeriod(TimePeriod period)
+        +AddDevice(RFDevice device)
+        +RemoveDevice(RFDevice device)
+        +Clone() RFGroup
+    }
+
+    class TimePeriod {
+        +int ID
+        +string Name
+        +DateTime StartTime
+        +DateTime EndTime
+        +TimeSpan? StartTimeSpan
+        +TimeSpan? EndTimeSpan
+        +DateRange Range
+        +UpdateRange()
+        +ToString() string
+    }
+
+    class ExclusionChannel {
+        +int ID
+        +string Country
+        +int ChannelNumber
+        +float StartFrequency
+        +float EndFrequency
+        +string Type
+        +bool Exclude
+        +float ChannelWidth
+    }
+
+    class CountryChannelConfig {
+        +int ID
+        +string Country
+        +int ChannelWidth
+        +int StartChannel
+        +int EndChannel
+        +string DefaultFrequencyRange
+    }
+
+    class FrequencyData {
+        +int ID
+        +HashSet~int~ UsedFrequencies
+        +string UsedFrequenciesSerialized
+        +HashSet~int~ TwoTX3rdOrder
+        +string TwoTX3rdOrderSerialized
+        +HashSet~int~ TwoTX5rdOrder
+        +string TwoTX5rdOrderSerialized
+        +HashSet~int~ TwoTX7rdOrder
+        +string TwoTX7rdOrderSerialized
+        +HashSet~int~ TwoTX9rdOrder
+        +string TwoTX9rdOrderSerialized
+        +HashSet~int~ ThreeTX3rdOrder
+        +string ThreeTX3rdOrderSerialized
+        +Dictionary~int,FrequencyData~ GroupData
+    }
+
+    class RFBackupFrequency {
+        +int ID
+        +string Brand
+        +string Model
+        +string Frequency
+        +int ChannelIndex
+        +int BackupFrequency
+        +bool IsUsed
+        +float MinRange
+        +float MaxRange
+        +float Step
+    }
+
+    class DeviceDiscoveredEventArgs {
+        +string Name
+        +string Brand
+        +string Type
+        +string SerialNumber
+        +string IPAddress
+        +string Frequency
+        +List~ChannelInfo~ Channels
+        +bool IsSynced
+    }
+
+    class ChannelInfo {
+        +int ChannelNumber
+        +string Name
+        +string Frequency
+    }
+
+    %% Services Réels
+    class RFDeviceService {
+        +List~RFDevice~ Devices
+    }
+
+    class RFchannelService {
+        +List~RFChannel~ Channels
+    }
+
+    class FrequencyDataService {
+        +FrequencyData FrequencyData
+    }
+
+    class FrequencyCalculationService {
+        -DevicesViewModel _devicesViewModel
+        -GroupsViewModel _groupsViewModel
+        -BackupFrequenciesViewModel _backupFrequenciesViewModel
+        -ExclusionChannelViewModel _exclusionChannelViewModel
+        -FrequencyDataViewModel _frequencyDataViewModel
+        +CalculateFrequenciesAsync() Task
+        +FindOverlappingGroups() List~List~RFGroup~~
+        +DoGroupsOverlap(RFGroup group1, RFGroup group2) bool
+        +GetExcludedRanges() List~(float Start, float End)~
+        +GetDevicesForGroupSet(List~RFGroup~ groupSet) List~RFDevice~
+    }
+
+    class DeviceMappingService {
+        -UDPCommunicationService _communicationService
+        -IDeviceCommandSet _commandSet
+        -IEnumerable~IDeviceHandler~ _deviceHandlers
+        -DevicesViewModel _devicesViewModel
+        -DiscoveryService _discoveryService
+        +CastDeviceDiscoveredToRFDevice(DeviceDiscoveredEventArgs device) RFDevice
+        +FirstSyncToDevice(RFDevice offlineDevice, RFDevice onlineDevice) Task~List~string~~
+        +SyncToDevice(RFDevice device) Task~List~string~~
+        +FirstSyncFromDevice(RFDevice device) Task
+        +SyncFromDevice(RFDevice device) Task
+        +SyncAllFromDevice() Task~List~string~~
+        +SyncAllToDevice() Task~List~string~~
+        +FetchDeviceData(RFDevice device) Task~DeviceDiscoveredEventArgs~
+        +IsDevicePendingSync(RFDevice device) Task~bool~
+        -GetAppropriateHandler(RFDevice device) IDeviceHandler
+    }
+
+    class DiscoveryService {
+        -MulticastService _multicastService
+        -ServiceDiscovery _serviceDiscovery
+        -List~IDeviceHandler~ _handlers
+        -DevicesViewModel _devicesViewModel
+        -Timer _syncTimer
+        +List~DeviceDiscoveredEventArgs~ DiscoveredDevices
+        +event EventHandler~DeviceDiscoveredEventArgs~ DeviceDiscovered
+        +StartDiscovery() Task
+        +StopDiscovery() Task
+        +DetectDevicesAsync() Task
+        +CheckDeviceSync(object state) Task
+        +TriggerSennheiserDiscovery() Task
+        +TriggerG4Discovery() Task
+        +TriggerShureDiscovery() Task
+        -OnServiceDiscovered(object sender, ServiceInstanceEventArgs e)
+        -OnServiceInstanceDiscovered(object sender, ServiceInstanceEventArgs e)
+        -GetAppropriateHandler(RFDevice device) IDeviceHandler
+        -GetAppropriateHandlerForType(string brand, string type) IDeviceHandler
+        -CheckSingleDeviceSync(RFDevice device) Task
+    }
+
+    %% Interfaces Réelles
+    class IDeviceHandler {
+        <<interface>>
+        +string Brand
+        +CanHandle(string serviceName) bool
+        +HandleDevice(DeviceDiscoveredEventArgs deviceInfo) Task
+        +IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo) Task~(bool IsEqual, bool IsNotResponding)~
+        +SyncToDevice(DeviceDiscoveredEventArgs deviceInfo) Task~List~string~~
+    }
+
+    class IDeviceCommandSet {
+        <<interface>>
+        +GetModelCommand() string
+        +GetFrequencyCodeCommand() string
+        +GetSerialCommand() string
+        +GetChannelFrequencyCommand(int channel) string
+        +GetChannelNameCommand(int channel) string
+        +GetSignalQualityCommand(int channel) string
+        +SetChannelFrequencyCommand(int channel, int frequency) string
+        +SetChannelNameCommand(int channel, string name) string
+        +SetSignalQualityCommand(int channel, int quality) string
+    }
+
+    %% Handlers Réels
+    class SennheiserDeviceHandler {
+        -UDPCommunicationService _communicationService
+        -SennheiserCommandSet _commandSet
+        -int Port = 45
+        +string Brand = "Sennheiser"
+        +CanHandle(string serviceName) bool
+        +HandleDevice(DeviceDiscoveredEventArgs deviceInfo) Task
+        +IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo) Task~(bool, bool)~
+        +SyncToDevice(DeviceDiscoveredEventArgs deviceInfo) Task~List~string~~
+        +SendCommandAndExtractValueAsync(string ip, int port, string command, params string[] jsonPath) Task~string~
+    }
+
+    class SennheiserG4DeviceHandler {
+        -UDPCommunicationService _communicationService
+        -SennheiserG4CommandSet _commandSet
+        -DeviceData _deviceData
+        +string Brand = "Sennheiser"
+        +CanHandle(string serviceName) bool
+        +HandleDevice(DeviceDiscoveredEventArgs deviceInfo) Task
+        +IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo) Task~(bool, bool)~
+        +SyncToDevice(DeviceDiscoveredEventArgs deviceInfo) Task~List~string~~
+        -DetermineFrequencyBand(int minFreq, int maxFreq) string
+    }
+
+    class ShureDeviceHandler {
+        -TCPCommunicationService _communicationService
+        -ShureCommandSet _commandSet
+        +string Brand = "Shure"
+        +CanHandle(string serviceName) bool
+        +HandleDevice(DeviceDiscoveredEventArgs deviceInfo) Task
+        +IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo) Task~(bool, bool)~
+        +SyncToDevice(DeviceDiscoveredEventArgs deviceInfo) Task~List~string~~
+        +SendCommandAndExtractValueAsync(string ip, string command) Task~string~
+    }
+
+    %% Command Sets Réels
+    class SennheiserCommandSet {
+        +GetModelCommand() string
+        +GetFrequencyCodeCommand() string
+        +GetSerialCommand() string
+        +GetChannelNameCommand(int channel) string
+        +GetChannelFrequencyCommand(int channel) string
+        +GetSignalQualityCommand(int channel) string
+        +SetChannelFrequencyCommand(int channel, int frequency) string
+        +SetChannelNameCommand(int channel, string name) string
+        +SetSignalQualityCommand(int channel, int quality) string
+    }
+
+    class SennheiserG4CommandSet {
+        +GetModelCommand() string
+        +GetFrequencyCodeCommand() string
+        +GetSerialCommand() string
+        +GetChannelNameCommand(int channel) string
+        +GetChannelFrequencyCommand(int channel) string
+        +GetSignalQualityCommand(int channel) string
+        +GetMuteCommand(int channel) string
+        +GetSensitivityCommand(int channel) string
+        +GetModeCommand(int channel) string
+        +SetChannelFrequencyCommand(int channel, int frequency) string
+        +SetChannelNameCommand(int channel, string name) string
+        +SetMuteCommand(int channel, bool mute) string
+        +SetSensitivityCommand(int channel, int sensitivity) string
+        +SetModeCommand(int channel, bool stereo) string
+        +GetPushCommand(int timeoutSeconds, int cycleMilliseconds, int updateMode) string
+        +GetBankListCommand(int bankNumber) string
+    }
+
+    class ShureCommandSet {
+        +GetModelCommand() string
+        +GetFrequencyCodeCommand() string
+        +GetSerialCommand() string
+        +GetChannelNameCommand(int channel) string
+        +GetChannelFrequencyCommand(int channel) string
+        +GetSignalQualityCommand(int channel) string
+        +SetChannelFrequencyCommand(int channel, int frequency) string
+        +SetChannelNameCommand(int channel, string name) string
+        +SetSignalQualityCommand(int channel, int quality) string
+    }
+
+    %% Relations Réelles
+    RFDevice "1" --> "*" RFChannel : contains
+    RFDevice "*" --> "1" RFGroup : belongs to
+    RFGroup "1" --> "*" TimePeriod : contains
+    RFGroup "1" --> "*" RFDevice : contains
+    DeviceDiscoveredEventArgs "1" --> "*" ChannelInfo : contains
+    
+    RFDeviceService "1" --> "*" RFDevice : manages
+    RFchannelService "1" --> "*" RFChannel : manages
+    FrequencyDataService "1" --> "1" FrequencyData : manages
+    
+    DiscoveryService "1" --> "*" IDeviceHandler : uses
+    DiscoveryService "1" --> "*" DeviceDiscoveredEventArgs : discovers
+    DeviceMappingService "1" --> "*" IDeviceHandler : uses
+    FrequencyCalculationService --> DevicesViewModel : uses
+    FrequencyCalculationService --> GroupsViewModel : uses
+    FrequencyCalculationService --> BackupFrequenciesViewModel : uses
+    
+    IDeviceHandler <|.. SennheiserDeviceHandler : implements
+    IDeviceHandler <|.. SennheiserG4DeviceHandler : implements
+    IDeviceHandler <|.. ShureDeviceHandler : implements
+    
+    IDeviceCommandSet <|.. SennheiserCommandSet : implements
+    IDeviceCommandSet <|.. SennheiserG4CommandSet : implements
+    IDeviceCommandSet <|.. ShureCommandSet : implements
+    
+    SennheiserDeviceHandler --> SennheiserCommandSet : uses
+    SennheiserG4DeviceHandler --> SennheiserG4CommandSet : uses
+    ShureDeviceHandler --> ShureCommandSet : uses
+```
+
+## 1. Vue d'ensemble de l'architecture
+
+### Architecture en couches avec séparation des responsabilités
 
 ```mermaid
 classDiagram
     class PresentationLayer {
         <<abstract>>
+        +DevicesViewModel
+        +GroupsViewModel
+        +BackupFrequenciesViewModel
+        +FrequencyDataViewModel
+        +ExclusionChannelViewModel
+        +ScansViewModel
     }
     
     class ApplicationLayer {
         <<abstract>>
+        +FrequencyCalculationService
+        +DeviceMappingService
+        +DiscoveryService
+        +DatabaseImportExportService
+        +ScanImportExportService
     }
     
     class DomainLayer {
-        <<abstract>>  
+        <<abstract>>
+        +RFDevice
+        +RFChannel
+        +RFGroup
+        +TimePeriod
+        +ExclusionChannel
+        +FrequencyData
+        +RFBackupFrequency
     }
     
     class InfrastructureLayer {
         <<abstract>>
+        +IDeviceHandler Implementations
+        +IDeviceCommandSet Implementations
+        +DatabaseContext
+        +NetworkProtocols
+        +Communication Services
     }
     
     PresentationLayer ..> ApplicationLayer : Uses
@@ -30,70 +408,84 @@ classDiagram
     InfrastructureLayer ..> DomainLayer : Implements
 ```
 
-## 2. Modèles Métier (Domain Layer)
+## 2. Modèles métier (domain layer) - code réel
 
-### Entités Principales RF
+### Entités principales RF
 
 ```mermaid
 classDiagram
     class RFDevice {
         +int ID
-        +string Name
-        +string IPAddress
-        +DeviceBrand Brand
-        +DeviceModel Model
         +string SerialNumber
-        +DeviceStatus Status
-        +DateTime LastSync
-        +int GroupID
+        +bool Selected
+        +string Brand
+        +string Model
+        +string Name
+        +string Frequency
+        +List~int~ Range
+        +string RangeSerialized
         +List~RFChannel~ Channels
-        +Dictionary~string,object~ Properties
+        +string ChannelsSerialized
+        +string IpAddress
+        +string Calendar
+        +string Stage
+        +bool IsSynced
+        +bool IsOnline
+        +bool PendingSync
+        +int NumberOfChannels
+        +int GroupID
+        +RFGroup Group
+        +int Step
         
-        +bool IsOnline()
-        +void UpdateStatus(DeviceStatus status)
-        +void AddChannel(RFChannel channel)
-        +RFChannel GetChannel(int index)
-        +bool CanSync()
-        +Dictionary~string,object~ GetConfiguration()
+        +RFDevice Clone()
+        +(bool IsValid, string ErrorMessage) Validate()
+        +void OnPropertyChanged(string propertyName)
     }
     
     class RFChannel {
         +int ID
-        +int DeviceID
-        +int ChannelNumber
+        +bool Selected
+        +int chanNumber
         +int Frequency
+        +List~int~ Range
+        +string RangeSerialized
+        +int Step
+        +int SelfSpacing
+        +int ThirdOrderSpacing
+        +bool ThirdOrderSpacingEnable
+        +int FifthOrderSpacing
+        +bool FifthOrderSpacingEnable
+        +int SeventhOrderSpacing
+        +bool SeventhOrderSpacingEnable
+        +int NinthOrderSpacing
+        +bool NinthOrderSpacingEnable
+        +int ThirdOrderSpacing3Tx
+        +bool ThirdOrderSpacing3TxEnable
+        +bool Checked
         +string ChannelName
         +bool IsLocked
-        +int Power
-        +int Sensitivity
-        +ChannelType Type
-        +DateTime LastUpdate
         
-        +bool IsValidFrequency(int frequency)
-        +void Lock()
-        +void Unlock()
-        +void SetFrequency(int frequency)
-        +bool HasConflict()
-        +List~int~ GetIntermodulations()
+        +void SetRandomFrequency(HashSet~int~ usedFreqs, HashSet~int~ intermod3rd, HashSet~int~ intermod5th, HashSet~int~ intermod7th, HashSet~int~ intermod9th, HashSet~int~ intermod3tx, List excludedRanges)
+        +int GetRandomFrequency(int min, int max, int step)
+        +bool LoopForFreeFrequency(HashSet~int~ usedFreqs, HashSet~int~ intermodulations, List excludedRanges)
+        +bool CheckFreeFrequency(int frequency, HashSet~int~ usedFreqs, HashSet~int~ intermodulations)
+        +bool SpacingEnable()
+        +(HashSet~int~, HashSet~int~, HashSet~int~, HashSet~int~, HashSet~int~) CalculAllIntermod(int frequency, HashSet~int~ usedFreqs)
+        +RFChannel Clone()
     }
     
     class RFGroup {
         +int ID
         +string Name
-        +string Description
-        +Color GroupColor
-        +List~TimePeriod~ TimePeriods
-        +List~RFDevice~ Devices
-        +GroupStatus Status
-        +DateTime CreatedAt
-        +DateTime UpdatedAt
+        +IReadOnlyList~TimePeriod~ TimePeriods
+        +string TimePeriodsSerialized
+        +IReadOnlyList~RFDevice~ Devices
         
+        +void AddTimePeriod(TimePeriod period)
+        +void DeleteTimePeriod(TimePeriod period)
         +void AddDevice(RFDevice device)
         +void RemoveDevice(RFDevice device)
-        +void AddTimePeriod(TimePeriod period)
-        +bool HasTemporalConflict()
-        +List~RFDevice~ GetActiveDevices(DateTime time)
-        +int GetTotalChannels()
+        +RFGroup Clone()
     }
     
     class TimePeriod {
@@ -101,551 +493,665 @@ classDiagram
         +string Name
         +DateTime StartTime
         +DateTime EndTime
-        +TimeSpan StartTimeSpan
-        +TimeSpan EndTimeSpan
-        +RecurrenceType Recurrence
-        +bool IsActive
+        +TimeSpan? StartTimeSpan
+        +TimeSpan? EndTimeSpan
+        +DateRange Range
         
-        +bool IsActiveAt(DateTime time)
-        +bool OverlapsWith(TimePeriod other)
-        +TimeSpan Duration()
-        +DateTime GetNextOccurrence()
-        +bool Contains(DateTime time)
+        +void UpdateRange()
+        +string ToString()
     }
     
     class ExclusionChannel {
         +int ID
-        +int Frequency
-        +string Reason
-        +ExclusionType Type
-        +DateTime ValidFrom
-        +DateTime ValidTo
-        +string Region
-        +bool IsActive
-        
-        +bool IsExcludedAt(DateTime time)
-        +bool Conflicts(int frequency)
-        +bool IsInRegion(string region)
+        +string Country
+        +int ChannelNumber
+        +float StartFrequency
+        +float EndFrequency
+        +string Type
+        +bool Exclude
+        +float ChannelWidth
     }
     
-    RFDevice ||--o{ RFChannel : contains
-    RFGroup ||--o{ RFDevice : contains
-    RFGroup ||--o{ TimePeriod : contains
-    RFDevice }o--|| RFGroup : belongs to
+    class RFBackupFrequency {
+        +int ID
+        +string Brand
+        +string Model
+        +string Frequency
+        +int ChannelIndex
+        +int BackupFrequency
+        +bool IsUsed
+        +float MinRange
+        +float MaxRange
+        +float Step
+    }
+    
+    class CountryChannelConfig {
+        +int ID
+        +string Country
+        +int ChannelWidth
+        +int StartChannel
+        +int EndChannel
+        +string DefaultFrequencyRange
+    }
+    
+    RFDevice "1" --> "*" RFChannel : contains
+    RFGroup "1" --> "*" RFDevice : contains
+    RFGroup "1" --> "*" TimePeriod : contains
+    RFDevice "*" --> "1" RFGroup : belongs to
 ```
 
-### Modèles de Calcul RF
+### Modèles de calcul RF et fréquences
 
 ```mermaid
 classDiagram
     class FrequencyData {
-        +Dictionary~int,List~int~~ UsedFrequencies
-        +List~int~ AvailableFrequencies
-        +List~int~ ExcludedFrequencies
-        +Dictionary~string,List~int~~ IntermodulationProducts
-        +Dictionary~int,List~int~~ ChannelIntermodulations
-        +int MinFrequency
-        +int MaxFrequency
-        +int ChannelSpacing
+        +int ID
+        +HashSet~int~ UsedFrequencies
+        +string UsedFrequenciesSerialized
+        +HashSet~int~ TwoTX3rdOrder
+        +string TwoTX3rdOrderSerialized
+        +HashSet~int~ TwoTX5rdOrder
+        +string TwoTX5rdOrderSerialized
+        +HashSet~int~ TwoTX7rdOrder
+        +string TwoTX7rdOrderSerialized
+        +HashSet~int~ TwoTX9rdOrder
+        +string TwoTX9rdOrderSerialized
+        +HashSet~int~ ThreeTX3rdOrder
+        +string ThreeTX3rdOrderSerialized
+        +Dictionary~int,FrequencyData~ GroupData
+        +string Color
         
         +bool IsFrequencyAvailable(int frequency)
-        +void AddUsedFrequency(int frequency, int deviceId)
-        +void RemoveUsedFrequency(int frequency, int deviceId)
-        +List~int~ GetIntermodulations(int frequency)
-        +void CalculateAllIntermodulations()
+        +void AddUsedFrequency(int frequency)
+        +void RemoveUsedFrequency(int frequency)
         +bool HasConflict(int frequency)
-        +int GetOptimalFrequency(List~int~ preferences)
+        +void ClearAllData()
     }
     
-    class CalculationResult {
-        +Dictionary~int,int~ ChannelFrequencies
-        +List~string~ Conflicts
-        +List~string~ Warnings
-        +double OptimizationScore
-        +TimeSpan CalculationTime
-        +int TotalChannels
-        +int SuccessfulChannels
-        +List~int~ BackupFrequencies
+    class DeviceDiscoveredEventArgs {
+        +string Name
+        +string Brand
+        +string Type
+        +string SerialNumber
+        +string IPAddress
+        +string Frequency
+        +List~ChannelInfo~ Channels
+        +bool IsSynced
+    }
+    
+    class ChannelInfo {
+        +int ChannelNumber
+        +string Name
+        +string Frequency
+    }
+    
+    class DeviceData {
+        +Dictionary~string,Dictionary~string,Dictionary~string,List~int~~~~ Brands
         
-        +bool IsValid()
-        +double GetSuccessRate()
-        +void AddConflict(string conflict)
-        +void AddWarning(string warning)
-        +List~int~ GetConflictingChannels()
-        +string GenerateReport()
+        +List~int~ GetFrequencyRange(string brand, string model, string frequency)
+        +bool IsValidConfiguration(string brand, string model, string frequency)
+        +List~string~ GetAvailableModels(string brand)
+        +List~string~ GetAvailableFrequencies(string brand, string model)
     }
     
-    class IntermodulationCalculator {
-        +FrequencyData FrequencyData
-        +IntermodulationOrder MaxOrder
-        +bool Include3TxCalculations
-        
-        +List~int~ Calculate2Tx3rdOrder(int f1, int f2)
-        +List~int~ Calculate2Tx5thOrder(int f1, int f2)
-        +List~int~ Calculate2Tx7thOrder(int f1, int f2)
-        +List~int~ Calculate3Tx3rdOrder(int f1, int f2, int f3)
-        +List~int~ CalculateAllIntermodulations(List~int~ frequencies)
-        +bool HasIntermodulationConflict(int frequency, List~int~ usedFreqs)
-        +Dictionary~string,List~int~~ GetDetailedCalculations()
-    }
-    
-    FrequencyData --> IntermodulationCalculator : uses
-    IntermodulationCalculator --> CalculationResult : produces
+    DeviceDiscoveredEventArgs "1" --> "*" ChannelInfo : contains
+    FrequencyData --> RFBackupFrequency : references
 ```
 
-## 3. Services de Domaine
+## 3. Services de domaine (application layer) - implémentation réelle
 
-### Services RF et Gestion des Appareils
+### Services RF et gestion des appareils
 
 ```mermaid
 classDiagram
     class IFrequencyCalculationService {
         <<interface>>
-        +CalculationResult CalculateFrequencies(List~RFDevice~ devices)
-        +CalculationResult CalculateTemporalFrequencies(List~RFGroup~ groups)
-        +bool ValidateFrequencyPlan(Dictionary~int,int~ plan)
-        +List~int~ GenerateBackupFrequencies(int count)
-        +void OptimizePlan(CalculationResult result)
+        +Task CalculateFrequenciesAsync()
+        +List~List~RFGroup~~ FindOverlappingGroups()
+        +bool DoGroupsOverlap(RFGroup group1, RFGroup group2)
+        +List~(float Start, float End)~ GetExcludedRanges()
     }
     
     class FrequencyCalculationService {
-        -IFrequencyDataService _frequencyDataService
-        -IntermodulationCalculator _calculator
-        -IOptimizationEngine _optimizer
-        -ILogger _logger
+        -DevicesViewModel _devicesViewModel
+        -GroupsViewModel _groupsViewModel
+        -BackupFrequenciesViewModel _backupFrequenciesViewModel
+        -ExclusionChannelViewModel _exclusionChannelViewModel
+        -FrequencyDataViewModel _frequencyDataViewModel
         
-        +CalculationResult CalculateFrequencies(List~RFDevice~ devices)
-        +CalculationResult CalculateTemporalFrequencies(List~RFGroup~ groups)
-        +bool ValidateFrequencyPlan(Dictionary~int,int~ plan)
-        +List~int~ GenerateBackupFrequencies(int count)
-        +void OptimizePlan(CalculationResult result)
-        -void GroupDevicesByTimePeriod(List~RFGroup~ groups)
-        -void ProcessLockedFrequencies(List~RFChannel~ channels)
-        -void ProcessUnlockedFrequencies(List~RFChannel~ channels)
+        +Task CalculateFrequenciesAsync()
+        +List~List~RFGroup~~ FindOverlappingGroups()
+        +bool DoGroupsOverlap(RFGroup group1, RFGroup group2)
+        +List~(float Start, float End)~ GetExcludedRanges()
+        +List~RFDevice~ GetDevicesForGroupSet(List~RFGroup~ groupSet)
+        +bool DoPeriodsOverlap(TimePeriod period1, TimePeriod period2)
+        -void ProcessLockedChannels(List~RFDevice~ devices, FrequencyData groupData, List excludedRanges)
+        -void ProcessUnlockedChannels(List~RFDevice~ devices, FrequencyData groupData, List excludedRanges)
+        -void ProcessBackupFrequencies(List~RFDevice~ devices, FrequencyData groupData, List excludedRanges)
     }
     
     class IDiscoveryService {
         <<interface>>
-        +event DeviceDiscoveredEventHandler DeviceDiscovered
-        +event DeviceLostEventHandler DeviceLost
+        +event EventHandler~DeviceDiscoveredEventArgs~ DeviceDiscovered
         +Task StartDiscoveryAsync()
         +Task StopDiscoveryAsync()
-        +List~RFDevice~ GetDiscoveredDevices()
-        +Task~RFDevice~ GetDeviceDetailsAsync(string ipAddress)
+        +List~DeviceDiscoveredEventArgs~ GetDiscoveredDevices()
+        +Task CheckDeviceSync(object state)
     }
     
     class DiscoveryService {
+        -MulticastService _multicastService
+        -ServiceDiscovery _serviceDiscovery
         -List~IDeviceHandler~ _handlers
-        -Timer _discoveryTimer
-        -ConcurrentDictionary~string,RFDevice~ _discoveredDevices
-        -ILogger _logger
+        -DevicesViewModel _devicesViewModel
+        -Timer _syncTimer
+        -UdpClient _g4UdpClient
+        -CancellationTokenSource _g4DiscoveryCts
+        -UdpClient _shureUdpClient
+        -CancellationTokenSource _shureDiscoveryCts
         
-        +event DeviceDiscoveredEventHandler DeviceDiscovered
-        +event DeviceLostEventHandler DeviceLost
+        +List~DeviceDiscoveredEventArgs~ DiscoveredDevices
+        +event EventHandler~DeviceDiscoveredEventArgs~ DeviceDiscovered
         +Task StartDiscoveryAsync()
         +Task StopDiscoveryAsync()
-        +List~RFDevice~ GetDiscoveredDevices()
-        +Task~RFDevice~ GetDeviceDetailsAsync(string ipAddress)
-        -Task RunDiscoveryLoop()
-        -void ProcessDiscoveryResults(List~DeviceInfo~ devices)
-        -bool IsDeviceAlreadyKnown(DeviceInfo device)
+        +Task DetectDevicesAsync()
+        +Task CheckDeviceSync(object state)
+        +Task TriggerSennheiserDiscovery()
+        +Task TriggerG4Discovery()
+        +Task TriggerShureDiscovery()
+        -void OnServiceDiscovered(object sender, ServiceInstanceEventArgs e)
+        -void OnServiceInstanceDiscovered(object sender, ServiceInstanceEventArgs e)
+        -IDeviceHandler GetAppropriateHandler(RFDevice device)
+        -IDeviceHandler GetAppropriateHandlerForType(string brand, string type)
+        -Task CheckSingleDeviceSync(RFDevice device)
+        -DeviceDiscoveredEventArgs ParseShureSLPResponse(byte[] data)
     }
     
     IFrequencyCalculationService <|.. FrequencyCalculationService
     IDiscoveryService <|.. DiscoveryService
 ```
 
-### Services de Synchronisation et Mapping
+### Services de synchronisation et mapping
 
 ```mermaid
 classDiagram
     class ISynchronizationService {
         <<interface>>
-        +Task~SyncResult~ SyncDeviceAsync(RFDevice device)
-        +Task~SyncResult~ SyncAllDevicesAsync(List~RFDevice~ devices)
-        +Task~SyncResult~ SyncFromDeviceAsync(RFDevice device)
-        +event SyncCompletedEventHandler SyncCompleted
+        +Task~List~string~~ SyncDeviceAsync(RFDevice device)
+        +Task~List~string~~ SyncAllDevicesAsync()
+        +Task SyncFromDeviceAsync(RFDevice device)
+        +Task~bool~ IsDevicePendingSync(RFDevice device)
     }
     
-    class SynchronizationService {
-        -IDeviceHandlerFactory _handlerFactory
-        -ISyncResultLogger _logger
-        -SemaphoreSlim _syncSemaphore
+    class DeviceMappingService {
+        -UDPCommunicationService _communicationService
+        -IDeviceCommandSet _commandSet
+        -IEnumerable~IDeviceHandler~ _deviceHandlers
+        -DevicesViewModel _devicesViewModel
+        -DiscoveryService _discoveryService
         
-        +Task~SyncResult~ SyncDeviceAsync(RFDevice device)
-        +Task~SyncResult~ SyncAllDevicesAsync(List~RFDevice~ devices)
-        +Task~SyncResult~ SyncFromDeviceAsync(RFDevice device)
-        +event SyncCompletedEventHandler SyncCompleted
-        -Task~SyncResult~ ExecuteSyncOperation(RFDevice device, SyncDirection direction)
-        -void ValidateDeviceState(RFDevice device)
-        -List~SyncCommand~ BuildSyncCommands(RFDevice device)
+        +Task~List~string~~ FirstSyncToDevice(RFDevice offlineDevice, RFDevice onlineDevice)
+        +Task~List~string~~ SyncToDevice(RFDevice device)
+        +Task FirstSyncFromDevice(RFDevice device)
+        +Task SyncFromDevice(RFDevice device)
+        +Task~List~string~~ SyncAllFromDevice()
+        +Task~List~string~~ SyncAllToDevice()
+        +Task~DeviceDiscoveredEventArgs~ FetchDeviceData(RFDevice device)
+        +Task~bool~ IsDevicePendingSync(RFDevice device)
+        +RFDevice CastDeviceDiscoveredToRFDevice(DeviceDiscoveredEventArgs device)
+        -IDeviceHandler GetAppropriateHandler(RFDevice device)
     }
     
-    class IMappingService {
-        <<interface>>
-        +void MapFrequenciesToDevices(List~RFDevice~ devices, Dictionary~int,int~ frequencies)
-        +Dictionary~int,int~ ExtractFrequenciesFromDevices(List~RFDevice~ devices)
-        +bool ValidateMapping(List~RFDevice~ devices)
-        +void ApplyTemporalMapping(List~RFGroup~ groups)
-    }
-    
-    class MappingService {
-        -IValidationService _validator
-        -ILogger _logger
+    class DatabaseImportExportService {
+        -DatabaseContext _context
         
-        +void MapFrequenciesToDevices(List~RFDevice~ devices, Dictionary~int,int~ frequencies)
-        +Dictionary~int,int~ ExtractFrequenciesFromDevices(List~RFDevice~ devices)
-        +bool ValidateMapping(List~RFDevice~ devices)
-        +void ApplyTemporalMapping(List~RFGroup~ groups)
-        -void ValidateFrequencyRange(int frequency)
-        -void UpdateChannelMapping(RFChannel channel, int frequency)
-        -void LogMappingOperation(string operation, object details)
+        +Task ExportDatabaseAsync()
+        +Task ImportDatabaseAsync()
+        -ImportData CreateExportData()
+        -Task RestoreFromImportData(ImportData data)
+        -Dictionary~int,int~ CreateGroupIdMapping(List~RFGroup~ importedGroups)
+        -void ApplyGroupIdMapping(List~RFDevice~ devices, Dictionary~int,int~ groupIdMapping)
     }
     
-    ISynchronizationService <|.. SynchronizationService
-    IMappingService <|.. MappingService
+    class ScanImportExportService {
+        -DatabaseContext _context
+        
+        +Task ExportScansAsync()
+        +Task ImportScansAsync()
+        +Task~ScanData~ CreateScanExportData()
+        +Task RestoreFromScanData(ScanData data)
+    }
+    
+    ISynchronizationService <|.. DeviceMappingService
 ```
 
-## 4. Handlers et Adaptateurs
+## 4. Handlers et adaptateurs (infrastructure layer) - patterns réels
 
-### Handlers de Protocoles Réseau
+### Handlers de protocoles réseau
 
 ```mermaid
 classDiagram
     class IDeviceHandler {
         <<interface>>
-        +DeviceBrand SupportedBrand
-        +List~DeviceModel~ SupportedModels
-        +Task~List~DeviceInfo~~ DiscoverDevicesAsync()
-        +Task~RFDevice~ GetDeviceDetailsAsync(string ipAddress)
-        +Task~SyncResult~ SyncDeviceAsync(RFDevice device)
-        +bool SupportsDevice(DeviceInfo device)
+        +string Brand
+        +bool CanHandle(string serviceName)
+        +Task HandleDevice(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~(bool IsEqual, bool IsNotResponding)~ IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~List~string~~ SyncToDevice(DeviceDiscoveredEventArgs deviceInfo)
     }
     
-    class SennheiserHandler {
-        -mDNSService _mdnsService
-        -TCPClient _tcpClient
-        -string _serviceType = "_sennheiser._tcp"
+    class SennheiserDeviceHandler {
+        -UDPCommunicationService _communicationService
+        -SennheiserCommandSet _commandSet
+        -int Port = 45
         
-        +DeviceBrand SupportedBrand = Sennheiser
-        +List~DeviceModel~ SupportedModels
-        +Task~List~DeviceInfo~~ DiscoverDevicesAsync()
-        +Task~RFDevice~ GetDeviceDetailsAsync(string ipAddress)
-        +Task~SyncResult~ SyncDeviceAsync(RFDevice device)
-        +bool SupportsDevice(DeviceInfo device)
-        -Task~List~DeviceInfo~~ PerformmDNSDiscovery()
-        -string BuildSennheiserCommand(string command, Dictionary~string,object~ parameters)
-        -Task~string~ SendTCPCommandAsync(string ipAddress, string command)
+        +string Brand = "Sennheiser"
+        +bool CanHandle(string serviceName)
+        +Task HandleDevice(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~(bool IsEqual, bool IsNotResponding)~ IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~List~string~~ SyncToDevice(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~string~ SendCommandAndExtractValueAsync(string ip, int port, string command, params string[] jsonPath)
     }
     
-    class ShureHandler {
-        -SLPService _slpService
-        -TCPClient _tcpClient
-        -string _multicastAddress = "239.255.254.253"
-        -int _multicastPort = 8427
+    class SennheiserG4DeviceHandler {
+        -UDPCommunicationService _communicationService
+        -SennheiserG4CommandSet _commandSet
+        -DeviceData _deviceData
+        -int Port = 53212
         
-        +DeviceBrand SupportedBrand = Shure
-        +List~DeviceModel~ SupportedModels
-        +Task~List~DeviceInfo~~ DiscoverDevicesAsync()
-        +Task~RFDevice~ GetDeviceDetailsAsync(string ipAddress)
-        +Task~SyncResult~ SyncDeviceAsync(RFDevice device)
-        +bool SupportsDevice(DeviceInfo device)
-        -Task~List~DeviceInfo~~ PerformSLPDiscovery()
-        -string BuildShureCommand(string command, Dictionary~string,object~ parameters)
-        -Task~string~ SendULXDCommandAsync(string ipAddress, string command)
+        +string Brand = "Sennheiser"
+        +bool CanHandle(string serviceName)
+        +Task HandleDevice(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~(bool IsEqual, bool IsNotResponding)~ IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~List~string~~ SyncToDevice(DeviceDiscoveredEventArgs deviceInfo)
+        -string DetermineFrequencyBand(int minFreq, int maxFreq)
     }
     
-    class GenericHandler {
-        -UDPClient _udpClient
-        -List~string~ _scanRanges
+    class ShureDeviceHandler {
+        -TCPCommunicationService _communicationService
+        -ShureCommandSet _commandSet
+        -int Port = 2202
         
-        +DeviceBrand SupportedBrand = Generic
-        +List~DeviceModel~ SupportedModels
-        +Task~List~DeviceInfo~~ DiscoverDevicesAsync()
-        +Task~RFDevice~ GetDeviceDetailsAsync(string ipAddress)
-        +Task~SyncResult~ SyncDeviceAsync(RFDevice device)
-        +bool SupportsDevice(DeviceInfo device)
-        -Task~List~DeviceInfo~~ PerformUDPScan()
-        -Task~DeviceInfo~ ProbeDevice(string ipAddress)
-        -bool IsDeviceResponsive(string ipAddress)
+        +string Brand = "Shure"
+        +bool CanHandle(string serviceName)
+        +Task HandleDevice(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~(bool IsEqual, bool IsNotResponding)~ IsDevicePendingSync(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~List~string~~ SyncToDevice(DeviceDiscoveredEventArgs deviceInfo)
+        +Task~string~ SendCommandAndExtractValueAsync(string ip, string command)
     }
     
-    IDeviceHandler <|.. SennheiserHandler
-    IDeviceHandler <|.. ShureHandler
-    IDeviceHandler <|.. GenericHandler
+    IDeviceHandler <|.. SennheiserDeviceHandler
+    IDeviceHandler <|.. SennheiserG4DeviceHandler
+    IDeviceHandler <|.. ShureDeviceHandler
 ```
 
-### Factory Patterns pour Extensibilité
+### Command sets et patterns de commande
 
 ```mermaid
 classDiagram
-    class IDeviceHandlerFactory {
+    class IDeviceCommandSet {
         <<interface>>
-        +IDeviceHandler GetHandler(DeviceBrand brand)
-        +IDeviceHandler GetHandler(DeviceInfo device)
-        +List~IDeviceHandler~ GetAllHandlers()
-        +void RegisterHandler(IDeviceHandler handler)
+        +string GetModelCommand()
+        +string GetFrequencyCodeCommand()
+        +string GetSerialCommand()
+        +string GetChannelFrequencyCommand(int channel)
+        +string GetChannelNameCommand(int channel)
+        +string GetSignalQualityCommand(int channel)
+        +string SetChannelFrequencyCommand(int channel, int frequency)
+        +string SetChannelNameCommand(int channel, string name)
+        +string SetSignalQualityCommand(int channel, int quality)
     }
     
-    class DeviceHandlerFactory {
-        -Dictionary~DeviceBrand,IDeviceHandler~ _handlers
-        -IServiceProvider _serviceProvider
-        
-        +IDeviceHandler GetHandler(DeviceBrand brand)
-        +IDeviceHandler GetHandler(DeviceInfo device)
-        +List~IDeviceHandler~ GetAllHandlers()
-        +void RegisterHandler(IDeviceHandler handler)
-        -void InitializeDefaultHandlers()
-        -IDeviceHandler CreateHandler(Type handlerType)
+    class SennheiserCommandSet {
+        +string GetModelCommand()
+        +string GetFrequencyCodeCommand()
+        +string GetSerialCommand()
+        +string GetChannelNameCommand(int channel)
+        +string GetChannelFrequencyCommand(int channel)
+        +string GetSignalQualityCommand(int channel)
+        +string SetChannelFrequencyCommand(int channel, int frequency)
+        +string SetChannelNameCommand(int channel, string name)
+        +string SetSignalQualityCommand(int channel, int quality)
     }
     
-    class ICalculationEngineFactory {
-        <<interface>>
-        +ICalculationEngine CreateEngine(CalculationType type)
-        +List~CalculationType~ GetSupportedTypes()
+    class SennheiserG4CommandSet {
+        +string GetModelCommand()
+        +string GetFrequencyCodeCommand()
+        +string GetSerialCommand()
+        +string GetChannelNameCommand(int channel)
+        +string GetChannelFrequencyCommand(int channel)
+        +string GetSignalQualityCommand(int channel)
+        +string GetMuteCommand(int channel)
+        +string GetSensitivityCommand(int channel)
+        +string GetModeCommand(int channel)
+        +string SetChannelFrequencyCommand(int channel, int frequency)
+        +string SetChannelNameCommand(int channel, string name)
+        +string SetMuteCommand(int channel, bool mute)
+        +string SetSensitivityCommand(int channel, int sensitivity)
+        +string SetModeCommand(int channel, bool stereo)
+        +string GetPushCommand(int timeoutSeconds, int cycleMilliseconds, int updateMode)
+        +string GetBankListCommand(int bankNumber)
     }
     
-    class CalculationEngineFactory {
-        -Dictionary~CalculationType,Type~ _engineTypes
-        -IServiceProvider _serviceProvider
-        
-        +ICalculationEngine CreateEngine(CalculationType type)
-        +List~CalculationType~ GetSupportedTypes()
-        +void RegisterEngine(CalculationType type, Type engineType)
-        -ICalculationEngine InstantiateEngine(Type engineType)
+    class ShureCommandSet {
+        +string GetModelCommand()
+        +string GetFrequencyCodeCommand()
+        +string GetSerialCommand()
+        +string GetChannelNameCommand(int channel)
+        +string GetChannelFrequencyCommand(int channel)
+        +string GetSignalQualityCommand(int channel)
+        +string SetChannelFrequencyCommand(int channel, int frequency)
+        +string SetChannelNameCommand(int channel, string name)
+        +string SetSignalQualityCommand(int channel, int quality)
     }
     
-    IDeviceHandlerFactory <|.. DeviceHandlerFactory
-    ICalculationEngineFactory <|.. CalculationEngineFactory
-    DeviceHandlerFactory --> IDeviceHandler : creates
-    CalculationEngineFactory --> ICalculationEngine : creates
+    IDeviceCommandSet <|.. SennheiserCommandSet
+    IDeviceCommandSet <|.. SennheiserG4CommandSet
+    IDeviceCommandSet <|.. ShureCommandSet
+    
+    SennheiserDeviceHandler --> SennheiserCommandSet : uses
+    SennheiserG4DeviceHandler --> SennheiserG4CommandSet : uses
+    ShureDeviceHandler --> ShureCommandSet : uses
 ```
 
-## 5. ViewModels et Presentation Layer
+## 5. ViewModels et presentation layer - MVVM réel
 
-### ViewModels MVVM
+### ViewModels architecture
 
 ```mermaid
 classDiagram
     class BaseViewModel {
         <<abstract>>
         +event PropertyChangedEventHandler PropertyChanged
+        +bool IsBusy
+        
         #bool SetProperty<T>(ref T field, T value, string propertyName)
         #void OnPropertyChanged(string propertyName)
         +virtual Task InitializeAsync()
         +virtual void Cleanup()
-        #void RaiseCanExecuteChanged()
+        #Task ExecuteAsync(Func~Task~ operation, string busyText)
     }
     
     class DevicesViewModel {
-        -IDiscoveryService _discoveryService
-        -ISynchronizationService _syncService
-        -IFrequencyCalculationService _calculationService
+        -DatabaseContext _context
         -ObservableCollection<RFDevice> _devices
-        -RFDevice _selectedDevice
-        -bool _isDiscovering
-        -string _statusMessage
+        -RFDevice _operatingDevice
         
         +ObservableCollection<RFDevice> Devices
-        +RFDevice SelectedDevice
-        +bool IsDiscovering
-        +string StatusMessage
-        +ICommand StartDiscoveryCommand
-        +ICommand SyncSelectedCommand
-        +ICommand SyncAllCommand
-        +ICommand CalculateFrequenciesCommand
-        +ICommand RefreshCommand
+        +RFDevice OperatingDevice
+        +event EventHandler DevicesChanged
         
-        +Task InitializeAsync()
-        -Task StartDiscovery()
-        -Task SyncSelectedDevice()
-        -Task SyncAllDevices()
-        -Task CalculateFrequencies()
-        -void OnDeviceDiscovered(object sender, DeviceDiscoveredEventArgs e)
-        -void OnSyncCompleted(object sender, SyncCompletedEventArgs e)
+        +Task LoadDevicesAsync()
+        +Task SaveDeviceAsync(RFDevice device)
+        +Task SaveAllDevicesAsync()
+        +Task DeleteDeviceAsync(RFDevice device)
+        +Task DeleteAllDeviceAsync()
+        +void SaveDataDevicesInfo(RFDevice device)
+        +void SaveDataChannelsInfo(RFDevice device)
+        +Task RefreshDevicesAsync()
     }
     
-    class FrequencyViewModel {
-        -IFrequencyCalculationService _calculationService
-        -IMappingService _mappingService
-        -ObservableCollection<RFChannel> _channels
-        -CalculationResult _lastCalculation
-        -bool _isCalculating
+    class GroupsViewModel {
+        -DatabaseContext _context
+        -ObservableCollection<RFGroup> _groups
+        -RFGroup _operatingGroup
         
-        +ObservableCollection<RFChannel> Channels
-        +CalculationResult LastCalculation
-        +bool IsCalculating
-        +ICommand CalculateCommand
-        +ICommand OptimizeCommand
-        +ICommand LockChannelCommand
-        +ICommand UnlockChannelCommand
+        +ObservableCollection<RFGroup> Groups
+        +RFGroup OperatingGroup
         
-        -Task CalculateFrequencies()
-        -Task OptimizeFrequencies()
-        -void LockChannel(RFChannel channel)
-        -void UnlockChannel(RFChannel channel)
-        -void UpdateChannelDisplay()
+        +Task LoadGroupsAsync()
+        +Task SaveGroupAsync()
+        +Task DeleteGroupAsync(RFGroup group)
+        +string GetGroupName(int groupId)
+        +Task UpdateDeviceGroupAsync(RFDevice device, int newGroupId)
+    }
+    
+    class BackupFrequenciesViewModel {
+        -DatabaseContext _context
+        -DeviceData _deviceData
+        -ObservableCollection<RFBackupFrequency> _backupFrequencies
+        -Dictionary<(string Brand, string Model, string Frequency), int> _backupCounts
+        
+        +ObservableCollection<RFBackupFrequency> BackupFrequencies
+        
+        +Task LoadBackupFrequenciesAsync()
+        +Task SaveBackupFrequencyCountAsync(string brand, string model, string frequency, int count)
+        +Task LoadBackupFrequencyCountsAsync()
+        +int GetBackupFrequencyCount(string brand, string model, string frequency)
+        +Task GenerateBackupFrequenciesAsync(FrequencyDataViewModel frequencyData, List excludedRanges)
+        +List~RFBackupFrequency~ GetBackupFrequenciesForDeviceType(string brand, string model, string frequency)
+        +Task SaveBackupFrequencyAsync(RFBackupFrequency frequency)
+        +Task DeleteBackupFrequencyAsync(RFBackupFrequency frequency)
+        +Task DeleteAllBackupFrequenciesAsync()
+    }
+    
+    class FrequencyDataViewModel {
+        -DatabaseContext _context
+        -FrequencyData _frequencyData
+        
+        +FrequencyData FrequencyData
+        
+        +Task LoadFrequencyDataAsync()
+        +Task SaveFrequencyDataAsync()
+        +Task ClearFrequencyDataAsync()
+    }
+    
+    class ExclusionChannelViewModel {
+        -DatabaseContext _context
+        -ObservableCollection<ExclusionChannel> _exclusionChannels
+        
+        +ObservableCollection<ExclusionChannel> ExclusionChannels
+        
+        +Task LoadExclusionChannelsAsync()
+        +Task SaveExclusionChannelAsync(ExclusionChannel channel)
+        +Task DeleteExclusionChannelAsync(ExclusionChannel channel)
+        +List~(float Start, float End)~ GetExcludedRanges()
+    }
+    
+    class ScansViewModel {
+        -DatabaseContext _context
+        -ObservableCollection<ScanResult> _scans
+        
+        +ObservableCollection<ScanResult> Scans
+        
+        +Task LoadScansAsync()
+        +Task SaveScanAsync(ScanResult scan)
+        +Task DeleteScanAsync(ScanResult scan)
+        +Task DeleteAllScansAsync()
     }
     
     BaseViewModel <|-- DevicesViewModel
-    BaseViewModel <|-- FrequencyViewModel
+    BaseViewModel <|-- GroupsViewModel
+    BaseViewModel <|-- BackupFrequenciesViewModel
+    BaseViewModel <|-- FrequencyDataViewModel
+    BaseViewModel <|-- ExclusionChannelViewModel
+    BaseViewModel <|-- ScansViewModel
 ```
 
-## 6. Data Access Layer
+## 6. Data access layer - repository pattern réel
 
-### Repository Pattern et EF Core
+### Database context et repository pattern
 
 ```mermaid
 classDiagram
-    class IRepository~T~ {
-        <<interface>>
-        +Task~T~ GetByIdAsync(int id)
-        +Task~IEnumerable~T~~ GetAllAsync()
-        +Task~IEnumerable~T~~ FindAsync(Expression~Func~T,bool~~ predicate)
-        +Task AddAsync(T entity)
-        +Task UpdateAsync(T entity)
-        +Task DeleteAsync(T entity)
-        +Task~bool~ ExistsAsync(int id)
-    }
-    
-    class BaseRepository~T~ {
-        <<abstract>>
-        #ApplicationDbContext _context
-        #DbSet~T~ _dbSet
+    class DatabaseContext {
+        -SQLiteAsyncConnection _database
+        -string _dbPath
         
-        +Task~T~ GetByIdAsync(int id)
-        +Task~IEnumerable~T~~ GetAllAsync()
-        +Task~IEnumerable~T~~ FindAsync(Expression~Func~T,bool~~ predicate)
-        +Task AddAsync(T entity)
-        +Task UpdateAsync(T entity)
-        +Task DeleteAsync(T entity)
-        +Task~bool~ ExistsAsync(int id)
-        #virtual IQueryable~T~ GetQueryable()
+        +Task<List<T>> GetAllAsync<T>() where T : class, new()
+        +Task<T> GetItemAsync<T>(int id) where T : class, new()
+        +Task<bool> AddItemAsync<T>(T item) where T : class, new()
+        +Task<bool> UpdateItemAsync<T>(T item) where T : class, new()
+        +Task<bool> DeleteItemAsync<T>(T item) where T : class, new()
+        +Task<bool> DeleteItemByKeyAsync<T>(object primaryKey) where T : class, new()
+        +Task<bool> DeleteAllAsync<T>() where T : class, new()
+        +Task<List<T>> GetFilteredAsync<T>(Expression<Func<T, bool>> predicate) where T : class, new()
+        +Task<RFGroup> GetGroupById(int id)
+        +Task InitializeDatabaseAsync()
+        -Task CreateTablesAsync()
     }
     
-    class IRFDeviceRepository {
-        <<interface>>
-        +Task~List~RFDevice~~ GetDevicesByGroupAsync(int groupId)
-        +Task~List~RFDevice~~ GetOnlineDevicesAsync()
-        +Task~RFDevice~ GetDeviceByIPAsync(string ipAddress)
-        +Task UpdateDeviceStatusAsync(int deviceId, DeviceStatus status)
+    class DeviceDataJson {
+        +DeviceData GetDeviceData()
+        +List~string~ GetBrands()
+        +List~string~ GetModels(string brand)
+        +List~string~ GetFrequencies(string brand, string model)
+        +List~int~ GetFrequencyRange(string brand, string model, string frequency)
     }
     
-    class RFDeviceRepository {
-        +Task~List~RFDevice~~ GetDevicesByGroupAsync(int groupId)
-        +Task~List~RFDevice~~ GetOnlineDevicesAsync()
-        +Task~RFDevice~ GetDeviceByIPAsync(string ipAddress)
-        +Task UpdateDeviceStatusAsync(int deviceId, DeviceStatus status)
-        -IQueryable~RFDevice~ GetDevicesWithChannels()
+    class FilePickerService {
+        +Task<FileResult> PickFileAsync(PickOptions options)
+        +Task<string> ReadFileAsync(FileResult file)
     }
     
-    class IUnitOfWork {
-        <<interface>>
-        +IRFDeviceRepository RFDevices
-        +IRFChannelRepository RFChannels
-        +IRFGroupRepository RFGroups
-        +IExclusionChannelRepository ExclusionChannels
-        +Task~int~ SaveChangesAsync()
-        +Task BeginTransactionAsync()
-        +Task CommitTransactionAsync()
-        +Task RollbackTransactionAsync()
+    class FileSaverService {
+        +Task<FileSaverResult> SaveAsync(string fileName, Stream data)
+        +Task<FileSaverResult> SaveAsync(string fileName, string data, CancellationToken cancellationToken)
     }
     
-    IRepository~T~ <|.. BaseRepository~T~
-    BaseRepository~RFDevice~ <|-- RFDeviceRepository
-    IRFDeviceRepository <|.. RFDeviceRepository
+    DatabaseContext --> RFDevice : manages
+    DatabaseContext --> RFChannel : manages
+    DatabaseContext --> RFGroup : manages
+    DatabaseContext --> RFBackupFrequency : manages
+    DatabaseContext --> ExclusionChannel : manages
+    DatabaseContext --> FrequencyData : manages
 ```
 
-## 7. Patterns de Conception Utilisés
+## 7. Communication services - network layer
 
-### Design Patterns Implémentés
+### Network protocols et communication
 
 ```mermaid
 classDiagram
-    class Singleton~T~ {
-        <<abstract>>
-        -static T _instance
-        -static readonly object _lock
-        +static T Instance
-        #Singleton()
-        +static T GetInstance()
+    class UDPCommunicationService {
+        +Task<string> SendUDPCommandAsync(string ipAddress, int port, string command)
+        +Task<string> SendG4CommandAsync(string ipAddress, string command)
+        +Task<byte[]> SendUDPCommandBytesAsync(string ipAddress, int port, byte[] command)
+        -UdpClient CreateUdpClient()
+        -void ConfigureTimeout(UdpClient client, int timeoutMs)
     }
     
-    class Command {
-        <<interface>>
-        +Task ExecuteAsync()
-        +bool CanExecute()
-        +event EventHandler CanExecuteChanged
+    class TCPCommunicationService {
+        +Task<string> SendTCPCommandAsync(string ipAddress, int port, string command)
+        +Task<string> SendShureCommandAsync(string ipAddress, string command)
+        -TcpClient CreateTcpClient()
+        -void ConfigureTimeout(TcpClient client, int timeoutMs)
     }
     
-    class Observer~T~ {
-        <<interface>>
-        +void Update(T data)
+    class MulticastService {
+        +event EventHandler<ServiceInstanceEventArgs> ServiceInstanceDiscovered
+        +Task StartAsync()
+        +Task StopAsync()
+        +void SendQuery(string serviceType)
     }
     
-    class Subject~T~ {
-        <<abstract>>
-        -List~Observer~T~~ _observers
-        +void Attach(Observer~T~ observer)
-        +void Detach(Observer~T~ observer)
-        #void Notify(T data)
+    class ServiceDiscovery {
+        -MulticastService _multicastService
+        
+        +event EventHandler<ServiceInstanceEventArgs> ServiceDiscovered
+        +event EventHandler<ServiceInstanceEventArgs> ServiceInstanceDiscovered
+        +Task StartAsync()
+        +Task StopAsync()
+        +void QueryService(string serviceType)
     }
     
-    class Strategy~T~ {
-        <<interface>>
-        +T Execute(object parameters)
-    }
-    
-    class Factory~T~ {
-        <<abstract>>
-        +abstract T Create(object parameters)
-        +virtual T CreateDefault()
-    }
+    SennheiserDeviceHandler --> UDPCommunicationService : uses
+    SennheiserG4DeviceHandler --> UDPCommunicationService : uses
+    ShureDeviceHandler --> TCPCommunicationService : uses
+    DiscoveryService --> MulticastService : uses
+    DiscoveryService --> ServiceDiscovery : uses
 ```
 
-### Métriques de Complexité
+## 8. Patterns de conception utilisés - implémentation réelle
 
-| Classe | Responsabilités | Couplage | Cohésion | Complexité Cyclomatique |
-|--------|----------------|----------|----------|-------------------------|
-| **RFDevice** | Entité métier | Faible | Élevée | 8 |
-| **FrequencyCalculationService** | Service métier | Moyen | Élevée | 15 |
-| **DiscoveryService** | Service technique | Moyen | Moyenne | 12 |
-| **DevicesViewModel** | Présentation | Élevé | Moyenne | 18 |
-| **SennheiserHandler** | Adaptateur | Faible | Élevée | 10 |
-
-## 8. Relations et Dépendances
-
-### Diagramme de Packages
+### Design patterns identifiés dans le code
 
 ```mermaid
 classDiagram
-    package RF.Go.Domain {
-        class RFDevice
-        class RFChannel
-        class RFGroup
+    class ObserverPattern {
+        <<pattern>>
+        +INotifyPropertyChanged
+        +PropertyChanged Events
+        +DevicesChanged Events
+        +DeviceDiscovered Events
     }
     
-    package RF.Go.Application {
-        class IFrequencyCalculationService
-        class FrequencyCalculationService
-        class DevicesViewModel
+    class StrategyPattern {
+        <<pattern>>
+        +IDeviceHandler Strategy
+        +IDeviceCommandSet Strategy
+        +Handler Selection Logic
     }
     
-    package RF.Go.Infrastructure {
-        class RFDeviceRepository
-        class SennheiserHandler
-        class DiscoveryService
+    class FactoryPattern {
+        <<pattern>>
+        +Handler Creation
+        +CommandSet Creation
+        +Service Registration
     }
     
-    package RF.Go.Presentation {
-        class DevicesView
-        class FrequencyView
+    class RepositoryPattern {
+        <<pattern>>
+        +DatabaseContext
+        +Generic CRUD Operations
+        +Expression-based Filtering
     }
     
-    RF.Go.Application ..> RF.Go.Domain : Uses
-    RF.Go.Infrastructure ..> RF.Go.Domain : Implements
-    RF.Go.Infrastructure ..> RF.Go.Application : Implements
-    RF.Go.Presentation ..> RF.Go.Application : Uses
+    class MVVMPattern {
+        <<pattern>>
+        +ViewModels
+        +ObservableCollections
+        +Property Binding
+        +Command Pattern
+    }
+    
+    class SingletonPattern {
+        <<pattern>>
+        +Service Registration
+        +DI Container
+        +Shared Instances
+    }
+    
+    class AdapterPattern {
+        <<pattern>>
+        +DeviceDiscoveredEventArgs → RFDevice
+        +Network Protocol Adapters
+        +Command Set Adapters
+    }
 ```
 
-Cette architecture orientée objet démontre une structure bien organisée avec une séparation claire des responsabilités, une extensibilité par design patterns, et une robustesse assurée par les principes SOLID. 
+## 9. Relations et dépendances - injection de dépendances
+
+### Diagramme de dépendances DI
+
+```mermaid
+classDiagram
+    class MauiProgram {
+        +ConfigureServices(IServiceCollection services)
+        +RegisterViewModels()
+        +RegisterServices()
+        +RegisterHandlers()
+        +RegisterCommunication()
+    }
+    
+    class DependencyInjection {
+        <<container>>
+        +DevicesViewModel
+        +GroupsViewModel
+        +BackupFrequenciesViewModel
+        +FrequencyCalculationService
+        +DeviceMappingService
+        +DiscoveryService
+        +DatabaseContext
+        +IDeviceHandler[]
+        +IDeviceCommandSet[]
+        +UDPCommunicationService
+        +TCPCommunicationService
+    }
+    
+    MauiProgram --> DependencyInjection : configures
+    DependencyInjection --> DevicesViewModel : provides
+    DependencyInjection --> FrequencyCalculationService : provides
+    DependencyInjection --> DiscoveryService : provides
+    DependencyInjection --> IDeviceHandler : provides
+```

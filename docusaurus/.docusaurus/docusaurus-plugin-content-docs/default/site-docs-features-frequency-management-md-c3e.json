@@ -5,7 +5,7 @@
   "source": "@site/docs/features/frequency-management.md",
   "sourceDirName": "features",
   "slug": "/features/frequency-management",
-  "permalink": "/RF_Go/docs/features/frequency-management",
+  "permalink": "/RF_Go/features/frequency-management",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/frequency-management.md",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Gestion des Appareils",
-    "permalink": "/RF_Go/docs/features/device-management"
+    "title": "Gestion des appareils",
+    "permalink": "/RF_Go/features/device-management"
   },
   "next": {
     "title": "Gestion Temporelle - Planification RF Avancée",
-    "permalink": "/RF_Go/docs/features/time-management"
+    "permalink": "/RF_Go/features/time-management"
   }
 }

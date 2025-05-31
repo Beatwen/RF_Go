@@ -5,7 +5,7 @@
   "source": "@site/docs/features/authentication.md",
   "sourceDirName": "features",
   "slug": "/features/authentication",
-  "permalink": "/RF_Go/docs/features/authentication",
+  "permalink": "/RF_Go/features/authentication",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/Beatwen/RF_Go/tree/main/docs/features/authentication.md",
@@ -15,10 +15,10 @@
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Système de Licence",
-    "permalink": "/RF_Go/docs/features/licensing"
+    "permalink": "/RF_Go/features/licensing"
   },
   "next": {
     "title": "Workflows de l'Application",
-    "permalink": "/RF_Go/docs/features/workflows"
+    "permalink": "/RF_Go/features/workflows"
   }
 }
