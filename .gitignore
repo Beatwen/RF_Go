@@ -364,3 +364,11 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /RF_Go.db3.lnk
+
+# Documentation personnelle et fichiers de rapport
+*.docx
+Structure_Presentation_RF_Go.md
+ANALYSE_RF.docx
+Rapport_Communication_Marketing_RF_Go.docx
+pagedegardebacinfo.docx
+Resume_et_Commentaire_Critique_RF_Go.docx
