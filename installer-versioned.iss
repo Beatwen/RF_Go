@@ -1,10 +1,10 @@
-#define MyAppName "RF_Go"
-#define MyAppVersion "1.0"
+﻿#define MyAppName "RF_Go"
+#define MyAppVersion "1.0.5-syntax-fix"
 #define MyAppVersionInfo "1.0.0.0"
-#define MyAppPublisher "Travail de Fin d'Étude"
+#define MyAppPublisher "Travail de Fin d'Ã‰tude"
 #define MyAppURL "https://github.com/beatwen/RF_Go"
 #define MyAppExeName "RF_Go.exe"
-#define MyAppDescription "Analyseur de Fréquences Radio"
+#define MyAppDescription "Analyseur de FrÃ©quences Radio"
 
 [Setup]
 AppId={{F1280CF3-71B1-40BF-A5C9-2F6267D27C2F}
@@ -64,11 +64,11 @@ Type: filesandordirs; Name: "{app}"
 [Code]
 procedure ConvertReadmeToTxt();
 begin
-  // Cette procédure peut être utilisée pour des conversions spécifiques si nécessaire
+  // Cette procÃ©dure peut Ãªtre utilisÃ©e pour des conversions spÃ©cifiques si nÃ©cessaire
 end;
 
 function InitializeSetup(): Boolean;
 begin
   Result := True;
-  // Vérifier si .NET 8.0 est installé (optionnel, car l'app est self-contained)
+  // VÃ©rifier si .NET 8.0 est installÃ© (optionnel, car l'app est self-contained)
 end; 
