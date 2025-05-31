@@ -75,11 +75,11 @@ jobs:
       shell: pwsh
       run: |
         # Renommer le fichier de sortie
-        if (Test-Path "Output/RF_Go-Setup.exe") {
-          Move-Item "Output/RF_Go-Setup.exe" "./RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe"
+        if (Test-Path "installer/RF_Go-Setup.exe") {
+          Move-Item "installer/RF_Go-Setup.exe" "./RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe"
           Write-Host "Installateur Windows créé avec succès"
         } else {
-          Write-Host "Installer not found in Output directory"
+          Write-Host "Installer not found in installer directory"
           Get-ChildItem -Recurse -Filter "*.exe" | ForEach-Object { Write-Host "Found EXE: $($_.FullName)" }
         }
     
@@ -94,6 +94,8 @@ jobs:
         if ($apkFiles.Count -gt 0) {
           foreach ($file in $apkFiles) {
             Copy-Item $file.FullName -Destination "./android-output/" -ErrorAction SilentlyContinue
+            # Copier aussi à la racine pour la release
+            Copy-Item $file.FullName -Destination "./RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk" -ErrorAction SilentlyContinue
             Write-Host "Copied APK: $($file.Name)"
           }
           
