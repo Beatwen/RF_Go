@@ -86,6 +86,18 @@
       <TrimmerDefaultAction>link</TrimmerDefaultAction>
     </PropertyGroup>
 
+    <!-- Configuration du trimming par plateforme -->
+    <!-- macOS/iOS : Trimming OBLIGATOIRE -->
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios'">
+      <PublishTrimmed>true</PublishTrimmed>
+      <TrimmerDefaultAction>link</TrimmerDefaultAction>
+    </PropertyGroup>
+    
+    <!-- Windows/Android : Trimming optionnel (contrôlé par ligne de commande) -->
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.26100.0' OR '$(TargetFramework)' == 'net8.0-android'">
+      <PublishTrimmed>false</PublishTrimmed>
+    </PropertyGroup>
+
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" />
