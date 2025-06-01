@@ -26,6 +26,15 @@ namespace RF_Go
         {
             var builder = MauiApp.CreateBuilder();
             
+            // Configurer WebView2 pour utiliser un dossier utilisateur
+            var userDataFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "RF_Go",
+                "WebView2"
+            );
+            Directory.CreateDirectory(userDataFolder);
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", userDataFolder);
+            
             builder
                 .UseSkiaSharp()
                 .UseMauiApp<App>()
@@ -34,6 +43,7 @@ namespace RF_Go
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
+
             builder.Services.AddMudServices();
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddBlazorWebViewDeveloperTools();
