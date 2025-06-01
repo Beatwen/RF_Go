@@ -10,12 +10,12 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
     
@@ -110,7 +110,7 @@ jobs:
       continue-on-error: true
 
     - name: Upload Windows/Android Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: windows-android-builds
         path: |
@@ -121,12 +121,12 @@ jobs:
     runs-on: macos-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
     
@@ -178,7 +178,7 @@ jobs:
       continue-on-error: true
 
     - name: Upload macOS/iOS Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: macos-ios-builds
         path: |
@@ -190,7 +190,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Extract Version
       id: get_version
@@ -199,13 +199,13 @@ jobs:
         echo "VERSION=$TAG" >> $GITHUB_OUTPUT
 
     - name: Download Windows/Android Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: windows-android-builds
         path: ./
 
     - name: Download macOS/iOS Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: macos-ios-builds
         path: ./
