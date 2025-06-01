@@ -214,31 +214,60 @@ jobs:
     - name: Create release notes
       run: |
         cat > release-notes.md << EOF
-        # RF_Go v${{ steps.get_version.outputs.VERSION }}
+        # 🚀 RF_Go v${{ steps.get_version.outputs.VERSION }}
 
-        Date de sortie: $(date +'%Y-%m-%d')
+        **Date de sortie** : $(date +'%d %B %Y')
 
-        ## Nouveautés
-        - Version initiale de RF_Go
-        - Fonctionnalité de gestion des scans
-        - Capacités d'import/export
+        ## 📦 Nouveautés et fonctionnalités
 
-        ## Notes importantes
-        - Cette version nécessite .NET 8.0 ou supérieur
-        - Compatible avec Windows 10/11
-        - Support Android (API 24+)
-        - Support macOS (Mac Catalyst)
+        ✅ **Analyseur de fréquences radio complet**  
+        ✅ **Gestion avancée des scans**  
+        ✅ **Interface utilisateur moderne avec MudBlazor**  
+        ✅ **Capacités d'import/export des données**  
+        ✅ **Support multi-plateforme natif**  
 
-        ## Installation
-        ### Windows
-        - Téléchargez et exécutez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe\`
+        ## 🖥️ Plateformes supportées
 
-        ### Android
-        - Téléchargez et installez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk\`
-        - Activez "Sources inconnues" dans les paramètres
+        | Plateforme | Statut | Format | 
+        |------------|--------|--------|
+        | **Windows 10/11** | ✅ Prêt | Installateur EXE |
+        | **Android (API 24+)** | ✅ Prêt | APK |
+        | **macOS (Mac Catalyst)** | ✅ Prêt | PKG |
 
-        ### macOS
-        - Téléchargez et extrayez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz\`
+        ## 📥 Installation
+
+        ### 🪟 Windows
+        1. Téléchargez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe\`
+        2. Exécutez l'installateur en tant qu'administrateur
+        3. Suivez les instructions d'installation
+
+        ### 🤖 Android
+        1. Téléchargez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk\`
+        2. Activez "Sources inconnues" dans Paramètres > Sécurité
+        3. Installez l'APK
+
+        ### 🍎 macOS
+        1. Téléchargez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz\`
+        2. Extrayez l'archive
+        3. Glissez RF_Go.app vers Applications
+
+        ## ⚙️ Exigences techniques
+
+        - **.NET 8.0** (inclus dans les versions self-contained)
+        - **Windows** : Windows 10 version 1809 ou supérieure
+        - **Android** : API Level 24 (Android 7.0) ou supérieure  
+        - **macOS** : macOS 11.0 (Big Sur) ou supérieure
+
+        ## 🐛 Problèmes connus
+
+        - iOS : En cours de développement (certificats Apple Developer requis)
+        
+        ## 📞 Support
+
+        Pour toute question ou problème, créez une issue sur GitHub.
+
+        ---
+        **Travail de Fin d'Étude** - Analyseur de Fréquences Radio
         EOF
 
     - name: List available files
