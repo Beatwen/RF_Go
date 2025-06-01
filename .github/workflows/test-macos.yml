@@ -1,0 +1,124 @@
+name: Test macOS Build
+
+on:
+  push:
+    tags:
+      - 'test-macos-*'
+
+jobs:
+  test-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: Install MAUI Workloads
+      run: |
+        dotnet workload install maui
+        dotnet workload install maccatalyst ios
+        dotnet workload restore
+    
+    - name: Extract Version
+      id: get_version
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        echo "VERSION=$TAG" >> $GITHUB_OUTPUT
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Publish macOS
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst-x64 -p:PublishReadyToRun=false -p:PublishTrimmed=true
+        
+        if [ -d "./publish/maccatalyst-x64" ]; then
+          if [ "$(ls -A ./publish/maccatalyst-x64)" ]; then
+            tar -czf ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz -C ./publish/maccatalyst-x64 .
+            echo "macOS build archived successfully"
+            
+            # Show build info
+            echo "Build contents:"
+            ls -la ./publish/maccatalyst-x64/
+            
+            if [ -d "./publish/maccatalyst-x64/RF_Go.app" ]; then
+              echo "App bundle size:"
+              du -sh ./publish/maccatalyst-x64/RF_Go.app
+            fi
+            
+            echo "Archive size:"
+            du -sh ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz
+          else
+            echo "macOS build directory is empty"
+            exit 1
+          fi
+        else
+          echo "macOS build directory not found"
+          exit 1
+        fi
+    
+    - name: Publish iOS
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true
+        
+        if [ -d "./publish/ios-arm64" ]; then
+          if [ "$(ls -A ./publish/ios-arm64)" ]; then
+            tar -czf ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz -C ./publish/ios-arm64 .
+            echo "iOS build archived successfully"
+            
+            # Show build info
+            echo "iOS build contents:"
+            ls -la ./publish/ios-arm64/
+            
+            echo "Archive size:"
+            du -sh ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
+          else
+            echo "iOS build directory is empty"
+          fi
+        else
+          echo "iOS build directory not found"
+        fi
+      continue-on-error: true
+
+    - name: Upload Test Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-test-builds
+        path: |
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
+
+    - name: Create Test Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        name: Test macOS Build ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: true
+        files: |
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
+        body: |
+          # Test macOS/iOS Build ${{ steps.get_version.outputs.VERSION }}
+          
+          🧪 **Build de test** pour macOS et iOS uniquement
+          
+          ⚡ **Rapide** - Pas de build Windows/Android
+          
+          ## Fichiers
+          - 🍎 **macOS**: RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz
+          - 📱 **iOS**: RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
+          
+          ## Test
+          - Extraire l'archive macOS
+          - Lancer RF_Go.app
+          - Vérifier que l'app démarre sans crash
+        fail_on_unmatched_files: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
