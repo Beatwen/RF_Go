@@ -6,7 +6,7 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build:
+  build-windows-android:
     runs-on: windows-latest
     
     steps:
@@ -48,8 +48,7 @@ jobs:
         
         if (Test-Path "./publish/win-x64") {
           if ((Get-ChildItem -Path "./publish/win-x64" | Measure-Object).Count -gt 0) {
-            Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip -ErrorAction SilentlyContinue
-            Write-Host "Windows build archived successfully"
+            Write-Host "Windows build ready for installer creation"
           } else {
             Write-Host "Windows build directory is empty"
           }
@@ -109,76 +108,143 @@ jobs:
           Write-Host "No APK files found"
         }
       continue-on-error: true
+
+    - name: Upload Windows/Android Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-android-builds
+        path: |
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: Install MAUI Workloads
+      run: |
+        dotnet workload install maui
+        dotnet workload install android ios maccatalyst macos
+        dotnet workload restore
+    
+    - name: Extract Version
+      id: get_version
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        echo "VERSION=$TAG" >> $GITHUB_OUTPUT
+    
+    - name: Restore dependencies
+      run: dotnet restore
     
     - name: Publish macOS
-      shell: pwsh
       run: |
         dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst-x64 -p:PublishReadyToRun=false
         
-        if (Test-Path "./publish/maccatalyst-x64") {
-          if ((Get-ChildItem -Path "./publish/maccatalyst-x64" | Measure-Object).Count -gt 0) {
-            Compress-Archive -Path ./publish/maccatalyst-x64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.zip -ErrorAction SilentlyContinue
-            Write-Host "macOS build archived successfully"
-          } else {
-            Write-Host "macOS build directory is empty"
-          }
-        } else {
-          Write-Host "macOS build directory not found"
-        }
+        if [ -d "./publish/maccatalyst-x64" ]; then
+          if [ "$(ls -A ./publish/maccatalyst-x64)" ]; then
+            tar -czf ./RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz -C ./publish/maccatalyst-x64 .
+            echo "macOS build archived successfully"
+          else
+            echo "macOS build directory is empty"
+          fi
+        else
+          echo "macOS build directory not found"
+        fi
       continue-on-error: true
     
     - name: Publish iOS
-      shell: pwsh
       run: |
         dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false
         
-        if (Test-Path "./publish/ios-arm64") {
-          if ((Get-ChildItem -Path "./publish/ios-arm64" | Measure-Object).Count -gt 0) {
-            Compress-Archive -Path ./publish/ios-arm64/* -DestinationPath ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.zip -ErrorAction SilentlyContinue
-            Write-Host "iOS build archived successfully"
-          } else {
-            Write-Host "iOS build directory is empty"
-          }
-        } else {
-          Write-Host "iOS build directory not found"
-        }
+        if [ -d "./publish/ios-arm64" ]; then
+          if [ "$(ls -A ./publish/ios-arm64)" ]; then
+            tar -czf ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz -C ./publish/ios-arm64 .
+            echo "iOS build archived successfully"
+          else
+            echo "iOS build directory is empty"
+          fi
+        else
+          echo "iOS build directory not found"
+        fi
       continue-on-error: true
+
+    - name: Upload macOS/iOS Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-ios-builds
+        path: |
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
+
+  create-release:
+    needs: [build-windows-android, build-macos]
+    runs-on: ubuntu-latest
     
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Extract Version
+      id: get_version
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        echo "VERSION=$TAG" >> $GITHUB_OUTPUT
+
+    - name: Download Windows/Android Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: windows-android-builds
+        path: ./
+
+    - name: Download macOS/iOS Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: macos-ios-builds
+        path: ./
+      continue-on-error: true
+
     - name: Create release notes
       run: |
-        $content = "# RF_Go v${{ steps.get_version.outputs.VERSION }}`n`n"
-        $content += "Date de sortie: $(Get-Date -Format 'yyyy-MM-dd')`n`n"
-        $content += "## Nouveautés`n"
-        $content += "- Version initiale de RF_Go`n"
-        $content += "- Fonctionnalité de gestion des scans`n"
-        $content += "- Capacités d'import/export`n`n"
-        $content += "## Notes importantes`n"
-        $content += "- Cette version nécessite .NET 8.0 ou supérieur`n"
-        $content += "- Compatible avec Windows 10/11`n"
-        Set-Content -Path "./release-notes.md" -Value $content
-    
-    - name: List and collect available files
-      id: collect_files
-      shell: pwsh
+        cat > release-notes.md << EOF
+        # RF_Go v${{ steps.get_version.outputs.VERSION }}
+
+        Date de sortie: $(date +'%Y-%m-%d')
+
+        ## Nouveautés
+        - Version initiale de RF_Go
+        - Fonctionnalité de gestion des scans
+        - Capacités d'import/export
+
+        ## Notes importantes
+        - Cette version nécessite .NET 8.0 ou supérieur
+        - Compatible avec Windows 10/11
+        - Support Android (API 24+)
+        - Support macOS (Mac Catalyst)
+
+        ## Installation
+        ### Windows
+        - Téléchargez et exécutez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe\`
+
+        ### Android
+        - Téléchargez et installez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk\`
+        - Activez "Sources inconnues" dans les paramètres
+
+        ### macOS
+        - Téléchargez et extrayez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz\`
+        EOF
+
+    - name: List available files
       run: |
-        $files = @()
-        Write-Host "Available release files:"
-        
-        # Fichiers exe et zip
-        $releaseFiles = Get-ChildItem -Path . -File | Where-Object { $_.Name -match "RF_Go-.*\.(exe|zip)$" }
-        foreach ($file in $releaseFiles) {
-          Write-Host "Found: $($file.Name)"
-          $files += "./$($file.Name)"
-        }
-        
-        if ($files.Count -eq 0) {
-          Write-Host "WARNING: No release files found!"
-        }
-        
-        $filesString = $files -join "`n"
-        echo "FILES<<EOF" >> $env:GITHUB_OUTPUT
-        echo "$filesString" >> $env:GITHUB_OUTPUT
-        echo "EOF" >> $env:GITHUB_OUTPUT
+        echo "Available release files:"
+        ls -la RF_Go-* || echo "No release files found"
 
     - name: Create GitHub Release with available files
       uses: softprops/action-gh-release@v1
@@ -188,11 +254,10 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          RF_Go-${{ steps.get_version.outputs.VERSION }}-windows-x64.zip
           RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe
           RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk
-          RF_Go-${{ steps.get_version.outputs.VERSION }}-osx-x64.zip
-          RF_Go-${{ steps.get_version.outputs.VERSION }}-osx-arm64.zip
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz
+          RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
         body_path: ./release-notes.md
         fail_on_unmatched_files: false
       env:
