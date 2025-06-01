@@ -155,8 +155,8 @@
 	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
 	</ItemGroup>
 
-	<!-- Configuration du trimmer pour Android -->
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+	<!-- Configuration du trimmer pour Android, macOS et iOS -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android' OR '$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios'">
 	  <TrimmerRootDescriptor Include="ILLink.Substitutions.xml" />
 	</ItemGroup>
 
