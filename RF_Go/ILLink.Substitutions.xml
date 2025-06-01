@@ -1,16 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <linker>
+  <!-- Préserver TOUS les assemblies critiques pour MAUI Blazor -->
+  <assembly fullname="Microsoft.Maui.Controls" preserve="all" />
+  <assembly fullname="Microsoft.Maui" preserve="all" />
+  <assembly fullname="Microsoft.Maui.Essentials" preserve="all" />
+  <assembly fullname="Microsoft.Maui.Graphics" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.WebView.Maui" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Web" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Forms" preserve="all" />
+  <assembly fullname="Microsoft.JSInterop" preserve="all" />
+  
+  <!-- Préserver SkiaSharp et LiveCharts (critiques pour les charts) -->
+  <assembly fullname="SkiaSharp" preserve="all" />
+  <assembly fullname="SkiaSharp.Views.iOS" preserve="all" />
+  <assembly fullname="SkiaSharp.Views.Maui.Core" preserve="all" />
+  <assembly fullname="SkiaSharp.Views.Maui.Controls" preserve="all" />
+  <assembly fullname="LiveChartsCore" preserve="all" />
+  <assembly fullname="LiveChartsCore.SkiaSharpView" preserve="all" />
+  <assembly fullname="LiveChartsCore.SkiaSharpView.Maui" preserve="all" />
+  <assembly fullname="LiveCharts" preserve="all" />
+  
   <!-- Préserver les types MudBlazor pour la sérialisation JSON -->
   <assembly fullname="MudBlazor" preserve="all" />
   
   <!-- Préserver les types System.Text.Json -->
-  <assembly fullname="System.Text.Json">
-    <type fullname="*" preserve="all" />
-  </assembly>
+  <assembly fullname="System.Text.Json" preserve="all" />
   
-  <!-- Préserver les modèles de l'application -->
-  <assembly fullname="RF_Go">
-    <namespace fullname="RF_Go.Models" preserve="all" />
-    <namespace fullname="RF_Go.Data" preserve="all" />
+  <!-- Préserver l'assemblage principal complet -->
+  <assembly fullname="RF_Go" preserve="all" />
+  
+  <!-- Préserver System.Net.Http pour les requêtes API -->
+  <assembly fullname="System.Net.Http" preserve="all" />
+  <assembly fullname="System.Net.Http.Json" preserve="all" />
+  
+  <!-- Préserver Entity Framework -->
+  <assembly fullname="Microsoft.EntityFrameworkCore" preserve="all" />
+  <assembly fullname="Microsoft.EntityFrameworkCore.Sqlite" preserve="all" />
+  
+  <!-- Préserver les propriétés et éléments UI critiques -->
+  <assembly fullname="Microsoft.Maui.Controls">
+    <type fullname="Microsoft.Maui.Controls.VisualElement">
+      <field signature="Microsoft.Maui.Controls.BindableProperty ZIndexProperty" />
+      <field signature="Microsoft.Maui.Controls.BindableProperty BackgroundColorProperty" />
+      <field signature="Microsoft.Maui.Controls.BindableProperty OpacityProperty" />
+      <field signature="Microsoft.Maui.Controls.BindableProperty IsVisibleProperty" />
+    </type>
+    <type fullname="Microsoft.Maui.Controls.Element">
+      <field signature="Microsoft.Maui.Controls.BindableProperty AutomationIdProperty" />
+    </type>
   </assembly>
 </linker> 

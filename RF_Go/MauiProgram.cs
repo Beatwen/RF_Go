@@ -26,14 +26,26 @@ namespace RF_Go
         {
             var builder = MauiApp.CreateBuilder();
             
-            // Configurer WebView2 pour utiliser un dossier utilisateur
+            // Configuration WebView pour Windows (ESSENTIELLE)
+#if WINDOWS
             var userDataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "RF_Go",
                 "WebView2"
             );
-            Directory.CreateDirectory(userDataFolder);
+            if (!Directory.Exists(userDataFolder))
+            {
+                try 
+                {
+                    Directory.CreateDirectory(userDataFolder);
+                }
+                catch 
+                {
+                    // Si on ne peut pas créer, utiliser un dossier par défaut
+                }
+            }
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", userDataFolder);
+#endif
             
             builder
                 .UseSkiaSharp()
@@ -51,14 +63,21 @@ namespace RF_Go
 
 #if DEBUG
             builder.Logging.AddDebug();
+#endif
 
+            // Configuration BlazorWebView pour macOS/iOS (MAIS PLUS SÛRE)
 #if IOS || MACCATALYST
+            try {
                 var handlerType = typeof(BlazorWebViewHandler);
-                var field = handlerType.GetField("AppOriginUri", BindingFlags.Static | BindingFlags.NonPublic) ?? throw new Exception("AppOriginUri field not found");
-                field.SetValue(null, new Uri("app://localhost/"));
+                var field = handlerType.GetField("AppOriginUri", BindingFlags.Static | BindingFlags.NonPublic);
+                if (field != null) {
+                    field.SetValue(null, new Uri("app://localhost/"));
+                }
+            } catch {
+                // Si la réflexion échoue, continuer sans crash
+            }
 #endif
 
-#endif
             builder.Services.AddSingleton<DatabaseContext>();
             builder.Services.AddSingleton<DevicesViewModel>();
             builder.Services.AddScoped<GroupsViewModel>();
