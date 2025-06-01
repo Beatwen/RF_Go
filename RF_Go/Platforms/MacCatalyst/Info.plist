@@ -2,6 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
+        <!-- Bundle Configuration -->
+        <key>CFBundleName</key>
+        <string>RF_Go</string>
+        <key>CFBundleIdentifier</key>
+        <string>com.companyname.rf_go</string>
+        <key>CFBundleVersion</key>
+        <string>1</string>
+        <key>CFBundleShortVersionString</key>
+        <string>1.0</string>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>en</string>
+        
+        <!-- Device Support -->
         <key>UIDeviceFamily</key>
         <array>
             <integer>1</integer>
@@ -11,6 +24,8 @@
         <array>
             <string>arm64</string>
         </array>
+        
+        <!-- Interface Orientations -->
         <key>UISupportedInterfaceOrientations</key>
         <array>
             <string>UIInterfaceOrientationPortrait</string>
@@ -24,8 +39,30 @@
             <string>UIInterfaceOrientationLandscapeLeft</string>
             <string>UIInterfaceOrientationLandscapeRight</string>
         </array>
+        
+        <!-- Network Permissions -->
+        <key>NSLocalNetworkUsageDescription</key>
+        <string>This app needs local network access to discover Sennheiser devices</string>
+        <key>NSBonjourServices</key>
+        <array>
+            <string>_ssc._tcp</string>
+            <string>_ssc._udp</string>
+        </array>
+        
+        <!-- UI Configuration -->
         <key>XSAppIconAssets</key>
         <string>Assets.xcassets/appicon.appiconset</string>
+        <key>UIStatusBarStyle</key>
+        <string>UIStatusBarStyleLightContent</string>
+        <key>UIViewControllerBasedStatusBarAppearance</key>
+        <false />
+        
+        <!-- Background Modes (if app uses background fetch) -->
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>fetch</string>
+            <string>background-processing</string>
+        </array>
 
         <!-- AJOUTS POUR WKWebView / BlazorWebView -->
         <key>NSAppTransportSecurity</key>
