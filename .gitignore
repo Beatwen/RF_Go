@@ -9,6 +9,9 @@ Complement_Rapport_RF_Go.docx
 Structure_Presentation_RF_Go.md
 build-local.ps1
 build-installer.ps1
+debug-android.ps1
+build-android.ps1
+
 # User-specific files
 *.rsuser
 *.suo

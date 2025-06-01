@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <!-- Préserver les types MudBlazor pour la sérialisation JSON -->
+  <assembly fullname="MudBlazor" preserve="all" />
+  
+  <!-- Préserver les types System.Text.Json -->
+  <assembly fullname="System.Text.Json">
+    <type fullname="*" preserve="all" />
+  </assembly>
+  
+  <!-- Préserver les modèles de l'application -->
+  <assembly fullname="RF_Go">
+    <namespace fullname="RF_Go.Models" preserve="all" />
+    <namespace fullname="RF_Go.Data" preserve="all" />
+  </assembly>
+</linker> 
