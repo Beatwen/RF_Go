@@ -11,6 +11,7 @@ build-local.ps1
 build-installer.ps1
 debug-android.ps1
 build-android.ps1
+build-macos.sh
 
 # User-specific files
 *.rsuser

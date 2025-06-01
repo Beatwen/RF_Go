@@ -147,7 +147,7 @@ jobs:
     
     - name: Publish macOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst-x64 -p:PublishReadyToRun=false
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-maccatalyst -r maccatalyst-x64 --self-contained -o ./publish/maccatalyst-x64 -p:PublishReadyToRun=false -p:PublishTrimmed=true
         
         if [ -d "./publish/maccatalyst-x64" ]; then
           if [ "$(ls -A ./publish/maccatalyst-x64)" ]; then
@@ -163,7 +163,7 @@ jobs:
     
     - name: Publish iOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true
         
         if [ -d "./publish/ios-arm64" ]; then
           if [ "$(ls -A ./publish/ios-arm64)" ]; then
