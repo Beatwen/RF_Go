@@ -10,16 +10,7 @@ RF.Go est construit avec un stack technologique moderne privilégiant la **perfo
 
 **Contexte de décision** : Suite à un cours sur Blazor Server, besoin d'une application **multiplateforme** et **offline**.
 
-**Alternatives évaluées** : Web app (Node.js, React), mais incompatible avec les contraintes offline.
-
-| Critère | .NET MAUI | Web App | Justification |
-|---------|-----------|---------|---------------|
-| **Offline capability** | ✅ Natif | ❌ Impossible | **Critère éliminatoire** pour événements live |
-| **Cross-platform** | ✅ Windows/macOS/iOS/Android | ⚠️ Browser only | Déploiement professionnel requis |
-| **Performance réseau** | ✅ UDP/TCP natif | ❌ WebSocket uniquement | mDNS et protocols RF propriétaires |
-| **Base de connaissances** | ✅ Blazor acquis | ❌ Nouvel apprentissage | Réutilisation des acquis du cours |
-
-**Décision finale** : .NET MAUI s'imposait comme la seule solution répondant au **besoin offline absolu** tout en permettant le **développement multiplateforme**.
+**Décision finale** : .NET MAUI s'imposait comme une bonne solution répondant au **besoin offline absolu** tout en permettant le **développement multiplateforme**.
 
 ### Interface utilisateur : Blazor Hybrid
 
