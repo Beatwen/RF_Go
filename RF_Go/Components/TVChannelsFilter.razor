@@ -1,7 +1,9 @@
 ﻿@using RF_Go.ViewModels
 @using RF_Go.Models
+@using RF_Go.Modal
 @using System.Diagnostics
 @inject MudBlazor.ISnackbar Snackbar
+@inject MudBlazor.IDialogService DialogService
 @inject IJSRuntime JSRuntime
 @inject ScansViewModel ScansViewModel
 
@@ -20,7 +22,15 @@
                 <MudTh>
                     <MudCheckBox Label="" ValueChanged="(bool IsChecked) => SelectAll(IsChecked)" />
                 </MudTh>
-                <MudTh>Frequency Range</MudTh>
+                <MudTh>
+                    <div class="d-flex align-center gap-2">
+                        <span>Frequency Range</span>
+                        <MudIconButton Icon="@Icons.Material.Filled.Settings" 
+                                       Size="Size.Small" 
+                                       OnClick="@(async () => await OpenCountryModal())"
+                                       Title="Sélectionner un pays/région" />
+                    </div>
+                </MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd Style="max-width:50px;">
@@ -83,16 +93,22 @@
     </MudItem>
 </MudGrid>
 
+
+
 @code {
     [Parameter] public ExclusionChannelViewModel ExclusionChannelViewModel { get; set; }
     private float UserStartFrequency { get; set; }
     private float UserEndFrequency { get; set; }
     private int activeTabIndex;
 
+    // Variables pour la sélection de pays/région
+    private CountryData countryData = new();
+
     protected override void OnInitialized()
     {
         activeTabIndex = LoadLastUsedTabIndex();
         SetSelectedDivision(GetDivisionByTabIndex(activeTabIndex));
+        countryData = CountryDataJson.GetCountryData();
     }
 
     private int LoadLastUsedTabIndex()
@@ -218,6 +234,52 @@
     private async Task HandleScanDeleted(ScanData scan)
     {
         await HandleScanVisibilityChanged(scan);
+    }
+
+    private async Task OpenCountryModal()
+    {
+        var parameters = new DialogParameters<RF_Go.Modal.CountrySelectionModal>
+        {
+            { x => x.CountryData, countryData }
+        };
+
+        var options = new MudBlazor.DialogOptions()
+        {
+            MaxWidth = MaxWidth.Small,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = await DialogService.ShowAsync<RF_Go.Modal.CountrySelectionModal>("Sélection Pays/Région", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is CountrySelectionResult selection)
+        {
+            await ApplyCountrySelection(selection);
+        }
+    }
+
+    private async Task ApplyCountrySelection(CountrySelectionResult selection)
+    {
+        SetSelectedDivision(selection.Country.ChannelDivision);
+        await Task.Delay(100);
+
+        // copy list first
+        var channelsCopy = ExclusionChannelViewModel.ExclusionChannels.ToList();
+
+        foreach (var channel in channelsCopy)
+        {
+            bool shouldExclude = !selection.Region.AllowedChannels.Contains(channel.ChannelNumber);
+            
+            if (channel.Exclude != shouldExclude)
+            {
+                channel.Exclude = shouldExclude;
+                ExclusionChannelViewModel.SelectedExclusionChannel = channel;
+                await ExclusionChannelViewModel.SaveExclusionChannelAsync();
+            }
+        }
+
+        Snackbar.Add($"Configuration appliquée pour {selection.Country.Name} - {selection.Region.Name}", Severity.Success);
+        StateHasChanged();
     }
 }
 

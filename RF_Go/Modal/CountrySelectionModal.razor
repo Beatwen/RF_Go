@@ -1,0 +1,111 @@
+@using RF_Go.Models
+@inject MudBlazor.ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Public" Class="mr-3" />
+            Sélectionner un pays/région
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="min-width: 400px;">
+            <MudSelect T="string" 
+                       Value="SelectedCountryKey"
+                       Label="Pays"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       ValueChanged="OnCountryChanged"
+                       Class="mb-4">
+                @foreach (var country in CountryData.Countries)
+                {
+                    <MudSelectItem Value="@country.Key">@country.Value.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (!string.IsNullOrEmpty(SelectedCountryKey) && CountryData.Countries.ContainsKey(SelectedCountryKey))
+            {
+                var country = CountryData.Countries[SelectedCountryKey];
+                if (country.Regions.Count > 1)
+                {
+                    <MudSelect T="string"
+                               @bind-Value="SelectedRegionKey" 
+                               Label="Région" 
+                               Variant="Variant.Outlined" 
+                               Margin="Margin.Dense"
+                               Class="mb-4">
+                        @foreach (var region in country.Regions)
+                        {
+                            <MudSelectItem Value="@region.Key">@region.Value.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+
+                @if (!string.IsNullOrEmpty(SelectedRegionKey) && country.Regions.ContainsKey(SelectedRegionKey))
+                {
+                    var region = country.Regions[SelectedRegionKey];
+                    <MudText Typo="Typo.body2" Class="mb-2">
+                        <strong>Canaux autorisés:</strong> @string.Join(", ", region.AllowedChannels)
+                    </MudText>
+                    <MudText Typo="Typo.caption" Class="mb-3">
+                        @region.Description
+                    </MudText>
+                }
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annuler</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled" 
+                   OnClick="Apply"
+                   Disabled="string.IsNullOrEmpty(SelectedCountryKey) || string.IsNullOrEmpty(SelectedRegionKey)">
+            Appliquer
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public CountryData CountryData { get; set; } = new();
+
+    public string SelectedCountryKey { get; set; } = string.Empty;
+    public string SelectedRegionKey { get; set; } = string.Empty;
+
+    private async Task OnCountryChanged(string countryKey)
+    {
+        SelectedCountryKey = countryKey;
+        SelectedRegionKey = string.Empty;
+
+        // Si le pays n'a qu'une région, la sélectionner automatiquement
+        if (!string.IsNullOrEmpty(countryKey) && CountryData.Countries.ContainsKey(countryKey))
+        {
+            var country = CountryData.Countries[countryKey];
+            if (country.Regions.Count == 1)
+            {
+                SelectedRegionKey = country.Regions.Keys.First();
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Apply()
+    {
+        if (string.IsNullOrEmpty(SelectedCountryKey) || string.IsNullOrEmpty(SelectedRegionKey))
+            return;
+
+        var result = new CountrySelectionResult
+        {
+            CountryKey = SelectedCountryKey,
+            RegionKey = SelectedRegionKey,
+            Country = CountryData.Countries[SelectedCountryKey],
+            Region = CountryData.Countries[SelectedCountryKey].Regions[SelectedRegionKey]
+        };
+
+        MudDialog.Close(DialogResult.Ok(result));
+    }
+
+}
