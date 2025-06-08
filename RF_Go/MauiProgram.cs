@@ -59,6 +59,7 @@ namespace RF_Go
             builder.Services.AddMudServices();
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddSingleton<PdfExportService>();
             builder.Services.AddSingleton<DatabaseImportExportService>();
 
 #if DEBUG

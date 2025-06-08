@@ -8,19 +8,53 @@ using CommunityToolkit.Maui.Storage;
 using System.Text.Json;
 using System.Linq;
 using RF_Go.Models;
+using RF_Go.ViewModels;
 
 namespace RF_Go.Services
 {
+    public class ExportOptions
+    {
+        public string Format { get; set; }
+        public string PdfTitle { get; set; }
+        public bool IncludeChannelNames { get; set; }
+        public bool GroupByDeviceType { get; set; }
+    }
+
     public class DatabaseImportExportService
     {
         private readonly DatabaseContext _dbContext;
+        private readonly PdfExportService _pdfExportService;
 
-        public DatabaseImportExportService(DatabaseContext dbContext)
+        public DatabaseImportExportService(DatabaseContext dbContext, PdfExportService pdfExportService)
         {
             _dbContext = dbContext;
+            _pdfExportService = pdfExportService;
         }
 
-        public async Task<bool> ExportDatabaseAsync()
+        public async Task<bool> ExportDatabaseAsync(
+            ExportOptions options = null,
+            DevicesViewModel devicesViewModel = null,
+            GroupsViewModel groupsViewModel = null)
+        {
+            try
+            {
+                if (options?.Format == "PDF" && devicesViewModel != null && groupsViewModel != null)
+                {
+                    return await _pdfExportService.ExportDevicesToPdfAsync(devicesViewModel, groupsViewModel, options);
+                }
+                else
+                {
+                    return await ExportDatabaseAsJsonAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error exporting database: {ex.Message}");
+                return false;
+            }
+        }
+
+        private async Task<bool> ExportDatabaseAsJsonAsync()
         {
             try
             {
@@ -59,9 +93,15 @@ namespace RF_Go.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error exporting database: {ex.Message}");
+                Console.WriteLine($"Error exporting database as JSON: {ex.Message}");
                 return false;
             }
+        }
+
+        // Keep the original method for backward compatibility
+        public async Task<bool> ExportDatabaseAsync()
+        {
+            return await ExportDatabaseAsJsonAsync();
         }
 
         public async Task<bool> ImportDatabaseAsync()

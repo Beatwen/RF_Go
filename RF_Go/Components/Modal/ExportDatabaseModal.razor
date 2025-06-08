@@ -1,0 +1,123 @@
+@using MudBlazor
+@using RF_Go.ViewModels
+@using RF_Go.Models
+@using RF_Go.Services
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center">
+            <MudIcon Icon="@Icons.Material.Filled.Upload" Class="mr-3" Color="Color.Primary" />
+            <MudText Typo="Typo.h5">Export Session</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="d-flex flex-column gap-4">
+            <MudText Typo="Typo.body1" Class="mb-2">
+                Choose your export format:
+            </MudText>
+            
+            <MudRadioGroup @bind-Value="ExportFormat" T="string">
+                <div class="d-flex flex-column gap-3">
+                    <MudCard Outlined="true" Class='@($"pa-4 cursor-pointer {(ExportFormat == "JSON" ? "mud-info" : "")}")' 
+                             @onclick='() => ExportFormat = "JSON"'>
+                        <div class="d-flex align-center">
+                            <MudRadio Value='"JSON"' Color="Color.Primary" Dense="true" />
+                            <div class="ml-3">
+                                <MudIcon Icon="@Icons.Material.Filled.DataObject" Class="mr-2" />
+                                <MudText Typo="Typo.h6" Inline="true">JSON Export</MudText>
+                                <MudText Typo="Typo.body2" Class="mt-1">
+                                    Export raw data for backup and reimport
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudCard>
+                    
+                    <MudCard Outlined="true" Class='@($"pa-4 cursor-pointer {(ExportFormat == "PDF" ? "mud-info" : "")}")' 
+                             @onclick='() => ExportFormat = "PDF"'>
+                        <div class="d-flex align-center">
+                            <MudRadio Value='"PDF"' Color="Color.Primary" Dense="true" />
+                            <div class="ml-3">
+                                <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Class="mr-2" />
+                                <MudText Typo="Typo.h6" Inline="true">PDF Export</MudText>
+                                <MudText Typo="Typo.body2" Class="mt-1">
+                                    Generate a beautiful report for documentation
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudCard>
+                </div>
+            </MudRadioGroup>
+
+            @if (ExportFormat == "PDF")
+            {
+                <MudDivider Class="my-3" />
+                <div class="d-flex flex-column gap-3">
+                    <MudText Typo="Typo.h6">PDF Options</MudText>
+                    
+                    <MudTextField @bind-Value="PdfTitle" 
+                                  Label="Document Title" 
+                                  Placeholder="RF Go Export Report"
+                                  Variant="Variant.Outlined"
+                                  HelperText="This will appear as the header of your PDF" />
+                    
+                    <MudCheckBox @bind-Value="IncludeChannelNames" 
+                                 Label="Include Channel Names" 
+                                 Color="Color.Primary" />
+                    
+                    <MudCheckBox @bind-Value="GroupByDeviceType" 
+                                 Label="Group devices by type" 
+                                 Color="Color.Primary" />
+                </div>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   OnClick="Submit" 
+                   Disabled="@(string.IsNullOrEmpty(ExportFormat))"
+                   StartIcon="@(ExportFormat == "PDF" ? Icons.Material.Filled.PictureAsPdf : Icons.Material.Filled.DataObject)">
+            Export @ExportFormat
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public DevicesViewModel DevicesViewModel { get; set; }
+    [Parameter] public GroupsViewModel GroupsViewModel { get; set; }
+
+    private string ExportFormat { get; set; } = "JSON";
+    private string PdfTitle { get; set; } = "RF Go Export Report";
+    private bool IncludeChannelNames { get; set; } = true;
+    private bool GroupByDeviceType { get; set; } = true;
+
+    private void Submit()
+    {
+        var options = new ExportOptions
+        {
+            Format = ExportFormat,
+            PdfTitle = PdfTitle,
+            IncludeChannelNames = IncludeChannelNames,
+            GroupByDeviceType = GroupByDeviceType
+        };
+        
+        MudDialog.Close(DialogResult.Ok(options));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    .mud-info {
+        border-color: var(--mud-palette-primary) !important;
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.08) !important;
+    }
+</style> 

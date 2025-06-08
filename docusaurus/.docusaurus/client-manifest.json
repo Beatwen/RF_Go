@@ -740,7 +740,7 @@
       "js": [
         {
           "file": "assets/js/runtime~main.f7cd538f.js",
-          "hash": "4878b90dc3aee3e2",
+          "hash": "2726296fef2e8c4f",
           "publicPath": "/RF_Go/assets/js/runtime~main.f7cd538f.js"
         }
       ]
@@ -1000,9 +1000,9 @@
     "8792": {
       "js": [
         {
-          "file": "assets/js/main.b3628cda.js",
-          "hash": "fd46ef8b32c9ca96",
-          "publicPath": "/RF_Go/assets/js/main.b3628cda.js"
+          "file": "assets/js/main.534472e8.js",
+          "hash": "61a9396e058a04ba",
+          "publicPath": "/RF_Go/assets/js/main.534472e8.js"
         }
       ]
     },

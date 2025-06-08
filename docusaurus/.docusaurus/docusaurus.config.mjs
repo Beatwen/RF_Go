@@ -45,6 +45,23 @@ export default {
       }
     ]
   ],
+  "plugins": [
+    [
+      "@docusaurus/plugin-client-redirects",
+      {
+        "redirects": [
+          {
+            "from": "/docs/intro",
+            "to": "/intro"
+          },
+          {
+            "from": "/docs",
+            "to": "/intro"
+          }
+        ]
+      }
+    ]
+  ],
   "themeConfig": {
     "image": "img/docusaurus-social-card.jpg",
     "navbar": {
@@ -387,7 +404,6 @@ export default {
     "static"
   ],
   "customFields": {},
-  "plugins": [],
   "scripts": [],
   "headTags": [],
   "stylesheets": [],

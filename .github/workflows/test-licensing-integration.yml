@@ -1,0 +1,48 @@
+name: 🧪 Test Licensing Server Integration
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_version:
+        description: 'Version de test à envoyer'
+        required: false
+        default: 'v1.0.1'
+        type: string
+
+jobs:
+  test-integration:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📋 Extract Test Version
+      id: get_version
+      run: |
+        VERSION="${{ github.event.inputs.test_version || 'v1.0.1' }}"
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "🧪 Testing with version: $VERSION"
+    
+    - name: 🚀 Send Test Data to Licensing Server
+      uses: peter-evans/repository-dispatch@v3
+      with:
+        token: ${{ secrets.LICENSING_SERVER_TOKEN }}
+        repository: c_bou/licensing_server
+        event-type: rf-go-release
+        client-payload: |
+          {
+            "version": "${{ steps.get_version.outputs.VERSION }}",
+            "release_url": "https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.VERSION }}",
+            "test_mode": true,
+            "downloads": {
+              "windows": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe",
+              "android": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk",
+              "macos": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz",
+              "ios": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz"
+            }
+          }
+    
+    - name: ✅ Test Completed
+      run: |
+        echo "🎉 Test integration completed!"
+        echo "📡 Data sent to licensing_server repository"
+        echo "🔍 Check the Actions tab in licensing_server to see the workflow execution"
+        echo "📂 The file config/rf_go_downloads.json should be updated with version ${{ steps.get_version.outputs.VERSION }}" 

@@ -290,4 +290,22 @@ jobs:
         body_path: ./release-notes.md
         fail_on_unmatched_files: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 🔄 Update Licensing Server Download Links
+      uses: peter-evans/repository-dispatch@v3
+      with:
+        token: ${{ secrets.LICENSING_SERVER_TOKEN }}
+        repository: c_bou/licensing_server
+        event-type: rf-go-release
+        client-payload: |
+          {
+            "version": "${{ steps.get_version.outputs.VERSION }}",
+            "release_url": "https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.VERSION }}",
+            "downloads": {
+              "windows": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe",
+              "android": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk",
+              "macos": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-macos-x64.tar.gz",
+              "ios": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz"
+            }
+          }

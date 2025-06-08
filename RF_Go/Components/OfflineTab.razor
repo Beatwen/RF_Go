@@ -202,26 +202,41 @@ else
     {
         var parameters = new DialogParameters
         {
-            { "Title", "Export Database" },
-            { "Message", "Are you sure you want to export your current database?" },
-            { "ConfirmText", "Export" },
-            { "CancelText", "Cancel" }
+            { "DevicesViewModel", DevicesViewModel },
+            { "GroupsViewModel", GroupsViewModel }
         };
 
-        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
-        var dialog = Dialog.Show<ConfirmationDialog>("Export Database", parameters, options);
+        var options = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Medium, 
+            FullWidth = true, 
+            CloseOnEscapeKey = true 
+        };
+        
+        var dialog = Dialog.Show<ExportDatabaseModal>("Export Database", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
-            var success = await DatabaseImportExportService.ExportDatabaseAsync();
-            if (success)
+            var exportOptions = (RF_Go.Services.ExportOptions)result.Data;
+            bool success;
+            
+            if (exportOptions.Format == "PDF")
             {
-                Snackbar.Add("Database exported successfully", Severity.Success);
+                success = await DatabaseImportExportService.ExportDatabaseAsync(exportOptions, DevicesViewModel, GroupsViewModel);
             }
             else
             {
-                Snackbar.Add("Failed to export database", Severity.Error);
+                success = await DatabaseImportExportService.ExportDatabaseAsync();
+            }
+            
+            if (success)
+            {
+                Snackbar.Add($"{exportOptions.Format} export completed successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Failed to export {exportOptions.Format.ToLower()}", Severity.Error);
             }
         }
     }
