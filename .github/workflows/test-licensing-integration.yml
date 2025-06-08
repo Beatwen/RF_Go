@@ -44,5 +44,5 @@ jobs:
       run: |
         echo "🎉 Test integration completed!"
         echo "📡 Data sent to licensing_server repository"
-        echo "🔍 Check the Actions tab in licensing_server to see the workflow execution"
+        echo "🔍 Check the Actions tab in Beatwen/Licensing-Server to see the workflow execution"
         echo "📂 The file config/rf_go_downloads.json should be updated with version ${{ steps.get_version.outputs.VERSION }}" 
