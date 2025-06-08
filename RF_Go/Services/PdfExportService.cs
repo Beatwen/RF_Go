@@ -24,9 +24,7 @@ namespace RF_Go.Services
         {
             try
             {
-                // Configure QuestPDF license
                 QuestPDF.Settings.License = LicenseType.Community;
-
                 var document = Document.Create(container =>
                 {
                     container.Page(page =>
@@ -41,12 +39,10 @@ namespace RF_Go.Services
                     });
                 });
 
-                // Generate PDF to memory stream
                 using var stream = new MemoryStream();
                 document.GeneratePdf(stream);
                 stream.Position = 0;
 
-                // Save the file
                 var fileName = $"RF_Go_Export_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.pdf";
                 var result = await FileSaver.Default.SaveAsync(fileName, stream);
                 return result.IsSuccessful;
