@@ -4,22 +4,34 @@ on:
   workflow_dispatch:
     inputs:
       test_version:
-        description: 'Version de test à envoyer'
+        description: 'Version à envoyer'
         required: false
-        default: 'v1.0.1'
+        default: 'v1.0.0'
         type: string
+      production_mode:
+        description: 'Écrire dans le fichier de production (au lieu du test)'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   test-integration:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📋 Extract Test Version
+    - name: 📋 Extract Version Info
       id: get_version
       run: |
-        VERSION="${{ github.event.inputs.test_version || 'v1.0.1' }}"
+        VERSION="${{ github.event.inputs.test_version || 'v1.0.0' }}"
+        PRODUCTION_MODE="${{ github.event.inputs.production_mode || 'true' }}"
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "🧪 Testing with version: $VERSION"
+        echo "PRODUCTION_MODE=$PRODUCTION_MODE" >> $GITHUB_OUTPUT
+        
+        if [ "$PRODUCTION_MODE" = "true" ]; then
+          echo "🚀 PRODUCTION MODE: Writing to rf_go_downloads.json with version: $VERSION"
+        else
+          echo "🧪 TEST MODE: Writing to rf_go_downloads_test.json with version: $VERSION"
+        fi
     
     - name: 🚀 Send Test Data to Licensing Server
       uses: peter-evans/repository-dispatch@v3
@@ -31,7 +43,7 @@ jobs:
           {
             "version": "${{ steps.get_version.outputs.VERSION }}",
             "release_url": "https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.VERSION }}",
-            "test_mode": true,
+            "test_mode": ${{ steps.get_version.outputs.PRODUCTION_MODE == 'false' }},
             "downloads": {
               "windows": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-setup-windows-x64.exe",
               "android": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk",
@@ -40,9 +52,20 @@ jobs:
             }
           }
     
-    - name: ✅ Test Completed
+    - name: ✅ Update Completed
       run: |
-        echo "🎉 Test integration completed!"
-        echo "📡 Data sent to licensing_server repository"
-        echo "🔍 Check the Actions tab in Beatwen/Licensing-Server to see the workflow execution"
-        echo "📂 The file config/rf_go_downloads.json should be updated with version ${{ steps.get_version.outputs.VERSION }}" 
+        PRODUCTION_MODE="${{ steps.get_version.outputs.PRODUCTION_MODE }}"
+        VERSION="${{ steps.get_version.outputs.VERSION }}"
+        
+        if [ "$PRODUCTION_MODE" = "true" ]; then
+          echo "🚀 PRODUCTION update completed!"
+          echo "📡 Data sent to Beatwen/Licensing-Server repository"
+          echo "🔍 Check the Actions tab in Beatwen/Licensing-Server to see the workflow execution"
+          echo "📂 The file Frontend/public/config/rf_go_downloads.json should be updated with version $VERSION"
+          echo "🌐 This will update the PRODUCTION download links!"
+        else
+          echo "🧪 TEST update completed!"
+          echo "📡 Data sent to Beatwen/Licensing-Server repository"  
+          echo "🔍 Check the Actions tab in Beatwen/Licensing-Server to see the workflow execution"
+          echo "📂 The file Frontend/public/config/rf_go_downloads_test.json should be updated with version $VERSION"
+        fi 
