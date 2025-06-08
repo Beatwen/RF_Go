@@ -132,7 +132,7 @@ public string UsedFrequenciesSerialized
 **Avantages** :
 
 - ✅ **Composants RF-friendly** : Tables, formulaires, graphiques
-- ✅ **Material Design** : Interface professionnelle
+- ✅ **Material Design** : Interface pro et simple
 - ✅ **Blazor natif** : Pas de wrapper JavaScript
 
 ## Évolutions futures

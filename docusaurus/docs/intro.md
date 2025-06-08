@@ -1,10 +1,10 @@
 # Introduction à RF.Go
 
-RF.Go est une application professionnelle de gestion de fréquences audio **multiplateforme et offline-first**, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil lors d'événements de grande envergure. Cette documentation technique complète présente l'analyse UML rigoureuse, l'architecture technique réelle et les choix d'implémentation du projet TFE.
+RF.Go est une application de gestion de fréquences audio **multiplateforme et offline**, conçue pour simplifier et optimiser la gestion des systèmes audio sans fil lors d'événements du monde du spectacle vivant. Cette documentation technique complète présente l'analyse UML, l'architecture technique réelle et les choix d'implémentation du projet TFE.
 
 ## Vision et contexte du projet
 
-RF.Go répond à un besoin critique du secteur professionnel de l'audio : **unifier la gestion multimarque des équipements RF** dans une interface moderne et intuitive. Contrairement aux solutions existantes (Shure Workbench, Sennheiser WSM) qui sont limitées à leurs écosystèmes respectifs, RF.Go offre une plateforme ouverte et **entièrement fonctionnelle offline**.
+RF.Go répond à un besoin critique du secteur professionnel de l'audio : **unifier la gestion multimarque des équipements RF** dans une interface moderne et intuitive. Contrairement aux solutions existantes (Shure Workbench, Sennheiser WSM) qui sont limitées à leurs écosystèmes respectifs, RF.Go offre une plateforme ouverte et **entièrement offline**.
 
 ### Problématiques adressées
 
@@ -14,7 +14,7 @@ RF.Go répond à un besoin critique du secteur professionnel de l'audio : **unif
 - **Dépendance réseau** : Solutions cloud inutilisables sans connexion
 - **Portabilité limitée** : Applications souvent liées à un seul OS
 
-### Innovation clé : Offline-first
+### Innovation clé : Offline
 
 RF.Go fonctionne **entièrement sans connexion internet** une fois l'authentification effectuée :
 
@@ -29,7 +29,7 @@ Cette documentation technique accompagne l'évaluation TFE et guide les dévelop
 
 ### 🔍 **[Analyse UML Complète](../uml-analysis/overview)**
 
-Modélisation rigoureuse selon UML 2.5 avec matrices de cohérence :
+Modélisation selon UML 2.5 avec matrices de cohérence :
 
 - **[Use Cases détaillés](../uml-analysis/use-cases/overview)** - 10 UC avec scénarios nominaux/alternatifs complets
 - **[Diagrammes de séquence](../uml-analysis/sequence-diagrams)** - Flux temporels end-to-end avec gestion d'erreurs
@@ -107,7 +107,7 @@ graph TB
 | **SQLite local** | Performance + offline garantie | Cloud DB (dépendance réseau) |
 | **Protocols propriétaires** | Imposés par fabricants RF | Aucune alternative possible |
 
-## Cas d'usage métier professionnels
+## Cas d'usage métier
 
 ### Événements live supportés
 
@@ -129,7 +129,7 @@ RF.Go gère les contraintes RF spécifiques aux événements :
 
 ### 👨‍🎓 **Jury TFE et évaluateurs académiques**
 
-- **Analyse UML rigoureuse** avec matrices de cohérence et métriques qualité
+- **Analyse UML** avec matrices de cohérence et métriques qualité
 - **Architecture technique justifiée** avec comparaisons et trade-offs
 - **Maîtrise des patterns** enterprise et domaine RF
 - **Innovation technique** démontrée (offline-first, multi-marques)

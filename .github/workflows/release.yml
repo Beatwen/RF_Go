@@ -220,6 +220,13 @@ jobs:
 
         ## 📦 Nouveautés et fonctionnalités
 
+        ### 🆕 Nouvelles fonctionnalités v1.0.2
+        ✅ **Export PDF** : Génération de rapports complets du plan fréquences 
+        ✅ **Filtres TV par pays** : Configuration automatique selon la réglementation locale depuis un modal  
+        ✅ **5 pays supportés** : France 🇫🇷, Belgique 🇧🇪, Allemagne 🇩🇪, Pays-Bas 🇳🇱, États-Unis 🇺🇸  
+        ✅ **Changement automatique de division** : 6MHz/7MHz/8MHz selon le pays  
+
+        ### 🔧 Fonctionnalités principales
         ✅ **Analyseur de fréquences radio complet**  
         ✅ **Gestion avancée des scans**  
         ✅ **Interface utilisateur moderne avec MudBlazor**  
