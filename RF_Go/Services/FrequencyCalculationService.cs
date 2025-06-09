@@ -31,7 +31,7 @@ namespace RF_Go.Services
 
         public async Task CalculateFrequenciesAsync()
         {
-            var overlappingGroups = FindOverlappingGroups();
+            var sortedGroups = GetGroupsSortedByStartTime();
             var excludedRanges = GetExcludedRanges();
 
             _frequencyDataViewModel.FrequencyData.UsedFrequencies.Clear();
@@ -46,20 +46,23 @@ namespace RF_Go.Services
             // Define colors for different groups
             var groupColors = new[]
             {
-                "#00FFFF", // Dark Green
+                "#00FFFF", // Cyan
                 "#0000FF", // Blue
-                "#800000",  // Maroon
+                "#800000", // Maroon
                 "#FF0000", // Red
                 "#800080", // Purple
                 "#FFA500", // Orange
-                "#00FFFF", // Green
+                "#008000", // Green
                 "#FFFF00", // Yellow
                 "#FF00FF", // Magenta
-                "#00FFFF", // Cyan
+                "#00CED1", // Dark Turquoise
             };
 
-            foreach (var groupSet in overlappingGroups)
+            foreach (var currentGroup in sortedGroups)
             {
+                // Find only groups that overlap DIRECTLY with current group and have already been processed
+                var overlappingProcessedGroups = GetDirectlyOverlappingProcessedGroups(currentGroup, groupFrequencyData.Keys);
+
                 var groupData = new FrequencyData
                 {
                     UsedFrequencies = new HashSet<int>(),
@@ -67,10 +70,35 @@ namespace RF_Go.Services
                     TwoTX5rdOrder = new HashSet<int>(),
                     TwoTX7rdOrder = new HashSet<int>(),
                     TwoTX9rdOrder = new HashSet<int>(),
-                    ThreeTX3rdOrder = new HashSet<int>()
+                    ThreeTX3rdOrder = new HashSet<int>(),
+                    Color = groupColors[currentGroup.ID % groupColors.Length]
                 };
 
-                var devicesInGroup = GetDevicesForGroupSet(groupSet);
+                var tempUsedFrequencies = new HashSet<int>();
+                var tempTwoTX3rdOrder = new HashSet<int>();
+                var tempTwoTX5rdOrder = new HashSet<int>();
+                var tempTwoTX7rdOrder = new HashSet<int>();
+                var tempTwoTX9rdOrder = new HashSet<int>();
+                var tempThreeTX3rdOrder = new HashSet<int>();
+
+                foreach (var overlappingGroupId in overlappingProcessedGroups)
+                {
+                    var overlappingData = groupFrequencyData[overlappingGroupId];
+                    foreach (var freq in overlappingData.UsedFrequencies)
+                        tempUsedFrequencies.Add(freq);
+                    foreach (var freq in overlappingData.TwoTX3rdOrder)
+                        tempTwoTX3rdOrder.Add(freq);
+                    foreach (var freq in overlappingData.TwoTX5rdOrder)
+                        tempTwoTX5rdOrder.Add(freq);
+                    foreach (var freq in overlappingData.TwoTX7rdOrder)
+                        tempTwoTX7rdOrder.Add(freq);
+                    foreach (var freq in overlappingData.TwoTX9rdOrder)
+                        tempTwoTX9rdOrder.Add(freq);
+                    foreach (var freq in overlappingData.ThreeTX3rdOrder)
+                        tempThreeTX3rdOrder.Add(freq);
+                }
+
+                var devicesInGroup = GetDevicesForGroup(currentGroup);
 
                 // First pass: lock frequencies
                 foreach (RFDevice device in devicesInGroup)
@@ -81,39 +109,75 @@ namespace RF_Go.Services
                         if (chan.IsLocked)
                         {
                             chan.SetRandomFrequency(
-                                groupData.UsedFrequencies,
-                                groupData.TwoTX3rdOrder,
-                                groupData.TwoTX5rdOrder,
-                                groupData.TwoTX7rdOrder,
-                                groupData.TwoTX9rdOrder,
-                                groupData.ThreeTX3rdOrder,
+                                tempUsedFrequencies,
+                                tempTwoTX3rdOrder,
+                                tempTwoTX5rdOrder,
+                                tempTwoTX7rdOrder,
+                                tempTwoTX9rdOrder,
+                                tempThreeTX3rdOrder,
                                 excludedRanges);
+
+                            if (chan.Frequency > 0)
+                            {
+                                AddFrequencyToGroupData(chan, groupData);
+                                // Also add to temp sets so other channels in same group see this frequency as used
+                                AddFrequencyToTempSets(chan, tempUsedFrequencies, tempTwoTX3rdOrder, tempTwoTX5rdOrder,
+                                                     tempTwoTX7rdOrder, tempTwoTX9rdOrder, tempThreeTX3rdOrder);
+                            }
                         }
                     }
                 }
 
-                // Second pass: assign frequencies to unlocked channels
                 foreach (RFDevice device in devicesInGroup)
                 {
                     foreach (RFChannel chan in device.Channels)
                     {
-                        chan.SetRandomFrequency(
-                            groupData.UsedFrequencies,
-                            groupData.TwoTX3rdOrder,
-                            groupData.TwoTX5rdOrder,
-                            groupData.TwoTX7rdOrder,
-                            groupData.TwoTX9rdOrder,
-                            groupData.ThreeTX3rdOrder,
-                            excludedRanges);
+                        if (!chan.IsLocked)
+                        {
+                            chan.SetRandomFrequency(
+                                tempUsedFrequencies,
+                                tempTwoTX3rdOrder,
+                                tempTwoTX5rdOrder,
+                                tempTwoTX7rdOrder,
+                                tempTwoTX9rdOrder,
+                                tempThreeTX3rdOrder,
+                                excludedRanges);
+
+                            if (chan.Frequency > 0)
+                            {
+                                AddFrequencyToGroupData(chan, groupData);
+                                AddFrequencyToTempSets(chan, tempUsedFrequencies, tempTwoTX3rdOrder, tempTwoTX5rdOrder,
+                                                     tempTwoTX7rdOrder, tempTwoTX9rdOrder, tempThreeTX3rdOrder);
+                            }
+                        }
                     }
                 }
 
-                // Store the group data with color
-                foreach (var group in groupSet)
-                {
-                    groupData.Color = groupColors[group.ID % groupColors.Length];
-                    groupFrequencyData[group.ID] = groupData;
-                }
+                // Fusionner les HashSet temporaires dans groupData pour conserver toutes les intermodulations
+                groupData.UsedFrequencies.UnionWith(tempUsedFrequencies);
+                groupData.TwoTX3rdOrder.UnionWith(tempTwoTX3rdOrder);
+                groupData.TwoTX5rdOrder.UnionWith(tempTwoTX5rdOrder);
+                groupData.TwoTX7rdOrder.UnionWith(tempTwoTX7rdOrder);
+                groupData.TwoTX9rdOrder.UnionWith(tempTwoTX9rdOrder);
+                groupData.ThreeTX3rdOrder.UnionWith(tempThreeTX3rdOrder);
+
+                // On ne garde que les intermodulations issues des fréquences réellement utilisées
+                groupData.TwoTX3rdOrder.Clear();
+                groupData.TwoTX5rdOrder.Clear();
+                groupData.TwoTX7rdOrder.Clear();
+                groupData.TwoTX9rdOrder.Clear();
+                groupData.ThreeTX3rdOrder.Clear();
+
+                RFChannel.CalculAllIntermodSet(
+                    groupData.UsedFrequencies,
+                    groupData.TwoTX3rdOrder,
+                    groupData.TwoTX5rdOrder,
+                    groupData.TwoTX7rdOrder,
+                    groupData.TwoTX9rdOrder,
+                    groupData.ThreeTX3rdOrder
+                );
+
+                groupFrequencyData[currentGroup.ID] = groupData;
 
                 // Third pass: assign frequencies to backup frequencies
                 foreach (RFDevice device in devicesInGroup)
@@ -137,12 +201,12 @@ namespace RF_Go.Services
 
                         // Use the same logic as regular channels
                         tempChannel.SetRandomFrequency(
-                            groupData.UsedFrequencies,
-                            groupData.TwoTX3rdOrder,
-                            groupData.TwoTX5rdOrder,
-                            groupData.TwoTX7rdOrder,
-                            groupData.TwoTX9rdOrder,
-                            groupData.ThreeTX3rdOrder,
+                            tempUsedFrequencies,
+                            tempTwoTX3rdOrder,
+                            tempTwoTX5rdOrder,
+                            tempTwoTX7rdOrder,
+                            tempTwoTX9rdOrder,
+                            tempThreeTX3rdOrder,
                             excludedRanges
                         );
 
@@ -160,44 +224,113 @@ namespace RF_Go.Services
             await _frequencyDataViewModel.SaveFrequencyDataAsync();
         }
 
-        private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)
+        private void AddFrequencyToGroupData(RFChannel channel, FrequencyData groupData)
         {
-            var groupIds = groupSet.Select(g => g.ID).ToList();
-            return _devicesViewModel.Devices.Where(device => groupIds.Contains(device.GroupID)).ToList();
+            // Add ONLY the main frequency used by this channel to the group data
+            groupData.UsedFrequencies.Add(channel.Frequency);
+
+            // Note: Intermodulations are calculated by SetRandomFrequency method internally
+            // We don't need to add them manually here as they are already handled
         }
 
-        private List<List<RFGroup>> FindOverlappingGroups()
+        private void AddFrequencyToTempSets(RFChannel channel, HashSet<int> tempUsedFrequencies,
+            HashSet<int> tempTwoTX3rdOrder, HashSet<int> tempTwoTX5rdOrder, HashSet<int> tempTwoTX7rdOrder,
+            HashSet<int> tempTwoTX9rdOrder, HashSet<int> tempThreeTX3rdOrder)
         {
-            var processedGroups = new HashSet<RFGroup>();
-            var overlappingGroups = new List<List<RFGroup>>();
+            // Add the main frequency
+            tempUsedFrequencies.Add(channel.Frequency);
 
-            foreach (var group in _groupsViewModel.Groups)
+            // Add intermodulation frequencies that need to be blocked for other channels
+            // This should match the logic used in SetRandomFrequency method
+            var freq = channel.Frequency;
+
+            // Add spacing-based blocked frequencies
+            if (channel.SelfSpacing > 0)
             {
-                if (processedGroups.Contains(group))
-                    continue;
-
-                var overlappingSet = new List<RFGroup> { group };
-                processedGroups.Add(group);
-
-                foreach (var otherGroup in _groupsViewModel.Groups)
+                for (int i = 1; i <= 5; i++) // Reduced range to avoid too many blocked frequencies
                 {
-                    if (group == otherGroup || processedGroups.Contains(otherGroup))
-                        continue;
-
-                    if (DoGroupsOverlap(group, otherGroup))
-                    {
-                        overlappingSet.Add(otherGroup);
-                        processedGroups.Add(otherGroup);
-                    }
+                    tempUsedFrequencies.Add(freq + (i * channel.SelfSpacing));
+                    tempUsedFrequencies.Add(freq - (i * channel.SelfSpacing));
                 }
-                overlappingGroups.Add(overlappingSet);
             }
 
-            return overlappingGroups;
+            if (channel.ThirdOrderSpacing > 0)
+            {
+                tempTwoTX3rdOrder.Add(freq + channel.ThirdOrderSpacing);
+                tempTwoTX3rdOrder.Add(freq - channel.ThirdOrderSpacing);
+            }
+
+            if (channel.FifthOrderSpacing > 0)
+            {
+                tempTwoTX5rdOrder.Add(freq + channel.FifthOrderSpacing);
+                tempTwoTX5rdOrder.Add(freq - channel.FifthOrderSpacing);
+            }
+
+            if (channel.SeventhOrderSpacing > 0)
+            {
+                tempTwoTX7rdOrder.Add(freq + channel.SeventhOrderSpacing);
+                tempTwoTX7rdOrder.Add(freq - channel.SeventhOrderSpacing);
+            }
+
+            if (channel.NinthOrderSpacing > 0)
+            {
+                tempTwoTX9rdOrder.Add(freq + channel.NinthOrderSpacing);
+                tempTwoTX9rdOrder.Add(freq - channel.NinthOrderSpacing);
+            }
+
+            if (channel.ThirdOrderSpacing3Tx > 0)
+            {
+                tempThreeTX3rdOrder.Add(freq + channel.ThirdOrderSpacing3Tx);
+                tempThreeTX3rdOrder.Add(freq - channel.ThirdOrderSpacing3Tx);
+            }
         }
 
-        private bool DoGroupsOverlap(RFGroup group1, RFGroup group2)
+        private List<RFDevice> GetDevicesForGroup(RFGroup group)
         {
+            return _devicesViewModel.Devices.Where(device => device.GroupID == group.ID).ToList();
+        }
+
+        private List<RFGroup> GetGroupsSortedByStartTime()
+        {
+            // Séparer les groupes avec et sans time slots
+            var groupsWithTimeSlots = _groupsViewModel.Groups
+                .Where(g => g.TimePeriods != null && g.TimePeriods.Any())
+                .OrderBy(g => g.TimePeriods.Min(tp => tp.StartTime))
+                .ToList();
+
+            var groupsWithoutTimeSlots = _groupsViewModel.Groups
+                .Where(g => g.TimePeriods == null || !g.TimePeriods.Any())
+                .ToList();
+
+            // Mettre les groupes sans time slots à la fin
+            return groupsWithTimeSlots.Concat(groupsWithoutTimeSlots).ToList();
+        }
+
+        private List<int> GetDirectlyOverlappingProcessedGroups(RFGroup currentGroup, IEnumerable<int> processedGroupIds)
+        {
+            var directlyOverlappingGroups = new List<int>();
+
+            foreach (var processedGroupId in processedGroupIds)
+            {
+                var processedGroup = _groupsViewModel.Groups.FirstOrDefault(g => g.ID == processedGroupId);
+                if (processedGroup != null && DoGroupsOverlapDirectly(currentGroup, processedGroup))
+                {
+                    directlyOverlappingGroups.Add(processedGroupId);
+                }
+            }
+
+            return directlyOverlappingGroups;
+        }
+
+        private bool DoGroupsOverlapDirectly(RFGroup group1, RFGroup group2)
+        {
+            // Si l'un des groupes n'a pas de time slots, il ne se chevauche jamais
+            if (group1.TimePeriods == null || group2.TimePeriods == null ||
+                !group1.TimePeriods.Any() || !group2.TimePeriods.Any())
+            {
+                return false;
+            }
+
             foreach (var period1 in group1.TimePeriods)
             {
                 foreach (var period2 in group2.TimePeriods)
@@ -227,4 +360,4 @@ namespace RF_Go.Services
             return excludedChannels;
         }
     }
-} 
+}

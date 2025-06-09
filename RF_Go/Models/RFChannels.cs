@@ -193,6 +193,19 @@ namespace RF_Go.Models
                 }
             }
         }
+        public static void CalculAllIntermodSet(
+            HashSet<int> usedFrequencies,
+            HashSet<int> twoTX3rdOrder,
+            HashSet<int> twoTX5rdOrder,
+            HashSet<int> twoTX7rdOrder,
+            HashSet<int> twoTX9rdOrder,
+            HashSet<int> threeTX3rdOrder)
+        {
+            foreach (int f1 in usedFrequencies)
+            {
+                CalculAllIntermod(f1, usedFrequencies, twoTX3rdOrder, twoTX5rdOrder, twoTX7rdOrder, twoTX9rdOrder, threeTX3rdOrder);
+            }
+        }
         public RFChannel Clone() => MemberwiseClone() as RFChannel;
     }
 }
