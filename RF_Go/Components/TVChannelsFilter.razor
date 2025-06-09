@@ -1,6 +1,6 @@
 ﻿@using RF_Go.ViewModels
 @using RF_Go.Models
-@using RF_Go.Modal
+@using RF_Go.Components.Modal
 @using System.Diagnostics
 @inject MudBlazor.ISnackbar Snackbar
 @inject MudBlazor.IDialogService DialogService
@@ -238,7 +238,7 @@
 
     private async Task OpenCountryModal()
     {
-        var parameters = new DialogParameters<RF_Go.Modal.CountrySelectionModal>
+        var parameters = new DialogParameters<CountrySelectionModal>
         {
             { x => x.CountryData, countryData }
         };
@@ -249,7 +249,7 @@
             CloseOnEscapeKey = true
         };
 
-        var dialog = await DialogService.ShowAsync<RF_Go.Modal.CountrySelectionModal>("Sélection Pays/Région", parameters, options);
+        var dialog = await DialogService.ShowAsync<CountrySelectionModal>("Select country/region", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is CountrySelectionResult selection)
@@ -278,7 +278,7 @@
             }
         }
 
-        Snackbar.Add($"Configuration appliquée pour {selection.Country.Name} - {selection.Region.Name}", Severity.Success);
+        Snackbar.Add($"Filter set on {selection.Country.Name} - {selection.Region.Name}", Severity.Success);
         StateHasChanged();
     }
 }
