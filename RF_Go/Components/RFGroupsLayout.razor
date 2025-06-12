@@ -16,6 +16,8 @@
 
     @foreach (var group in GroupsViewModel.Groups)
     {
+        if (group.Name != "Default Group")
+        {
         <MudCard Elevation="0" Outlined="true" Class="border-solid border-1 mud-border-secondary mb-2" Style="max-width: 600px;">
             <MudCardContent Class="d-flex flex-column align-center">
                 @if (temporaryGroupID == group.ID)
@@ -66,20 +68,23 @@
                     }
                 }
                 <div class="d-flex justify-center mt-4">
+
                     <MudButton Variant="Variant.Filled" 
                              Color="Color.Primary" 
                              OnClick="() => AddTimePeriod(group)"
                              Class="mr-2">Add Time Period</MudButton>
+                    
                     <MudButton Variant="Variant.Filled" 
                              Color="Color.Primary" 
                              OnClick="() => EditGroup(group)"
                              Class="mr-2">Edit</MudButton>
                     <MudButton Variant="Variant.Filled" 
                              Color="Color.Primary" 
-                             OnClick="() => GroupsViewModel.DeleteGroupAsync(group)">Delete</MudButton>
+                             OnClick="() => DeleteGroupAndRefresh(group)">Delete</MudButton>
                 </div>
             </MudCardContent>
         </MudCard>
+        }
     }
 </div>
 
@@ -146,5 +151,22 @@
     {
         group.DeleteTimePeriod(time);
         await GroupsViewModel.UpdateGroupAsync(group);
+    }
+
+    private async Task DeleteGroupAndRefresh(RFGroup group)
+    {
+        try
+        {
+            await GroupsViewModel.DeleteGroupAsync(group);
+            await GroupsViewModel.LoadGroupsAsync();
+            await DevicesViewModel.LoadDevicesAsync();
+            
+            Debug.WriteLine($"Group '{group.Name}' deleted, groups and devices reloaded");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error deleting group: {ex.Message}");
+        }
     }
 }

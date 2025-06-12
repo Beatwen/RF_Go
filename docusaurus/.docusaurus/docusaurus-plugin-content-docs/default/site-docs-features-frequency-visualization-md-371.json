@@ -1,7 +1,7 @@
 {
   "id": "features/frequency-visualization",
-  "title": "Visualisation des Fréquences",
-  "description": "Visualisation Multi-Groupes",
+  "title": "Visualisation des fréquences",
+  "description": "Visualisation par étapes de calcul",
   "source": "@site/docs/features/frequency-visualization.md",
   "sourceDirName": "features",
   "slug": "/features/frequency-visualization",
@@ -14,7 +14,7 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Gestion temporelle - Planification RF avancée",
+    "title": "Gestion temporelle - planification RF avancée",
     "permalink": "/RF_Go/features/time-management"
   },
   "next": {

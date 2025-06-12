@@ -31,34 +31,53 @@ namespace RF_Go.Services
 
         public async Task CalculateFrequenciesAsync()
         {
-            var overlappingGroups = FindOverlappingGroups();
+            await _devicesViewModel.LoadDevicesAsync();
+            await _groupsViewModel.LoadGroupsAsync();
+            
+            var groupCalculationPlan = BuildGroupCalculationPlan();
             var excludedRanges = GetExcludedRanges();
 
+            // Clear all existing data completely - fresh start every time
             _frequencyDataViewModel.FrequencyData.UsedFrequencies.Clear();
             _frequencyDataViewModel.FrequencyData.TwoTX3rdOrder.Clear();
             _frequencyDataViewModel.FrequencyData.TwoTX5rdOrder.Clear();
             _frequencyDataViewModel.FrequencyData.TwoTX7rdOrder.Clear();
             _frequencyDataViewModel.FrequencyData.TwoTX9rdOrder.Clear();
             _frequencyDataViewModel.FrequencyData.ThreeTX3rdOrder.Clear();
+            
+            // Clear group data
+            _frequencyDataViewModel.FrequencyData.GroupData.Clear();
 
-            var groupFrequencyData = new Dictionary<int, FrequencyData>();
-
-            // Define colors for different groups
-            var groupColors = new[]
+            var calculationStepData = new Dictionary<string, FrequencyData>();
+            
+            // Global frequency tracking for cumulative effect
+            var globalUsedFrequencies = new HashSet<int>();
+            var globalIntermodulations = new Dictionary<string, HashSet<int>>
             {
-                "#00FFFF", // Dark Green
+                ["TwoTX3rdOrder"] = new HashSet<int>(),
+                ["TwoTX5rdOrder"] = new HashSet<int>(),
+                ["TwoTX7rdOrder"] = new HashSet<int>(),
+                ["TwoTX9rdOrder"] = new HashSet<int>(),
+                ["ThreeTX3rdOrder"] = new HashSet<int>()
+            };
+
+            // Define colors for different calculation steps
+            var stepColors = new[]
+            {
+                "#00FF00", // Green
                 "#0000FF", // Blue
-                "#800000",  // Maroon
+                "#800000", // Maroon
                 "#FF0000", // Red
                 "#800080", // Purple
                 "#FFA500", // Orange
-                "#00FFFF", // Green
+                "#ADFF2F", // Green Yellow
                 "#FFFF00", // Yellow
                 "#FF00FF", // Magenta
                 "#00FFFF", // Cyan
             };
 
-            foreach (var groupSet in overlappingGroups)
+            int stepIndex = 0;
+            foreach (var calculationStep in groupCalculationPlan)
             {
                 var groupData = new FrequencyData
                 {
@@ -70,14 +89,52 @@ namespace RF_Go.Services
                     ThreeTX3rdOrder = new HashSet<int>()
                 };
 
-                var devicesInGroup = GetDevicesForGroupSet(groupSet);
+                // Copy existing frequencies from overlapping groups that should be preserved
+                // BUT ONLY if they were calculated in previous steps (not from old calculation runs)
+                var preservedGroupData = new Dictionary<int, FrequencyData>();
+                foreach (var existingGroupId in calculationStep.PreserveFrequenciesFromGroups)
+                {
+                    // Find this group's data from previous calculation steps
+                    foreach (var (stepKey, stepData) in calculationStepData)
+                    {
+                        if (stepKey.Contains($"Groupe {existingGroupId}"))
+                        {
+                            preservedGroupData[existingGroupId] = stepData;
+                            // Copy frequencies to current calculation
+                            foreach (var freq in stepData.UsedFrequencies)
+                                groupData.UsedFrequencies.Add(freq);
+                            foreach (var freq in stepData.TwoTX3rdOrder)
+                                groupData.TwoTX3rdOrder.Add(freq);
+                            foreach (var freq in stepData.TwoTX5rdOrder)
+                                groupData.TwoTX5rdOrder.Add(freq);
+                            foreach (var freq in stepData.TwoTX7rdOrder)
+                                groupData.TwoTX7rdOrder.Add(freq);
+                            foreach (var freq in stepData.TwoTX9rdOrder)
+                                groupData.TwoTX9rdOrder.Add(freq);
+                            foreach (var freq in stepData.ThreeTX3rdOrder)
+                                groupData.ThreeTX3rdOrder.Add(freq);
+                            break;
+                        }
+                    }
+                }
 
-                // First pass: lock frequencies
-                foreach (RFDevice device in devicesInGroup)
+                var devicesInGroups = GetDevicesForGroupSet(calculationStep.GroupsToCalculate);
+
+                // Reset all channels first - ensure fresh calculation
+                foreach (RFDevice device in devicesInGroups)
                 {
                     foreach (RFChannel chan in device.Channels)
                     {
                         chan.Checked = false;
+                        // Don't preserve locked state from preserved groups anymore - recalculate everything
+                    }
+                }
+
+                // First pass: handle locked frequencies
+                foreach (RFDevice device in devicesInGroups)
+                {
+                    foreach (RFChannel chan in device.Channels)
+                    {
                         if (chan.IsLocked)
                         {
                             chan.SetRandomFrequency(
@@ -93,30 +150,57 @@ namespace RF_Go.Services
                 }
 
                 // Second pass: assign frequencies to unlocked channels
-                foreach (RFDevice device in devicesInGroup)
+                foreach (RFDevice device in devicesInGroups)
                 {
                     foreach (RFChannel chan in device.Channels)
                     {
-                        chan.SetRandomFrequency(
-                            groupData.UsedFrequencies,
-                            groupData.TwoTX3rdOrder,
-                            groupData.TwoTX5rdOrder,
-                            groupData.TwoTX7rdOrder,
-                            groupData.TwoTX9rdOrder,
-                            groupData.ThreeTX3rdOrder,
-                            excludedRanges);
+                        if (!chan.IsLocked)
+                        {
+                            chan.SetRandomFrequency(
+                                groupData.UsedFrequencies,
+                                groupData.TwoTX3rdOrder,
+                                groupData.TwoTX5rdOrder,
+                                groupData.TwoTX7rdOrder,
+                                groupData.TwoTX9rdOrder,
+                                groupData.ThreeTX3rdOrder,
+                                excludedRanges);
+                        }
                     }
                 }
 
-                // Store the group data with color
-                foreach (var group in groupSet)
-                {
-                    groupData.Color = groupColors[group.ID % groupColors.Length];
-                    groupFrequencyData[group.ID] = groupData;
-                }
+                // Create calculation step name based on groups involved
+                var stepName = CreateCalculationStepName(calculationStep);
+                var stepColor = stepColors[stepIndex % stepColors.Length];
 
-                // Third pass: assign frequencies to backup frequencies
-                foreach (RFDevice device in devicesInGroup)
+                // Store calculation step data for SciChart
+                var stepDataCopy = new FrequencyData
+                {
+                    UsedFrequencies = new HashSet<int>(groupData.UsedFrequencies),
+                    TwoTX3rdOrder = new HashSet<int>(groupData.TwoTX3rdOrder),
+                    TwoTX5rdOrder = new HashSet<int>(groupData.TwoTX5rdOrder),
+                    TwoTX7rdOrder = new HashSet<int>(groupData.TwoTX7rdOrder),
+                    TwoTX9rdOrder = new HashSet<int>(groupData.TwoTX9rdOrder),
+                    ThreeTX3rdOrder = new HashSet<int>(groupData.ThreeTX3rdOrder),
+                    Color = stepColor
+                };
+                calculationStepData[stepName] = stepDataCopy;
+
+                // Add this step's frequencies to global tracking
+                foreach (var freq in groupData.UsedFrequencies)
+                    globalUsedFrequencies.Add(freq);
+                foreach (var freq in groupData.TwoTX3rdOrder)
+                    globalIntermodulations["TwoTX3rdOrder"].Add(freq);
+                foreach (var freq in groupData.TwoTX5rdOrder)
+                    globalIntermodulations["TwoTX5rdOrder"].Add(freq);
+                foreach (var freq in groupData.TwoTX7rdOrder)
+                    globalIntermodulations["TwoTX7rdOrder"].Add(freq);
+                foreach (var freq in groupData.TwoTX9rdOrder)
+                    globalIntermodulations["TwoTX9rdOrder"].Add(freq);
+                foreach (var freq in groupData.ThreeTX3rdOrder)
+                    globalIntermodulations["ThreeTX3rdOrder"].Add(freq);
+
+                // Calculate backup frequencies
+                foreach (RFDevice device in devicesInGroups)
                 {
                     var deviceBackupFrequencies = _backupFrequenciesViewModel.GetBackupFrequenciesForDeviceType(
                         device.Brand, device.Model, device.Frequency);
@@ -151,13 +235,169 @@ namespace RF_Go.Services
                         await _backupFrequenciesViewModel.SaveBackupFrequencyAsync(backupFreq);
                     }
                 }
+
+                stepIndex++;
             }
 
-            // Update the FrequencyDataViewModel with the grouped data
-            _frequencyDataViewModel.FrequencyData.GroupData = groupFrequencyData;
+            // Update BOTH the global FrequencyData AND the CalculationStepData for proper SciChart display
+            foreach (var freq in globalUsedFrequencies)
+                _frequencyDataViewModel.FrequencyData.UsedFrequencies.Add(freq);
+            foreach (var freq in globalIntermodulations["TwoTX3rdOrder"])
+                _frequencyDataViewModel.FrequencyData.TwoTX3rdOrder.Add(freq);
+            foreach (var freq in globalIntermodulations["TwoTX5rdOrder"])
+                _frequencyDataViewModel.FrequencyData.TwoTX5rdOrder.Add(freq);
+            foreach (var freq in globalIntermodulations["TwoTX7rdOrder"])
+                _frequencyDataViewModel.FrequencyData.TwoTX7rdOrder.Add(freq);
+            foreach (var freq in globalIntermodulations["TwoTX9rdOrder"])
+                _frequencyDataViewModel.FrequencyData.TwoTX9rdOrder.Add(freq);
+            foreach (var freq in globalIntermodulations["ThreeTX3rdOrder"])
+                _frequencyDataViewModel.FrequencyData.ThreeTX3rdOrder.Add(freq);
+
+            // Set the calculation step data for SciChart visualization
+            _frequencyDataViewModel.FrequencyData.GroupData = ConvertCalculationStepDataToGroupData(calculationStepData);
 
             await _devicesViewModel.SaveAllDevicesAsync();
             await _frequencyDataViewModel.SaveFrequencyDataAsync();
+        }
+
+        private string CreateCalculationStepName(GroupCalculationStep calculationStep)
+        {
+            var groupNames = calculationStep.GroupsToCalculate
+                .Select(g => _groupsViewModel.Groups.FirstOrDefault(group => group.ID == g.ID)?.Name ?? $"Groupe {g.ID}")
+                .ToList();
+
+            if (groupNames.Count == 1)
+            {
+                return groupNames[0];
+            }
+            else
+            {
+                return string.Join(" & ", groupNames);
+            }
+        }
+
+        private Dictionary<int, FrequencyData> ConvertCalculationStepDataToGroupData(Dictionary<string, FrequencyData> calculationStepData)
+        {
+            var groupData = new Dictionary<int, FrequencyData>();
+            int fakeGroupId = 1000; // Start with high number to avoid conflicts with real group IDs
+
+            foreach (var (stepName, stepData) in calculationStepData)
+            {
+                // Create a fake group entry for SciChart compatibility
+                // Store the step name in a custom property for JavaScript access
+                var frequencyDataCopy = new FrequencyData
+                {
+                    UsedFrequencies = new HashSet<int>(stepData.UsedFrequencies),
+                    TwoTX3rdOrder = new HashSet<int>(stepData.TwoTX3rdOrder),
+                    TwoTX5rdOrder = new HashSet<int>(stepData.TwoTX5rdOrder),
+                    TwoTX7rdOrder = new HashSet<int>(stepData.TwoTX7rdOrder),
+                    TwoTX9rdOrder = new HashSet<int>(stepData.TwoTX9rdOrder),
+                    ThreeTX3rdOrder = new HashSet<int>(stepData.ThreeTX3rdOrder),
+                    Color = stepData.Color
+                };
+
+                groupData[fakeGroupId] = frequencyDataCopy;
+                fakeGroupId++;
+            }
+
+            // Store calculation step names for JavaScript access
+            _calculationStepNames = calculationStepData.Keys.ToList();
+
+            return groupData;
+        }
+
+        private List<string> _calculationStepNames = new List<string>();
+
+        public List<string> GetCalculationStepNames()
+        {
+            return _calculationStepNames ?? new List<string>();
+        }
+
+        private List<GroupCalculationStep> BuildGroupCalculationPlan()
+        {
+            var sortedGroups = _groupsViewModel.Groups
+                .Where(g => g.TimePeriods != null && g.TimePeriods.Any())
+                .OrderBy(g => g.TimePeriods.Min(tp => tp.StartTime))
+                .ToList();
+
+            var groupsWithoutTimePeriods = _groupsViewModel.Groups
+                .Where(g => g.TimePeriods == null || !g.TimePeriods.Any())
+                .ToList();
+
+            var calculationPlan = new List<GroupCalculationStep>();
+            var processedGroupCombinations = new HashSet<string>();
+
+            foreach (var group in sortedGroups)
+            {
+                // Find all groups that overlap with this group
+                var overlappingGroups = new List<RFGroup>();
+                
+                foreach (var otherGroup in sortedGroups)
+                {
+                    if (group.ID == otherGroup.ID)
+                        continue;
+
+                    if (DoGroupsOverlap(group, otherGroup))
+                    {
+                        overlappingGroups.Add(otherGroup);
+                    }
+                }
+
+                // For each overlapping group, create a calculation step
+                foreach (var overlappingGroup in overlappingGroups)
+                {
+                    // Only process if this group started before the overlapping group (chronological order)
+                    var groupStartTime = group.TimePeriods.Min(tp => tp.StartTime);
+                    var overlappingStartTime = overlappingGroup.TimePeriods.Min(tp => tp.StartTime);
+                    
+                    if (groupStartTime <= overlappingStartTime)
+                    {
+                        // Create a unique key for this combination to avoid duplicates
+                        var combinationKey = $"{Math.Min(group.ID, overlappingGroup.ID)}-{Math.Max(group.ID, overlappingGroup.ID)}";
+                        
+                        if (!processedGroupCombinations.Contains(combinationKey))
+                        {
+                            var step = new GroupCalculationStep
+                            {
+                                GroupsToCalculate = new List<RFGroup> { group, overlappingGroup },
+                                PreserveFrequenciesFromGroups = new List<int>()
+                            };
+
+                            calculationPlan.Add(step);
+                            processedGroupCombinations.Add(combinationKey);
+                        }
+                    }
+                }
+
+                // If group has no overlaps, calculate it alone
+                if (overlappingGroups.Count == 0)
+                {
+                    var step = new GroupCalculationStep
+                    {
+                        GroupsToCalculate = new List<RFGroup> { group },
+                        PreserveFrequenciesFromGroups = new List<int>()
+                    };
+                    calculationPlan.Add(step);
+                }
+            }
+
+            // Add groups without time periods as separate calculation steps
+            foreach (var group in groupsWithoutTimePeriods)
+            {
+                calculationPlan.Add(new GroupCalculationStep
+                {
+                    GroupsToCalculate = new List<RFGroup> { group },
+                    PreserveFrequenciesFromGroups = new List<int>()
+                });
+            }
+
+            return calculationPlan;
+        }
+
+        private class GroupCalculationStep
+        {
+            public List<RFGroup> GroupsToCalculate { get; set; } = new List<RFGroup>();
+            public List<int> PreserveFrequenciesFromGroups { get; set; } = new List<int>();
         }
 
         private List<RFDevice> GetDevicesForGroupSet(List<RFGroup> groupSet)

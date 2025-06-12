@@ -74,6 +74,15 @@
                 }
             </MudSelect>
         </MudItem>
+        <MudItem xs="12">
+            <MudSelect HelperText="Choose device group" Placeholder="Please Select" AdornmentColor="Color.Primary"
+            @bind-Value="@selectedGroup">
+                @foreach (var group in GroupsViewModel.Groups)
+                {
+                    <MudSelectItem T="RFGroup" value="@group">@group.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
         <MudButton @onclick="() => SaveDeviceInDB(Device)">Save device</MudButton>
     </MudGrid>
 </div>
@@ -92,11 +101,15 @@
     private List<int> frequencyOptions = Enumerable.Range(1, 99).ToList();
     private int selectedBackupCount = 0;
     private List<int> backupCountOptions = Enumerable.Range(0, 6).ToList();
-
+    private RFGroup selectedGroup; 
     protected override async Task OnInitializedAsync()
     {
         await DevicesViewModel.LoadDevicesAsync();
         await GroupsViewModel.LoadGroupsAsync();
+        
+        selectedGroup = GroupsViewModel.Groups.FirstOrDefault(g => g.ID == 1) 
+                       ?? GroupsViewModel.Groups.FirstOrDefault();
+        
         await base.OnInitializedAsync();
     }
 
@@ -107,6 +120,9 @@
             Snackbar.Add("Please select a brand, model, and frequency", Severity.Error);
             return;
         }
+
+        int groupIdToAssign = selectedGroup?.ID ?? 1;
+        
         DevicesViewModel.SaveDataDevicesInfo(device);
         DevicesViewModel.SaveDataChannelsInfo(device);
 
@@ -116,10 +132,11 @@
         for (int i = 0; i < selectedQuantity; i++)
         {
             var clonedDevice = device.Clone();
+            clonedDevice.GroupID = groupIdToAssign;
             DevicesViewModel.OperatingDevice = clonedDevice;
             try
             {
-                Debug.Print($"Saving device {i + 1}...");
+                Debug.Print($"Saving device {i + 1} to group {selectedGroup?.Name ?? "Default Group"}...");
                 await DevicesViewModel.SaveDeviceAsync();
             }
             catch (Exception ex)

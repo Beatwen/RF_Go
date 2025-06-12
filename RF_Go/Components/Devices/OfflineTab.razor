@@ -336,12 +336,19 @@ else
 
         try
         {
-            var groupNames = GroupsViewModel.Groups.ToDictionary(
-                g => g.ID.ToString(), 
-                g => g.Name
-            );
+            // Get calculation step names instead of group names
+            var calculationStepNames = FrequencyCalculationService.GetCalculationStepNames();
+            var stepNamesDict = new Dictionary<string, string>();
             
-            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", groupNames);
+            // Create a mapping from fake group IDs to step names
+            int fakeGroupId = 1000;
+            foreach (var stepName in calculationStepNames)
+            {
+                stepNamesDict[fakeGroupId.ToString()] = stepName;
+                fakeGroupId++;
+            }
+            
+            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", stepNamesDict);
             await JSRuntime.InvokeVoidAsync("scichartInterop.initSciChart", "sciChartDiv", 
                 FrequencyDataViewModel.FrequencyData,
                 ScansViewModel.Scans.Select(s => new { 

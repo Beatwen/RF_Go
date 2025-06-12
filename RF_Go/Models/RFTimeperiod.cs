@@ -27,10 +27,10 @@ public class TimePeriod
         get => _startTime;
         set
         {
-            if (_endTime != default(DateTime) && value >= _endTime)
-            {
-                throw new ArgumentException("Start time must be less than end time.");
-            }
+            //if (_endTime != default(DateTime) && value >= _endTime)
+            //{
+            //    throw new ArgumentException("Start time must be less than end time.");
+            //}
             _startTime = value;
             UpdateRange();
         }

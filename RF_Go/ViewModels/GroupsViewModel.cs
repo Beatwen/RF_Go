@@ -40,13 +40,32 @@ namespace RF_Go.ViewModels
             }
             public async Task DeleteGroupAsync(RFGroup group)
             {
+                // don't forget to reassign devices to default group
                     try
                     {
                         if (group == null)
                             return;
 
+                        if (group.ID == 1)
+                        {
+                            Debug.WriteLine("Cannot delete Default Group");
+                            return;
+                        }
+
+                        var devicesToReassign = await _context.GetAllAsync<RFDevice>();
+                        var affectedDevices = devicesToReassign.Where(d => d.GroupID == group.ID).ToList();
+
+                        foreach (var device in affectedDevices)
+                        {
+                            device.GroupID = 1;
+                            await _context.UpdateItemAsync(device);
+                            Debug.WriteLine($"Device {device.Name} reassigned to Default Group");
+                        }
+
                         await _context.DeleteItemAsync(group);
                         Groups.Remove(group);
+                        
+                        Debug.WriteLine($"Group '{group.Name}' deleted and {affectedDevices.Count} devices reassigned to Default Group");
                     }
                     catch (Exception ex)
                     {

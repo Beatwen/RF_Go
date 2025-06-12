@@ -393,13 +393,20 @@ else
             Debug.WriteLine("Starting HandleCalculationCompleted");
             StateHasChanged();
 
-            var groupNames = GroupsViewModel.Groups.ToDictionary(
-                g => g.ID.ToString(),
-                g => g.Name
-            );
+            // Get calculation step names instead of group names so i can use the same chart for all calculation steps
+            var calculationStepNames = FrequencyCalculationService.GetCalculationStepNames();
+            var stepNamesDict = new Dictionary<string, string>();
+            
+            // Create a mapping from fake group IDs to step names
+            int fakeGroupId = 1000;
+            foreach (var stepName in calculationStepNames)
+            {
+                stepNamesDict[fakeGroupId.ToString()] = stepName;
+                fakeGroupId++;
+            }
 
-            Debug.WriteLine($"Updating chart with {groupNames.Count} groups");
-            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", groupNames);
+            Debug.WriteLine($"Updating chart with {stepNamesDict.Count} calculation steps");
+            await JSRuntime.InvokeVoidAsync("scichartInterop.setGroupNames", stepNamesDict);
             
             var frequencyData = FrequencyDataViewModel.FrequencyData;
             var scans = ScansViewModel.Scans.Select(s => new

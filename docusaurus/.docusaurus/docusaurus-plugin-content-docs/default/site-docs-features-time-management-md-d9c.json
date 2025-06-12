@@ -1,7 +1,7 @@
 {
   "id": "features/time-management",
-  "title": "Gestion temporelle - Planification RF avancée",
-  "description": "La gestion temporelle est une fonctionnalité distinctive de RF.Go qui permet de planifier l'utilisation des fréquences dans le temps. Cette approche optimise l'utilisation du spectre en permettant la réutilisation des fréquences selon les créneaux horaires.",
+  "title": "Gestion temporelle - planification RF avancée",
+  "description": "La gestion temporelle est une fonctionnalité distinctive de RF.Go qui permet de planifier l'utilisation des fréquences dans le temps. Cette approche optimise l'utilisation du spectre en calculant des étapes de fréquences par paires selon les superpositions temporelles réelles.",
   "source": "@site/docs/features/time-management.md",
   "sourceDirName": "features",
   "slug": "/features/time-management",
@@ -18,7 +18,7 @@
     "permalink": "/RF_Go/features/frequency-management"
   },
   "next": {
-    "title": "Visualisation des Fréquences",
+    "title": "Visualisation des fréquences",
     "permalink": "/RF_Go/features/frequency-visualization"
   }
 }
