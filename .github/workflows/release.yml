@@ -283,7 +283,7 @@ jobs:
         ls -la RF_Go-* || echo "No release files found"
 
     - name: Create GitHub Release with available files
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref }}
         name: RF_Go ${{ steps.get_version.outputs.VERSION }}
