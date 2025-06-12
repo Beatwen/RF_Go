@@ -33,7 +33,7 @@ namespace RF_Go.Services
         {
             await _devicesViewModel.LoadDevicesAsync();
             await _groupsViewModel.LoadGroupsAsync();
-            
+
             var groupCalculationPlan = BuildGroupCalculationPlan();
             var excludedRanges = GetExcludedRanges();
 
@@ -44,12 +44,12 @@ namespace RF_Go.Services
             _frequencyDataViewModel.FrequencyData.TwoTX7rdOrder.Clear();
             _frequencyDataViewModel.FrequencyData.TwoTX9rdOrder.Clear();
             _frequencyDataViewModel.FrequencyData.ThreeTX3rdOrder.Clear();
-            
+
             // Clear group data
             _frequencyDataViewModel.FrequencyData.GroupData.Clear();
 
             var calculationStepData = new Dictionary<string, FrequencyData>();
-            
+
             // Global frequency tracking for cumulative effect
             var globalUsedFrequencies = new HashSet<int>();
             var globalIntermodulations = new Dictionary<string, HashSet<int>>
@@ -89,81 +89,61 @@ namespace RF_Go.Services
                     ThreeTX3rdOrder = new HashSet<int>()
                 };
 
-                // Copy existing frequencies from overlapping groups that should be preserved
-                // BUT ONLY if they were calculated in previous steps (not from old calculation runs)
-                var preservedGroupData = new Dictionary<int, FrequencyData>();
-                foreach (var existingGroupId in calculationStep.PreserveFrequenciesFromGroups)
-                {
-                    // Find this group's data from previous calculation steps
-                    foreach (var (stepKey, stepData) in calculationStepData)
-                    {
-                        if (stepKey.Contains($"Groupe {existingGroupId}"))
-                        {
-                            preservedGroupData[existingGroupId] = stepData;
-                            // Copy frequencies to current calculation
-                            foreach (var freq in stepData.UsedFrequencies)
-                                groupData.UsedFrequencies.Add(freq);
-                            foreach (var freq in stepData.TwoTX3rdOrder)
-                                groupData.TwoTX3rdOrder.Add(freq);
-                            foreach (var freq in stepData.TwoTX5rdOrder)
-                                groupData.TwoTX5rdOrder.Add(freq);
-                            foreach (var freq in stepData.TwoTX7rdOrder)
-                                groupData.TwoTX7rdOrder.Add(freq);
-                            foreach (var freq in stepData.TwoTX9rdOrder)
-                                groupData.TwoTX9rdOrder.Add(freq);
-                            foreach (var freq in stepData.ThreeTX3rdOrder)
-                                groupData.ThreeTX3rdOrder.Add(freq);
-                            break;
-                        }
-                    }
-                }
-
                 var devicesInGroups = GetDevicesForGroupSet(calculationStep.GroupsToCalculate);
 
-                // Reset all channels first - ensure fresh calculation
+                // Reset seulement les canaux des groupes NON-préservés
                 foreach (RFDevice device in devicesInGroups)
                 {
-                    foreach (RFChannel chan in device.Channels)
+                    // Ne réinitialiser que si le device n'appartient pas à un groupe préservé
+                    if (!calculationStep.PreserveFrequenciesFromGroups.Contains(device.GroupID))
                     {
-                        chan.Checked = false;
-                        // Don't preserve locked state from preserved groups anymore - recalculate everything
-                    }
-                }
-
-                // First pass: handle locked frequencies
-                foreach (RFDevice device in devicesInGroups)
-                {
-                    foreach (RFChannel chan in device.Channels)
-                    {
-                        if (chan.IsLocked)
+                        foreach (RFChannel chan in device.Channels)
                         {
-                            chan.SetRandomFrequency(
-                                groupData.UsedFrequencies,
-                                groupData.TwoTX3rdOrder,
-                                groupData.TwoTX5rdOrder,
-                                groupData.TwoTX7rdOrder,
-                                groupData.TwoTX9rdOrder,
-                                groupData.ThreeTX3rdOrder,
-                                excludedRanges);
+                            chan.Checked = false;
                         }
                     }
                 }
 
-                // Second pass: assign frequencies to unlocked channels
+                // First pass: handle locked frequencies (seulement pour les groupes non-préservés)
                 foreach (RFDevice device in devicesInGroups)
                 {
-                    foreach (RFChannel chan in device.Channels)
+                    if (!calculationStep.PreserveFrequenciesFromGroups.Contains(device.GroupID))
                     {
-                        if (!chan.IsLocked)
+                        foreach (RFChannel chan in device.Channels)
                         {
-                            chan.SetRandomFrequency(
-                                groupData.UsedFrequencies,
-                                groupData.TwoTX3rdOrder,
-                                groupData.TwoTX5rdOrder,
-                                groupData.TwoTX7rdOrder,
-                                groupData.TwoTX9rdOrder,
-                                groupData.ThreeTX3rdOrder,
-                                excludedRanges);
+                            if (chan.IsLocked)
+                            {
+                                chan.SetRandomFrequency(
+                                    groupData.UsedFrequencies,
+                                    groupData.TwoTX3rdOrder,
+                                    groupData.TwoTX5rdOrder,
+                                    groupData.TwoTX7rdOrder,
+                                    groupData.TwoTX9rdOrder,
+                                    groupData.ThreeTX3rdOrder,
+                                    excludedRanges);
+                            }
+                        }
+                    }
+                }
+
+                // Second pass: assign frequencies to unlocked channels (seulement pour les groupes non-préservés)
+                foreach (RFDevice device in devicesInGroups)
+                {
+                    if (!calculationStep.PreserveFrequenciesFromGroups.Contains(device.GroupID))
+                    {
+                        foreach (RFChannel chan in device.Channels)
+                        {
+                            if (!chan.IsLocked)
+                            {
+                                chan.SetRandomFrequency(
+                                    groupData.UsedFrequencies,
+                                    groupData.TwoTX3rdOrder,
+                                    groupData.TwoTX5rdOrder,
+                                    groupData.TwoTX7rdOrder,
+                                    groupData.TwoTX9rdOrder,
+                                    groupData.ThreeTX3rdOrder,
+                                    excludedRanges);
+                            }
                         }
                     }
                 }
@@ -264,6 +244,7 @@ namespace RF_Go.Services
         {
             var groupNames = calculationStep.GroupsToCalculate
                 .Select(g => _groupsViewModel.Groups.FirstOrDefault(group => group.ID == g.ID)?.Name ?? $"Groupe {g.ID}")
+                .OrderBy(name => name) // Tri pour cohérence
                 .ToList();
 
             if (groupNames.Count == 1)
@@ -313,9 +294,20 @@ namespace RF_Go.Services
             return _calculationStepNames ?? new List<string>();
         }
 
+        /// <summary>
+        /// Algorithme optimisé pour l'allocation de fréquences :
+        /// 1. Trie les groupes par heure de début
+        /// 2. Pour chaque groupe non-calculé, trouve les groupes qui chevauchent avec lui
+        /// 3. Si un groupe qui chevauche est déjà calculé, on le préserve (pas de recalcul)
+        /// 4. Calcule ensemble : nouveaux groupes + groupes déjà calculés (préservés)
+        /// 
+        /// Exemple: A(19h-20h), B(19h50-21h), C(20h45-22h35)
+        /// - Étape 1: A  B (se chevauchent) → calcul normal
+        /// - Étape 2: C chevauche B (déjà calculé) → calcul C avec préservation de B
+        /// </summary>
         private List<GroupCalculationStep> BuildGroupCalculationPlan()
         {
-            var sortedGroups = _groupsViewModel.Groups
+            var groupsWithTimePeriods = _groupsViewModel.Groups
                 .Where(g => g.TimePeriods != null && g.TimePeriods.Any())
                 .OrderBy(g => g.TimePeriods.Min(tp => tp.StartTime))
                 .ToList();
@@ -325,63 +317,59 @@ namespace RF_Go.Services
                 .ToList();
 
             var calculationPlan = new List<GroupCalculationStep>();
-            var processedGroupCombinations = new HashSet<string>();
+            var processedGroups = new HashSet<int>(); // IDs des groupes déjà calculés
 
-            foreach (var group in sortedGroups)
+            foreach (var currentGroup in groupsWithTimePeriods)
             {
-                // Find all groups that overlap with this group
+                if (processedGroups.Contains(currentGroup.ID))
+                    continue;
+
                 var overlappingGroups = new List<RFGroup>();
-                
-                foreach (var otherGroup in sortedGroups)
+                var preserveFromGroups = new List<int>();
+
+                foreach (var otherGroup in groupsWithTimePeriods)
                 {
-                    if (group.ID == otherGroup.ID)
+                    // Ne pas inclure le groupe actuel
+                    if (otherGroup.ID == currentGroup.ID)
                         continue;
 
-                    if (DoGroupsOverlap(group, otherGroup))
+                    if (DoGroupsOverlap(currentGroup, otherGroup))
                     {
-                        overlappingGroups.Add(otherGroup);
-                    }
-                }
-
-                // For each overlapping group, create a calculation step
-                foreach (var overlappingGroup in overlappingGroups)
-                {
-                    // Only process if this group started before the overlapping group (chronological order)
-                    var groupStartTime = group.TimePeriods.Min(tp => tp.StartTime);
-                    var overlappingStartTime = overlappingGroup.TimePeriods.Min(tp => tp.StartTime);
-                    
-                    if (groupStartTime <= overlappingStartTime)
-                    {
-                        // Create a unique key for this combination to avoid duplicates
-                        var combinationKey = $"{Math.Min(group.ID, overlappingGroup.ID)}-{Math.Max(group.ID, overlappingGroup.ID)}";
-                        
-                        if (!processedGroupCombinations.Contains(combinationKey))
+                        if (processedGroups.Contains(otherGroup.ID))
                         {
-                            var step = new GroupCalculationStep
-                            {
-                                GroupsToCalculate = new List<RFGroup> { group, overlappingGroup },
-                                PreserveFrequenciesFromGroups = new List<int>()
-                            };
-
-                            calculationPlan.Add(step);
-                            processedGroupCombinations.Add(combinationKey);
+                            // Groupe déjà calculé → à préserver
+                            preserveFromGroups.Add(otherGroup.ID);
+                            overlappingGroups.Add(otherGroup);
+                        }
+                        else
+                        {
+                            overlappingGroups.Add(otherGroup);
                         }
                     }
                 }
 
-                // If group has no overlaps, calculate it alone
-                if (overlappingGroups.Count == 0)
+                // Créer une étape de calcul
+                var groupsToCalculate = new List<RFGroup> { currentGroup };
+                groupsToCalculate.AddRange(overlappingGroups);
+
+                var step = new GroupCalculationStep
                 {
-                    var step = new GroupCalculationStep
+                    GroupsToCalculate = groupsToCalculate,
+                    PreserveFrequenciesFromGroups = preserveFromGroups
+                };
+
+                calculationPlan.Add(step);
+
+                processedGroups.Add(currentGroup.ID);
+                foreach (var group in overlappingGroups)
+                {
+                    if (!processedGroups.Contains(group.ID))
                     {
-                        GroupsToCalculate = new List<RFGroup> { group },
-                        PreserveFrequenciesFromGroups = new List<int>()
-                    };
-                    calculationPlan.Add(step);
+                        processedGroups.Add(group.ID);
+                    }
                 }
             }
 
-            // Add groups without time periods as separate calculation steps
             foreach (var group in groupsWithoutTimePeriods)
             {
                 calculationPlan.Add(new GroupCalculationStep
@@ -393,7 +381,6 @@ namespace RF_Go.Services
 
             return calculationPlan;
         }
-
         private class GroupCalculationStep
         {
             public List<RFGroup> GroupsToCalculate { get; set; } = new List<RFGroup>();
@@ -406,34 +393,25 @@ namespace RF_Go.Services
             return _devicesViewModel.Devices.Where(device => groupIds.Contains(device.GroupID)).ToList();
         }
 
-        private List<List<RFGroup>> FindOverlappingGroups()
+
+        // Méthodes helper pour le debugging
+        private string GetGroupTimeRange(RFGroup group)
         {
-            var processedGroups = new HashSet<RFGroup>();
-            var overlappingGroups = new List<List<RFGroup>>();
+            if (group.TimePeriods == null || !group.TimePeriods.Any())
+                return "Pas de période définie";
 
-            foreach (var group in _groupsViewModel.Groups)
-            {
-                if (processedGroups.Contains(group))
-                    continue;
+            var start = group.TimePeriods.Min(tp => tp.StartTime);
+            var end = group.TimePeriods.Max(tp => tp.EndTime);
+            return $"{start:HH:mm}-{end:HH:mm}";
+        }
 
-                var overlappingSet = new List<RFGroup> { group };
-                processedGroups.Add(group);
+        private string GetOverlapReason(List<RFGroup> groups)
+        {
+            if (groups.Count == 1)
+                return "Aucun chevauchement - calcul isolé";
 
-                foreach (var otherGroup in _groupsViewModel.Groups)
-                {
-                    if (group == otherGroup || processedGroups.Contains(otherGroup))
-                        continue;
-
-                    if (DoGroupsOverlap(group, otherGroup))
-                    {
-                        overlappingSet.Add(otherGroup);
-                        processedGroups.Add(otherGroup);
-                    }
-                }
-                overlappingGroups.Add(overlappingSet);
-            }
-
-            return overlappingGroups;
+            var timeRanges = groups.Select(g => GetGroupTimeRange(g)).ToList();
+            return $"Chevauchement temporel détecté entre: {string.Join(", ", timeRanges)}";
         }
 
         private bool DoGroupsOverlap(RFGroup group1, RFGroup group2)
@@ -467,4 +445,4 @@ namespace RF_Go.Services
             return excludedChannels;
         }
     }
-} 
+}
