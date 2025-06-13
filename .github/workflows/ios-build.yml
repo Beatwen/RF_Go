@@ -53,7 +53,7 @@ jobs:
     
     - name: Publish iOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -p:ApplicationId="com.christophebouserez.rfgo" -v detailed
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -v detailed
         
         if [ -d "./publish/ios-arm64" ]; then
           if [ "$(ls -A ./publish/ios-arm64)" ]; then

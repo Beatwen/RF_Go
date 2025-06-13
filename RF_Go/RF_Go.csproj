@@ -18,7 +18,8 @@
         <ApplicationTitle>RF_Go</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.rf_go</ApplicationId>
+        <ApplicationId Condition="'$(TargetFramework)' != 'net8.0-ios'">com.companyname.rf_go</ApplicationId>
+        <ApplicationId Condition="'$(TargetFramework)' == 'net8.0-ios'">com.christophebouserez.rfgo</ApplicationId>
         <ApplicationIdGuid>F1280CF3-71B1-40BF-A5C9-2F6267D27C2F</ApplicationIdGuid>
 
         <!-- Versions -->
@@ -46,7 +47,6 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
-      <ApplicationId>com.christophebouserez.rfgo</ApplicationId>
       <CodesignProvision>RF_Go_Development</CodesignProvision>
 	    <CodesignTeamId>FT3A4TV42D</CodesignTeamId>
 	    <ProvisioningType>manual</ProvisioningType>
