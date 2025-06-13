@@ -46,8 +46,9 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
-      <CodesignKey>Apple Development: Created via API (SRTHXQ6LQM)</CodesignKey>
-      <CodesignProvision>VS: WildCard Development</CodesignProvision>
+      <ApplicationId>com.christophebouserez.rfgo</ApplicationId>
+      <CodesignKey>Christophe Simon R Bouserez</CodesignKey>
+      <CodesignProvision>RF_Go_Development</CodesignProvision>
 	    <CodesignTeamId>FT3A4TV42D</CodesignTeamId>
 	    <ProvisioningType>manual</ProvisioningType>
     </PropertyGroup>
@@ -123,7 +124,6 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="CommunityToolkit.Maui" Version="8.0.0" />
-        <PackageReference Include="LiveCharts" Version="0.9.7" />
         <PackageReference Include="LiveChartsCore.SkiaSharpView.Maui" Version="2.0.0-rc4.5" />
         <PackageReference Include="Makaretu.Dns" Version="2.0.1" />
         <PackageReference Include="Makaretu.Dns.Multicast.New" Version="0.37.0" />
