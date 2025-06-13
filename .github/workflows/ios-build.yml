@@ -84,7 +84,7 @@ jobs:
         dotnet msbuild RF_Go/RF_Go.csproj -t:_GetApplicationId -p:TargetFramework=net8.0-ios -v:minimal || echo "Could not get ApplicationId"
         
         echo "=== STARTING iOS BUILD ==="
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF Go iOS" -p:CreatePackage=true -v detailed
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF Go iOS" -p:ApplicationId="FT3A4TV42D.com.christophebouserez.rfgo" -p:CreatePackage=true -v detailed
         
         echo "=== POST-BUILD VERIFICATION ==="
         if [ -d "./publish/ios-arm64" ]; then
