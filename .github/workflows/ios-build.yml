@@ -25,10 +25,16 @@ jobs:
         p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
         p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
+    - name: List Keychain Contents
+      run: |
+        security list-keychain
+        security find-identity -v -p codesigning
+
     - name: Install Provisioning Profile
       run: |
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         echo "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/RF_Go_Development.mobileprovision
+        ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
     - name: Install MAUI Workloads
       run: |
@@ -47,7 +53,7 @@ jobs:
     
     - name: Publish iOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignKey="Christophe Simon R Bouserez" -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -p:ApplicationId="com.christophebouserez.rfgo"
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignKey="Christophe Simon R Bouserez" -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -p:ApplicationId="com.christophebouserez.rfgo" -v detailed
         
         if [ -d "./publish/ios-arm64" ]; then
           if [ "$(ls -A ./publish/ios-arm64)" ]; then
