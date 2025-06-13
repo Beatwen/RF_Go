@@ -54,6 +54,9 @@
 	    <!-- iOS requires PublishTrimmed=true, but we disable linking to avoid errors -->
 	    <PublishTrimmed>true</PublishTrimmed>
 	    <MtouchLink>None</MtouchLink>
+	    <!-- Force older iOS SDK to work with Xcode 15.4 -->
+	    <_iOSDeploymentTarget>15.0</_iOSDeploymentTarget>
+	    <MtouchSdkVersion>17.5</MtouchSdkVersion>
     </PropertyGroup>
 
     <!-- Désactivation de ReadyToRun pour éviter les problèmes de compilation -->
