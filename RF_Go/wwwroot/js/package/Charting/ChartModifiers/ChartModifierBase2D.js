@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scaleAxes = exports.getActiveAxes = exports.testIsOverAxes = exports.ChartModifierBase2D = void 0;
+exports.getActiveAxes = exports.testIsOverAxes = exports.ChartModifierBase2D = void 0;
 var XyDirection_1 = require("../../types/XyDirection");
 var pointUtil_1 = require("../../utils/pointUtil");
 var AxisCore_1 = require("../Visuals/Axis/AxisCore");
@@ -169,10 +169,3 @@ var getActiveAxes = function (xAxisArr, mousePoint) {
     return result;
 };
 exports.getActiveAxes = getActiveAxes;
-var scaleAxes = function (axes, initialVisibleRanges, delta, isMoreThanHalf) {
-    axes.forEach(function (currentAxis, index) {
-        var initialRange = initialVisibleRanges[index];
-        currentAxis.scale(initialRange, delta, isMoreThanHalf);
-    });
-};
-exports.scaleAxes = scaleAxes;

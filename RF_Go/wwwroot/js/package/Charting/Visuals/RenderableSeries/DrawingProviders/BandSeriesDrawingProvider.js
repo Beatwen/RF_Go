@@ -68,7 +68,7 @@ var BandSeriesDrawingProvider = /** @class */ (function (_super) {
      */
     BandSeriesDrawingProvider.prototype.onDetachSeries = function () {
         _super.prototype.onDetachSeries.call(this);
-        this.delete();
+        this.nativeDrawingProvider = (0, Deleter_1.deleteSafe)(this.nativeDrawingProvider);
     };
     /**
      * @inheritDoc

@@ -570,7 +570,9 @@ var BaseHeatmapDataSeries = /** @class */ (function () {
     };
     BaseHeatmapDataSeries.prototype.setMetadata = function (metadata) {
         if (!metadata && this.metadataGeneratorProperty) {
+            metadata = [];
             for (var h = 0; h < this.arrayHeight; h++) {
+                metadata[h] = [];
                 for (var w = 0; w < this.arrayWidth; w++) {
                     metadata[h][w] = this.metadataGeneratorProperty.getSingleMetadata();
                 }

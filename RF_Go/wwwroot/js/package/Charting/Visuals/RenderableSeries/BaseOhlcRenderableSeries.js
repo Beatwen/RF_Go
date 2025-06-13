@@ -224,7 +224,7 @@ var BaseOhlcRenderableSeries = /** @class */ (function (_super) {
         // if there is a transform as well, it will run off this.pointSeries
         if (this.renderDataTransform && this.renderDataTransform.useForYRange) {
             this.updateTransformedValues(dataSeriesValueType);
-            return (0, BaseDataSeries_1.getWindowedYRange)(this.webAssemblyContext, this.transformedRenderPassData.pointSeries.xValues, this.transformedRenderPassData.pointSeries.yValues, xVisibleRange, true, isXCategoryAxis, this.dataSeries.dataDistributionCalculator.isSortedAscending);
+            return (0, BaseDataSeries_1.getWindowedYRange)(this.webAssemblyContext, this.transformedRenderPassData.pointSeries.xValues, this.transformedRenderPassData.pointSeries.yValues, pointSeries ? new NumberRange_1.NumberRange(0, pointSeries.count - 1) : xVisibleRange, true, isXCategoryAxis, this.dataSeries.dataDistributionCalculator.isSortedAscending);
         }
         // Use resampled data for autoRange if possible
         if (pointSeries) {

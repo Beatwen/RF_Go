@@ -49,11 +49,14 @@ var SciChartSurfaceBase_1 = require("../../Charting/Visuals/SciChartSurfaceBase"
 var BuildStamp_1 = require("../../Core/BuildStamp");
 var DeletableEntity_1 = require("../../Core/DeletableEntity");
 var Globals_1 = require("../../Core/Globals");
+var guid_1 = require("../../utils/guid");
 var MemoryUsageHelper_1 = require("../../utils/MemoryUsageHelper");
+var perfomance_1 = require("../../utils/perfomance");
 var licenseManager3D_1 = require("./licenseManager3D");
 var SciChart3DSurface_1 = require("./SciChart3DSurface");
 /** @ignore */
 var sciChartMaster3D = {
+    id: undefined,
     wasmContext: undefined,
     getChildSurfaces: undefined,
     createChildSurface: undefined
@@ -62,19 +65,21 @@ var sciChartMaster3D = {
 var sciChartMaster3DPromise;
 /** @ignore */
 var createMultichart3d = function (divElement, options) { return __awaiter(void 0, void 0, void 0, function () {
-    var canvases, loader, loaderDiv, master, createChildSurface, wasmContext_1, divElementId, sciChart3DSurface_1, err_1;
-    var _a, _b, _c, _d, _e, _f, _g;
-    return __generator(this, function (_h) {
-        switch (_h.label) {
+    var canvases, loader, loaderDiv, canvas2DId, mark, master, createChildSurface, wasmContext_1, divElementId, sciChart3DSurface_1, err_1;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    return __generator(this, function (_k) {
+        switch (_k.label) {
             case 0:
                 (0, chartBuilder_1.ensureRegistrations)();
                 sciChartInitCommon_1.default.checkChartDivExists(divElement);
                 canvases = sciChartInitCommon_1.default.initCanvas(divElement, (_a = options === null || options === void 0 ? void 0 : options.widthAspect) !== null && _a !== void 0 ? _a : 0, (_b = options === null || options === void 0 ? void 0 : options.heightAspect) !== null && _b !== void 0 ? _b : 0, sciChartInitCommon_1.default.ECanvasType.canvas2D, undefined, options === null || options === void 0 ? void 0 : options.touchAction);
                 loader = (_c = options === null || options === void 0 ? void 0 : options.loader) !== null && _c !== void 0 ? _c : new loader_1.DefaultSciChartLoader();
                 loaderDiv = (_d = loader.addChartLoader) === null || _d === void 0 ? void 0 : _d.call(loader, canvases.domDivContainer, (_e = options === null || options === void 0 ? void 0 : options.theme) !== null && _e !== void 0 ? _e : SciChartSurfaceBase_1.SciChartSurfaceBase.DEFAULT_THEME);
-                _h.label = 1;
+                _k.label = 1;
             case 1:
-                _h.trys.push([1, 4, , 5]);
+                _k.trys.push([1, 4, , 5]);
+                canvas2DId = (_f = canvases.domCanvas2D) === null || _f === void 0 ? void 0 : _f.id;
+                mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitStart, { parentContextId: canvas2DId });
                 if (!(!sciChartMaster3D.wasmContext ||
                     !sciChartMaster3D.createChildSurface ||
                     !sciChartMaster3D.getChildSurfaces)) return [3 /*break*/, 3];
@@ -84,16 +89,22 @@ var createMultichart3d = function (divElement, options) { return __awaiter(void 
                 }
                 return [4 /*yield*/, sciChartMaster3DPromise];
             case 2:
-                master = _h.sent();
+                master = _k.sent();
                 (0, BuildStamp_1.checkBuildStamp)(master.wasmContext);
+                sciChartMaster3D.id = master.id;
                 sciChartMaster3D.wasmContext = master.wasmContext;
                 sciChartMaster3D.createChildSurface = master.createChildSurface;
                 sciChartMaster3D.getChildSurfaces = master.getChildSurfaces;
-                _h.label = 3;
+                _k.label = 3;
             case 3:
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitEnd, {
+                    relatedId: (_g = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _g === void 0 ? void 0 : _g.relatedId,
+                    contextId: sciChartMaster3D.id,
+                    parentContextId: canvas2DId
+                });
                 createChildSurface = sciChartMaster3D.createChildSurface, wasmContext_1 = sciChartMaster3D.wasmContext;
                 divElementId = canvases.domChartRoot.id;
-                sciChart3DSurface_1 = createChildSurface(divElementId, canvases, (_f = options === null || options === void 0 ? void 0 : options.theme) !== null && _f !== void 0 ? _f : SciChartSurfaceBase_1.SciChartSurfaceBase.DEFAULT_THEME);
+                sciChart3DSurface_1 = createChildSurface(divElementId, canvases, (_h = options === null || options === void 0 ? void 0 : options.theme) !== null && _h !== void 0 ? _h : SciChartSurfaceBase_1.SciChartSurfaceBase.DEFAULT_THEME);
                 return [2 /*return*/, new Promise(function (resolve) {
                         setTimeout(function () {
                             var _a;
@@ -103,10 +114,10 @@ var createMultichart3d = function (divElement, options) { return __awaiter(void 
                         }, 0);
                     })];
             case 4:
-                err_1 = _h.sent();
+                err_1 = _k.sent();
                 console.error(err_1);
                 // replace with div with error message
-                (_g = loader.removeChartLoader) === null || _g === void 0 ? void 0 : _g.call(loader, canvases.domDivContainer, loaderDiv);
+                (_j = loader.removeChartLoader) === null || _j === void 0 ? void 0 : _j.call(loader, canvases.domDivContainer, loaderDiv);
                 return [2 /*return*/, Promise.reject(err_1)];
             case 5: return [2 /*return*/];
         }
@@ -151,7 +162,8 @@ var createMaster = function () {
         // @ts-ignore
         new WasmModule3D({ locateFile: locateFile, noInitialRun: true })
             .then(function (originalWasmContext) {
-            var revocable = (0, DeletableEntity_1.createWasmContextRevocableProxy)(originalWasmContext);
+            var wasmContextId = (0, guid_1.generateGuid)();
+            var revocable = (0, DeletableEntity_1.createWasmContextRevocableProxy)(originalWasmContext, wasmContextId);
             var wasmContext = revocable.proxy;
             cleanupWasmContext = function () {
                 // Halt the engine
@@ -222,7 +234,7 @@ var createMaster = function () {
             wasmContext.canvas = (0, SciChartSurfaceBase_1.getMasterCanvas)();
             var chartInitializer = {
                 InitializeChart: function () {
-                    resolve({ getChildSurfaces: getChildSurfaces, createChildSurface: createChildSurface, wasmContext: wasmContext });
+                    resolve({ id: wasmContextId, getChildSurfaces: getChildSurfaces, createChildSurface: createChildSurface, wasmContext: wasmContext });
                 },
                 Draw: function (canvasId) {
                     var dest = Globals_1.sciChart3DDestinations.find(function (d) { return d.canvasElementId === canvasId; });

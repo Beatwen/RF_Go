@@ -21,6 +21,7 @@ var AnimationFiniteStateMachine_1 = require("../../../Core/Animations/AnimationF
 var DeletableEntity_1 = require("../../../Core/DeletableEntity");
 var Deleter_1 = require("../../../Core/Deleter");
 var EventHandler_1 = require("../../../Core/EventHandler");
+var NumberRange_1 = require("../../../Core/NumberRange");
 var Rect_1 = require("../../../Core/Rect");
 var AnimationType_1 = require("../../../types/AnimationType");
 var BaseType_1 = require("../../../types/BaseType");
@@ -58,6 +59,7 @@ var SeriesSelectedArgs_1 = require("./SeriesSelectedArgs");
 var SeriesVisibleChangedArgs_1 = require("./SeriesVisibleChangedArgs");
 var YRangeMode_1 = require("../../../types/YRangeMode");
 var DataPointWidthMode_1 = require("../../../types/DataPointWidthMode");
+var perfomance_1 = require("../../../utils/perfomance");
 /**
  * @summary Defines the base class to a Render Series (or Chart Type) in SciChart's High Performance Real-time
  * {@link https://www.scichart.com/javascript-chart-features | JavaScript Charts}
@@ -363,6 +365,10 @@ var BaseRenderableSeries = /** @class */ (function (_super) {
                         this.rolloverModifierProps1.tooltip.y1 = undefined;
                     }
                 }
+                else {
+                    // Force rebuild of resample params and indexRange
+                    this.resamplingParams = undefined;
+                }
                 (_a = this.isVisibleChanged) === null || _a === void 0 ? void 0 : _a.raiseEvent(new SeriesVisibleChangedArgs_1.SeriesVisibleChangedArgs(this, isVisible));
                 this.notifyPropertyChanged(constants_1.PROPERTY.IS_VISIBLE);
             }
@@ -616,17 +622,22 @@ var BaseRenderableSeries = /** @class */ (function (_super) {
     /** @inheritDoc */
     BaseRenderableSeries.prototype.draw = function (renderContext, renderPassData) {
         var _this = this;
-        var _a, _b;
+        var _a, _b, _c, _d, _e;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawSingleSeriesStart, {
+            contextId: this.id,
+            parentContextId: (_a = this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         this.currentRenderPassData = renderPassData;
-        (_a = this.hitTestProvider) === null || _a === void 0 ? void 0 : _a.update(renderPassData);
+        (_b = this.hitTestProvider) === null || _b === void 0 ? void 0 : _b.update(renderPassData);
         if (this.canDraw) {
             var nativeContext = renderContext.getNativeContext();
-            var viewRect = (_b = this.parentSurface) === null || _b === void 0 ? void 0 : _b.seriesViewRect;
+            var viewRect = (_c = this.parentSurface) === null || _c === void 0 ? void 0 : _c.seriesViewRect;
             try {
                 renderContext.pushShaderEffect(this.effect);
                 if (this.clipToYRange) {
-                    var _c = renderPassData.xCoordinateCalculator, x = _c.offset, width = _c.viewportDimension;
-                    var _d = renderPassData.yCoordinateCalculator, y = _d.offset, height = _d.viewportDimension;
+                    var _f = renderPassData.xCoordinateCalculator, x = _f.offset, width = _f.viewportDimension;
+                    var _g = renderPassData.yCoordinateCalculator, y = _g.offset, height = _g.viewportDimension;
                     if (renderPassData.isVerticalChart) {
                         var clipRect = new Rect_1.Rect(viewRect.x + y, viewRect.y + x, height, width);
                         nativeContext.SetClipRect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
@@ -659,6 +670,12 @@ var BaseRenderableSeries = /** @class */ (function (_super) {
             }
         }
         this.resamplingParams = undefined;
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawSingleSeriesEnd, {
+            contextId: this.id,
+            parentContextId: (_d = this.parentSurface) === null || _d === void 0 ? void 0 : _d.id,
+            relatedId: (_e = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _e === void 0 ? void 0 : _e.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /** @inheritDoc */
     BaseRenderableSeries.prototype.delete = function () {
@@ -688,11 +705,11 @@ var BaseRenderableSeries = /** @class */ (function (_super) {
         if (this.renderDataTransform && this.renderDataTransform.useForYRange) {
             this.updateTransformedValues(dataSeriesValueType);
             // TODO transforms probably need a way to provide their own YRange method, as you don't know what shape the data is here.
-            return (0, BaseDataSeries_1.getWindowedYRange)(this.webAssemblyContext, this.transformedRenderPassData.pointSeries.xValues, this.transformedRenderPassData.pointSeries.yValues, xVisibleRange, true, isXCategoryAxis, this.dataSeries.dataDistributionCalculator.isSortedAscending);
+            return (0, BaseDataSeries_1.getWindowedYRange)(this.webAssemblyContext, this.transformedRenderPassData.pointSeries.xValues, this.transformedRenderPassData.pointSeries.yValues, pointSeries && isXCategoryAxis ? new NumberRange_1.NumberRange(0, pointSeries.count - 1) : xVisibleRange, true, isXCategoryAxis, this.dataSeries.dataDistributionCalculator.isSortedAscending);
         }
         // Use resampled data for autoRange if possible
         if (pointSeries) {
-            return (0, BaseDataSeries_1.getWindowedYRange)(this.webAssemblyContext, pointSeries.xValues, pointSeries.yValues, xVisibleRange, true, isXCategoryAxis, this.dataSeries.dataDistributionCalculator.isSortedAscending);
+            return (0, BaseDataSeries_1.getWindowedYRange)(this.webAssemblyContext, pointSeries.xValues, pointSeries.yValues, isXCategoryAxis ? new NumberRange_1.NumberRange(0, pointSeries.count - 1) : xVisibleRange, true, isXCategoryAxis, this.dataSeries.dataDistributionCalculator.isSortedAscending);
         }
         return this.dataSeries.getWindowedYRange(xVisibleRange, true, isXCategoryAxis, dataSeriesValueType, this.yRangeMode);
     };
@@ -765,6 +782,7 @@ var BaseRenderableSeries = /** @class */ (function (_super) {
         this.invalidateParentCallback = scs.invalidateElement;
         this.drawingProviders.forEach(function (dp) { return dp.onAttachSeries(); });
         this.rolloverModifierProps.setInvalidateParentCallback(scs.invalidateElement);
+        this.resamplingParams = undefined;
     };
     /** @inheritDoc */
     BaseRenderableSeries.prototype.hasStrokePaletteProvider = function () {

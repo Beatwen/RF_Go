@@ -534,7 +534,7 @@ var AxisRenderer = /** @class */ (function (_super) {
      * Called internally
      */
     AxisRenderer.prototype.createAnnotationLabelTexture = function (text, textStyle, backgroundColor, displayVertically, displayMirrored, opacity) {
-        return this.textureManager.createSimpleTextTexture(text, __assign(__assign({}, textStyle), { padding: new Thickness_1.Thickness(2, 2, 2, 2) }), backgroundColor, displayVertically, displayMirrored, opacity);
+        return this.textureManager.createSimpleTextTexture(text, textStyle, backgroundColor, displayVertically, displayMirrored, opacity);
     };
     AxisRenderer.prototype.invalidateParent = function () {
         if (this.parentAxis && this.parentAxis.invalidateParentCallback) {

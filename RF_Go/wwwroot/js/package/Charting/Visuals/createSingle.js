@@ -27,7 +27,9 @@ var createSingleInternal = function (divElement, options) {
         var canvases = sciChartInitCommon_1.default.initCanvas(divElement, options === null || options === void 0 ? void 0 : options.widthAspect, options === null || options === void 0 ? void 0 : options.heightAspect, undefined, options === null || options === void 0 ? void 0 : options.disableAspect, options === null || options === void 0 ? void 0 : options.touchAction);
         var loader = (_a = options === null || options === void 0 ? void 0 : options.loader) !== null && _a !== void 0 ? _a : new loader_1.DefaultSciChartLoader();
         var loaderDiv = (_b = loader.addChartLoader) === null || _b === void 0 ? void 0 : _b.call(loader, canvases.domDivContainer, options === null || options === void 0 ? void 0 : options.theme);
-        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitStart);
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitStart, {
+            parentContextId: canvases.domCanvas2D.id
+        });
         var webGLSupport = WebGlHelper_1.WebGlHelper.getWebGlSupport();
         // console.log("webGLSupport", webGLSupport);
         if (webGLSupport === WebGlHelper_1.EWebGLSupport.WebGL2 || webGLSupport === WebGlHelper_1.EWebGLSupport.WebGL1) {
@@ -42,7 +44,7 @@ var createSingleInternal = function (divElement, options) {
                 // TODO replace workaround with proper wasmContext references cleanup
                 // TODO use revocable only for memory debug
                 // if (process.env.NODE_ENV !== "production") {
-                var revocable = (0, DeletableEntity_1.createWasmContextRevocableProxy)(wasmContext);
+                var revocable = (0, DeletableEntity_1.createWasmContextRevocableProxy)(wasmContext, canvases.domCanvas2D.id);
                 var customResolve = function (res) {
                     var _a;
                     if ((_a = options === null || options === void 0 ? void 0 : options.createSuspended) !== null && _a !== void 0 ? _a : SciChartDefaults_1.SciChartDefaults.createSuspended) {
@@ -55,6 +57,11 @@ var createSingleInternal = function (divElement, options) {
                             revocable.revoke();
                             revocable = undefined;
                         }
+                    });
+                    perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitEnd, {
+                        relatedId: mark === null || mark === void 0 ? void 0 : mark.detail.relatedId,
+                        contextId: res.sciChartSurface.id,
+                        parentContextId: canvases.domCanvas2D.id
                     });
                     resolve(res);
                 };
@@ -138,6 +145,5 @@ var initDrawEngineSingleChart = function (wasmContext, canvases, resolve, theme)
     wasmContext.SCRTSetGlobalSampleChartInterface(chartInitObj);
     // @ts-ignore
     wasmContext.callMain();
-    perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitEnd, { contextId: scs === null || scs === void 0 ? void 0 : scs.id });
 };
 exports.initDrawEngineSingleChart = initDrawEngineSingleChart;

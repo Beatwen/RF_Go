@@ -118,7 +118,7 @@ var BaseSeriesDrawingProvider = /** @class */ (function (_super) {
                 advancedPP.applyPaletting(this.palettingState, xValues, yValues, (_c = pointSeries === null || pointSeries === void 0 ? void 0 : pointSeries.indexes) !== null && _c !== void 0 ? _c : dataSeries.getNativeIndexes(), startIndex, count);
                 return;
             }
-            this.shouldUpdatePalette(renderPassData, strokePaletteProvider, startIndex, count);
+            this.shouldUpdatePalette(renderPassData, strokePaletteProvider, startIndex, count, false);
             if (!this.palettingState.requiresUpdate) {
                 return;
             }
@@ -193,7 +193,7 @@ var BaseSeriesDrawingProvider = /** @class */ (function (_super) {
                 advancedPP.applyPaletting(this.palettingState, xValues, yValues, (_c = pointSeries === null || pointSeries === void 0 ? void 0 : pointSeries.indexes) !== null && _c !== void 0 ? _c : dataSeries.getNativeIndexes(), startIndex, count);
                 return;
             }
-            this.shouldUpdatePalette(renderPassData, strokePaletteProvider, startIndex, count);
+            this.shouldUpdatePalette(renderPassData, strokePaletteProvider, startIndex, count, true);
             if (!this.palettingState.requiresUpdate) {
                 return;
             }
@@ -229,8 +229,10 @@ var BaseSeriesDrawingProvider = /** @class */ (function (_super) {
                 var overrideFillColor = (_e = overriddenColors.fill) !== null && _e !== void 0 ? _e : fillColor;
                 this.palettingState.palettedColors.push_back(overrideStrokeColor);
                 this.palettingState.palettedColors.push_back(overrideFillColor);
-                hashCode = (0, number_1.numericHashCode)(hashCode, overrideStrokeColor);
-                hashCode = (0, number_1.numericHashCode)(hashCode, overrideFillColor);
+                if (usePalette) {
+                    hashCode = (0, number_1.numericHashCode)(hashCode, overrideStrokeColor);
+                    hashCode = (0, number_1.numericHashCode)(hashCode, overrideFillColor);
+                }
             }
             // Palette is used only for band and mountain series
             if (usePalette) {
@@ -318,7 +320,7 @@ var BaseSeriesDrawingProvider = /** @class */ (function (_super) {
         this.palettingState.requiresUpdate = true;
         // TODO override in derived class.
     };
-    BaseSeriesDrawingProvider.prototype.shouldUpdatePalette = function (renderPassData, paletteProvider, startIndex, count) {
+    BaseSeriesDrawingProvider.prototype.shouldUpdatePalette = function (renderPassData, paletteProvider, startIndex, count, isDoubled) {
         var _a, _b, _c, _d, _e, _f;
         if (((_a = renderPassData === null || renderPassData === void 0 ? void 0 : renderPassData.pointSeries) === null || _a === void 0 ? void 0 : _a.resampled) &&
             (renderPassData === null || renderPassData === void 0 ? void 0 : renderPassData.resamplingHash) !== this.palettingState.lastResamplingHash) {
@@ -347,7 +349,8 @@ var BaseSeriesDrawingProvider = /** @class */ (function (_super) {
             }
             else {
                 // Range is same or smaller so adjust palette startIndex
-                this.palettingState.paletteStartIndex = startIndex - this.palettingState.lastStartIndex;
+                this.palettingState.paletteStartIndex =
+                    startIndex * (isDoubled ? 2 : 1) - this.palettingState.lastStartIndex;
             }
         }
         // Default to always update for back compatability

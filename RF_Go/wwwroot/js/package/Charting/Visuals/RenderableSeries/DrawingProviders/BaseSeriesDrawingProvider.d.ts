@@ -117,7 +117,7 @@ export declare abstract class BaseSeriesDrawingProvider<T extends IRenderableSer
      */
     onDetachSeries(): void;
     protected seriesHasDataChanges(): void;
-    protected shouldUpdatePalette(renderPassData: RenderPassData, paletteProvider: IPaletteProvider, startIndex: number, count: number): void;
+    protected shouldUpdatePalette(renderPassData: RenderPassData, paletteProvider: IPaletteProvider, startIndex: number, count: number, isDoubled: boolean): void;
     protected overridePaletteProviderColors(rs: IRenderableSeries, xValue: number, yValue: number, index: number, opacity?: number, metadata?: IPointMetadata): {
         stroke: number | undefined;
         fill: number | undefined;

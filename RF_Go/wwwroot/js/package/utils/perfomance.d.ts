@@ -87,6 +87,13 @@ export declare enum EPerformanceMarkType {
      */
     FullStateRendered = "FullStateRendered",
     /**
+     * Chart was painted.
+     * @description
+     * Chart has been visually pained to pixels.
+     * @remarks used internally.
+     */
+    Painted = "Painted",
+    /**
      * Chart element resizing.
      * @remarks used internally.
      */
@@ -109,15 +116,103 @@ export declare enum EPerformanceMarkType {
      * used internally in `chartBuilder`.
      * Otherwise, it is supposed to be used explicitly after the surface is created.
      */
-    SetupEnd = "SetupEnd"
+    SetupEnd = "SetupEnd",
+    CanvasInitializationStart = "CanvasInitializationStart",
+    CanvasInitializationEnd = "CanvasInitializationEnd",
+    AddSubSurfaceStart = "AddSubSurfaceStart",
+    AddSubSurfaceEnd = "AddSubSurfaceEnd",
+    RenderSurfaceDrawStart = "RenderSurfaceDrawStart",
+    RenderSurfaceDrawEnd = "RenderSurfaceDrawEnd",
+    DrawingLoopStart = "DrawingLoopStart",
+    DrawingLoopEnd = "DrawingLoopEnd",
+    CopyToCanvasStart = "CopyToCanvasStart",
+    CopyToCanvasEnd = "CopyToCanvasEnd",
+    GenericAnimationStart = "GenericAnimationStart",
+    GenericAnimationEnd = "GenericAnimationEnd",
+    AutoRangeStart = "AutoRangeStart",
+    AutoRangeEnd = "AutoRangeEnd",
+    LayoutStart = "LayoutStart",
+    LayoutEnd = "LayoutEnd",
+    GetTicksStart = "GetTicksStart",
+    GetTicksEnd = "GetTicksEnd",
+    DrawAxisBorderStart = "DrawAxisBorderStart",
+    DrawAxisBorderEnd = "DrawAxisBorderEnd",
+    DrawAxisBandsStart = "DrawAxisBandsStart",
+    DrawAxisBandsEnd = "DrawAxisBandsEnd",
+    DrawMinorGridLinesStart = "DrawMinorGridLinesStart",
+    DrawMinorGridLinesEnd = "DrawMinorGridLinesEnd",
+    DrawMajorGridLinesStart = "DrawMajorGridLinesStart",
+    DrawMajorGridLinesEnd = "DrawMajorGridLinesEnd",
+    DrawAxisBackgroundStart = "DrawAxisBackgroundStart",
+    DrawAxisBackgroundEnd = "DrawAxisBackgroundEnd",
+    DrawAxisLabelsStart = "DrawAxisLabelsStart",
+    DrawAxisLabelsEnd = "DrawAxisLabelsEnd",
+    DrawMinorTicksStart = "DrawMinorTicksStart",
+    DrawMinorTicksEnd = "DrawMinorTicksEnd",
+    DrawMajorTicksStart = "DrawMajorTicksStart",
+    DrawMajorTicksEnd = "DrawMajorTicksEnd",
+    DrawNativeTextStart = "DrawNativeTextStart",
+    DrawNativeTextEnd = "DrawNativeTextEnd",
+    DrawAnnotationStart = "DrawAnnotationStart",
+    DrawAnnotationEnd = "DrawAnnotationEnd",
+    ResampleSingleSeriesStart = "ResampleSingleSeriesStart",
+    ResampleSingleSeriesEnd = "ResampleSingleSeriesEnd",
+    DrawSingleSeriesStart = "DrawSingleSeriesStart",
+    DrawSingleSeriesEnd = "DrawSingleSeriesEnd",
+    DrawCollectionSeriesStart = "DrawCollectionSeriesStart",
+    DrawCollectionSeriesEnd = "DrawCollectionSeriesEnd",
+    PerformTextLayoutStart = "PerformTextLayoutStart",
+    PerformTextLayoutEnd = "PerformTextLayoutEnd",
+    DrawDataLabelsStart = "DrawDataLabelsStart",
+    DrawDataLabelsEnd = "DrawDataLabelsEnd",
+    PostDrawActionsStart = "PostDrawActionsStart",
+    PostDrawActionsEnd = "PostDrawActionsEnd",
+    PointerMoveStart = "PointerMoveStart",
+    PointerMoveEnd = "PointerMoveEnd",
+    PointerDownStart = "PointerDownStart",
+    PointerDownEnd = "PointerDownEnd",
+    PointerUpStart = "PointerUpStart",
+    PointerUpEnd = "PointerUpEnd",
+    ScrollStart = "ScrollStart",
+    ScrollEnd = "ScrollEnd",
+    DoubleClickStart = "DoubleClickStart",
+    DoubleClickEnd = "DoubleClickEnd",
+    MouseLeaveStart = "MouseLeaveStart",
+    MouseLeaveEnd = "MouseLeaveEnd",
+    MouseEnterStart = "MouseEnterStart",
+    MouseEnterEnd = "MouseEnterEnd"
 }
-declare type TPerformanceDetailType = {
+export declare enum EPerformanceDebugLevel {
+    Info = 0,
+    Verbose = 1
+}
+export declare type TPerformanceDetail = {
     relatedId?: string;
     contextId?: string;
+    parentContextId?: string;
 };
-interface TSciChartPerformanceMark extends PerformanceMark {
-    detail: TPerformanceDetailType;
+export declare type TProcessedDetail<TDetail extends TPerformanceDetail> = TDetail & {
+    relatedId: string;
+};
+export interface TSciChartPerformanceMark<TDetail extends TPerformanceDetail> extends PerformanceMark {
+    readonly detail: TDetail & {
+        relatedId: string;
+    };
 }
+export declare type TPerformanceMarkOptions<TDetail extends TPerformanceDetail> = TDetail & {
+    level?: EPerformanceDebugLevel;
+};
+export declare type TSerializableMark = {
+    startTime: DOMHighResTimeStamp;
+    name: string;
+    detail: TPerformanceDetail;
+};
+/** Serializable performance debug data with the timeOrigin of the thread */
+export declare type TSciChartPerformanceData = {
+    name: string;
+    timeOrigin: DOMHighResTimeStamp;
+    marks: TSerializableMark[];
+};
 /**
  * @experimental
  * An util used for adding performance checkpoints which can be then used for analyzing the chart performance.
@@ -130,10 +225,40 @@ interface TSciChartPerformanceMark extends PerformanceMark {
  */
 export declare class PerformanceDebugHelper {
     static enableDebug: boolean;
-    static mark(type: EPerformanceMarkType | string, options?: {
-        relatedId?: string;
-        contextId?: string;
-    }): TSciChartPerformanceMark;
+    static debugLevel: EPerformanceDebugLevel;
+    static instance: PerformanceDebugHelper;
+    static mark<TDetail extends TPerformanceDetail>(type: EPerformanceMarkType | string, options?: TPerformanceMarkOptions<TDetail>): TSciChartPerformanceMark<TDetail>;
+    /** @inheritDoc {@link PerformanceDebugHelper.getMarks{} */
+    static getMarks(): TSciChartPerformanceMark<TPerformanceDetail>[];
+    static clearMarks(name?: string): void;
     static outputLogs(): void;
+    static toJSON(): TSciChartPerformanceData;
+    separator: string;
+    /**
+     * Retrieves the marks.
+     * @remarks the default implementation will return all PerformanceMark instances the browser's performance timeline (e.g. created via performance.mark)
+     */
+    getMarks(): TSciChartPerformanceMark<TPerformanceDetail>[];
+    /**
+     * Removes a specific mark by name or all marks if no name provided
+     * @remarks the default implementation removes marks the browser's performance timeline as well.
+     */
+    clearMarks(name?: string): void;
+    /**
+     * Processes and creates a {@link TSciChartPerformanceMark} entry accordingly to provided  {@link TPerformanceMarkOptions | options }.
+     * @remarks Make sure to provide a correct `level` option to define which marks are relevance. Default: EPerformanceDebugLevel.Info
+     */
+    addMark<TDetail extends TPerformanceDetail>(type: EPerformanceMarkType | string, options?: TPerformanceMarkOptions<TDetail>): TSciChartPerformanceMark<TDetail>;
+    /**
+     * Creates and returns {@link TSciChartPerformanceMark}
+     *
+     * @remarks default implementation adds mark to the browser's performance timeline.
+     * Alternatively, override this to  add a mark to a separate collection without polluting the global object.
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/PerformanceMark)
+     */
+    protected createMark<TDetail extends TPerformanceDetail>(type: EPerformanceMarkType | string, groupId: string, detail: TProcessedDetail<TDetail>): TSciChartPerformanceMark<TDetail>;
 }
-export {};
+/**
+ * Runs `callback` shortly after the next browser Frame is produced.
+ */
+export declare function runAfterFramePaint(callback: () => void): void;

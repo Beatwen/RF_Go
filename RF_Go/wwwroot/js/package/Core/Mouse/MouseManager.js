@@ -16,6 +16,7 @@ var ModifierMouseArgs_1 = require("../../Charting/ChartModifiers/ModifierMouseAr
 var SciChartSurfaceBase_1 = require("../../Charting/Visuals/SciChartSurfaceBase");
 var DpiHelper_1 = require("../../Charting/Visuals/TextureManager/DpiHelper");
 var array_1 = require("../../utils/array");
+var perfomance_1 = require("../../utils/perfomance");
 var Guard_1 = require("../Guard");
 var EMouseEventType;
 (function (EMouseEventType) {
@@ -117,8 +118,18 @@ var MouseManager = /** @class */ (function () {
      * @param event The {@link PointerEvent}
      */
     MouseManager.prototype.onPointerMove = function (event) {
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PointerMoveStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var modifierEvent = ModifierMouseArgs_1.ModifierMouseArgs.fromPointerEvent(event);
         this.modifierMouseMove(modifierEvent);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PointerMoveEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * Internal function called when 'pointerdown' event is fired on the target element
@@ -127,6 +138,11 @@ var MouseManager = /** @class */ (function () {
     MouseManager.prototype.onPointerDown = function (event) {
         // To prevent default browser actions (like fast scroll for mouse wheel click and dragging of selected elements)
         // call args.nativeEvent.preventDefault() in the chart modifier instead of calling event.preventDefault() here
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PointerDownStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var modifierEvent = ModifierMouseArgs_1.ModifierMouseArgs.fromPointerEvent(event);
         this.modifierMouseDown(modifierEvent);
         // workaround for handling double tap in case "dbclick" is not fired
@@ -157,20 +173,40 @@ var MouseManager = /** @class */ (function () {
         else {
             this.doubleTapHandled = false;
         }
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PointerDownEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * Internal function called when 'pointerup' event is fired on the target element
      * @param event The {@link PointerEvent}
      */
     MouseManager.prototype.onPointerUp = function (event) {
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PointerUpStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var modifierEvent = ModifierMouseArgs_1.ModifierMouseArgs.fromPointerEvent(event);
         this.modifierMouseUp(modifierEvent);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PointerUpEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * Internal function called when 'dblclick' event is fired on the target element
      * @param event The {@link PointerEvent}
      */
     MouseManager.prototype.onDoubleClick = function (event) {
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DoubleClickStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         if (this.doubleTapHandled) {
             // source of `dbclick` event was a double tap
             this.supportsDoubleTap = true;
@@ -179,33 +215,68 @@ var MouseManager = /** @class */ (function () {
         }
         var modifierEvent = ModifierMouseArgs_1.ModifierMouseArgs.fromMouseEvent(event);
         this.modifierDoubleClick(modifierEvent);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DoubleClickEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * Internal function called when 'wheel' event is fired on the target element
      * @param event The {@link PointerEvent}
      */
     MouseManager.prototype.onMouseWheel = function (event) {
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.ScrollStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var modifierEvent = ModifierMouseArgs_1.ModifierMouseArgs.fromWheelEvent(event);
         this.modifierMouseWheel(modifierEvent);
         if (modifierEvent.handled) {
             event.preventDefault();
         }
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.ScrollEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * Internal function called when 'mouseleave' event is fired on the target element
      * @param event The {@link PointerEvent}
      */
     MouseManager.prototype.onMouseLeave = function (event) {
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.MouseLeaveStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var modifierEvent = ModifierMouseArgs_1.ModifierMouseArgs.fromMouseEvent(event);
         this.modifierMouseLeave(modifierEvent);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.MouseLeaveEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * Internal function called when 'mouseenter' event is fired on the target element
      * @param event The {@link PointerEvent}
      */
     MouseManager.prototype.onMouseEnter = function (event) {
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.MouseEnterStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var modifierEvent = ModifierMouseArgs_1.ModifierMouseArgs.fromMouseEvent(event);
         this.modifierMouseEnter(modifierEvent);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.MouseEnterEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * Internal function called when 'contextmenu' event is fired on the target element

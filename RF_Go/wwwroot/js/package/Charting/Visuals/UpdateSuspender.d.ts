@@ -93,6 +93,7 @@ export declare class UpdateSuspender extends DeletableEntity implements IUpdateS
      */
     resume(): void;
     delete(): void;
+    destroy(): void;
     protected remove(): void;
     private increment;
     private decrement;

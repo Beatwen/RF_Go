@@ -28,7 +28,7 @@ export declare class WasmContextProxyHandler implements ProxyHandler<TSciChart> 
     get(target: any, name: string, receiver: any): any;
 }
 /** @ignore */
-export declare const createWasmContextRevocableProxy: <TContextType extends object>(wasmContext: TContextType) => {
+export declare const createWasmContextRevocableProxy: <TContextType extends object>(wasmContext: TContextType, id: string) => {
     proxy: TContextType;
     revoke: () => void;
 };

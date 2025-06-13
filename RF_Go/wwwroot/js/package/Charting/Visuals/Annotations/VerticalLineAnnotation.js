@@ -30,6 +30,7 @@ exports.VerticalLineAnnotation = void 0;
 var Guard_1 = require("../../../Core/Guard");
 var Point_1 = require("../../../Core/Point");
 var Rect_1 = require("../../../Core/Rect");
+var Thickness_1 = require("../../../Core/Thickness");
 var AxisAlignment_1 = require("../../../types/AxisAlignment");
 var pointUtil_1 = require("../../../utils/pointUtil");
 var translate_1 = require("../../../utils/translate");
@@ -141,7 +142,7 @@ var VerticalLineAnnotation = /** @class */ (function (_super) {
             : lineEdgeAbsoluteVerticalCoord <= verticalAxis.parentSurface.seriesViewRect.height;
         var isLineAnnotationEdgeVisible = !isPartialLine || isLineAnnotationInVerticalVisibleRange;
         if (isAxisLabelInHorizontalVisibleRange && isLineAnnotationEdgeVisible) {
-            var textStyle = __assign(__assign({}, verticalAxis.labelStyle), { color: this.axisLabelStroke, fontSize: this.axisFontSize * DpiHelper_1.DpiHelper.PIXEL_RATIO, fontFamily: this.axisFontFamily });
+            var textStyle = __assign(__assign({}, verticalAxis.labelStyle), { padding: new Thickness_1.Thickness(2, 2, 2, 2), color: this.axisLabelStroke, fontSize: this.axisFontSize * DpiHelper_1.DpiHelper.PIXEL_RATIO, fontFamily: this.axisFontFamily });
             var labelRect = (0, drawLabel_1.drawLineAnnotation)(horizontalAxis, renderContext, this.labelPlacement, this.labelValue, borderX1, borderX2, borderY1, borderY2, textStyle, this.axisLabelFill, strokePen, viewRect, this.showLabel, this.opacity, null, this.verticalAlignment);
             if (labelRect) {
                 var point1 = (0, translate_1.translateFromCanvasToSeriesViewRect)(new Point_1.Point(labelRect.left, labelRect.top), viewRect, true);

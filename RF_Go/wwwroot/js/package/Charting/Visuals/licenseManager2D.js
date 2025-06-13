@@ -264,8 +264,9 @@ var setChallengeResponse = function (token, licenseContext) {
         expirySeconds = licenseContext.SCRTCredentials.ApplyLicenseResponse(token);
     }
     var expirySeconds3D = callbacks3D.setChallengeResponse3D(token);
-    if (expirySeconds3D !== undefined)
+    if (expirySeconds3D !== undefined && expirySeconds3D > 0) {
         return expirySeconds3D;
+    }
     return expirySeconds;
 };
 var challengeFailCounts = 0;
@@ -335,7 +336,7 @@ var dolicenseChallenge = function (licenseContext, sciChartSurface) { return __a
                     }
                     else {
                         // Something went wrong with the apply
-                        debug("license challenge response was invalid: " + token);
+                        debug("license challenge response was invalid: ".concat(token, " ").concat(expirySeconds));
                         checkStatus = licensingClasses_1.LicenseCheckStatus.FailedToValidateDeveloperLicense;
                     }
                 }

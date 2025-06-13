@@ -179,6 +179,7 @@ export declare class SciChartSurface extends SciChartSurfaceBase {
      * to update elements of the chart for the current render.  Any updates made here will not trigger a subsequent render.
      */
     preRender: EventHandler<WebGlRenderContext2D>;
+    preRenderAll: EventHandler<WebGlRenderContext2D>;
     layersOffset: number;
     stepBetweenLayers: number;
     readonly isSubSurface: boolean;

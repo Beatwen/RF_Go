@@ -63,13 +63,13 @@ var Globals_1 = require("../../Core/Globals");
 var Guard_1 = require("../../Core/Guard");
 var MouseManager_1 = require("../../Core/Mouse/MouseManager");
 var ObservableArray_1 = require("../../Core/ObservableArray");
+var ObserveVisibility_1 = require("../../Core/ObserveVisibility");
 var PropertyChangedEventArgs_1 = require("../../Core/PropertyChangedEventArgs");
 var WebGlHelper_1 = require("../../Core/WebGlHelper");
 var BaseType_1 = require("../../types/BaseType");
 var array_1 = require("../../utils/array");
 var guid_1 = require("../../utils/guid");
 var MemoryUsageHelper_1 = require("../../utils/MemoryUsageHelper");
-var perfomance_1 = require("../../utils/perfomance");
 var ChartModifierBase_1 = require("../ChartModifiers/ChartModifierBase");
 var SciChartJSDarkv2Theme_1 = require("../Themes/SciChartJSDarkv2Theme");
 var DpiHelper_1 = require("./TextureManager/DpiHelper");
@@ -108,10 +108,32 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         if (canvases === void 0) { canvases = {}; }
         var _this = _super.call(this) || this;
         /**
-         * An event handler which notifies its subscribers when a render operation has finished. Use this
-         * to time render performance, or to update elements of the chart or your UI on redraw.
+         * An event handler which notifies its subscribers when a layout stage in render process has finished.
+         */
+        _this.layoutMeasured = new EventHandler_1.EventHandler();
+        /**
+         * An event handler which notifies its subscribers when animations stage in render process has finished.
+         */
+        _this.genericAnimationsRun = new EventHandler_1.EventHandler();
+        /**
+         * An event handler which notifies its subscribers when a chart was rendered to WebgL Canvas.
+         * @remarks Not applicable to sub-charts
+         */
+        _this.renderedToWebGl = new EventHandler_1.EventHandler();
+        /**
+         * An event handler which notifies its subscribers when a render operation has finished.
          */
         _this.rendered = new EventHandler_1.EventHandler();
+        /**
+         * An event handler which notifies its subscribers when a chart was rendered to a display canvas.
+         * @remarks Not applicable to sub-charts
+         */
+        _this.renderedToDestination = new EventHandler_1.EventHandler();
+        /**
+         * An event handler which notifies its subscribers when a chart was visually painted a display canvas.
+         * @remarks Not applicable to sub-charts
+         */
+        _this.painted = new EventHandler_1.EventHandler();
         _this.themeProviderProperty = SciChartSurfaceBase.DEFAULT_THEME;
         _this.previousThemeProviderProperty = SciChartSurfaceBase.DEFAULT_THEME;
         _this.isInitializedProperty = false;
@@ -121,6 +143,7 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         _this.suspendableIdProperty = (0, guid_1.generateGuid)();
         _this.isAlphaEnabledProperty = true;
         _this.deletables = [];
+        _this.freezeWhenOutOfViewProperty = false;
         Guard_1.Guard.notNull(webAssemblyContext, "webAssemblyContext");
         _this.domChartRoot = canvases.domChartRoot;
         _this.domCanvasWebGL = canvases.domCanvasWebGL;
@@ -192,9 +215,6 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         }
         catch (err) {
             console.warn(err);
-        }
-        if (perfomance_1.PerformanceDebugHelper.enableDebug) {
-            _this.enableRenderListener();
         }
         if (!app_1.IS_TEST_ENV && SciChartSurfaceBase.invalidateOnTabVisible) {
             var visibilityChangeHandler_1 = function () {
@@ -428,7 +448,6 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
      */
     SciChartSurfaceBase.prototype.suspendUpdates = function () {
         this.suspender = new UpdateSuspender_1.UpdateSuspender(this);
-        this.addDeletable(this.suspender);
         return this.suspender;
     };
     /**
@@ -461,16 +480,55 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(SciChartSurfaceBase.prototype, "freezeWhenOutOfView", {
+        /**
+         * When true, charts that are out of the viewport will be frozen (pausing rendering). Data updates can resume
+         * Once the chart is in view again, rendering will resume. This can be useful for performance optimization.
+         */
+        get: function () {
+            return this.freezeWhenOutOfViewProperty;
+        },
+        /**
+         * When true, charts that are out of the viewport will be frozen (pausing rendering). Data updates can resume
+         * Once the chart is in view again, rendering will resume. This can be useful for performance optimization.
+         */
+        set: function (freezeWhenOutOfView) {
+            var _this = this;
+            var _a;
+            this.freezeWhenOutOfViewProperty = freezeWhenOutOfView;
+            if (freezeWhenOutOfView && !this.visibilityObserver) {
+                this.visibilityObserver = ObserveVisibility_1.VisibilityObserver.observe(this.domChartRoot, function (isVisible) {
+                    if (!isVisible && !_this.isSuspended) {
+                        _this.suspendUpdates();
+                        // console.log(`${spec.title} is out of view`);
+                    }
+                    else if (isVisible && _this.isSuspended) {
+                        _this.resume();
+                        // console.log(`${spec.title} is in view`);
+                    }
+                });
+            }
+            else if (!freezeWhenOutOfView && this.visibilityObserver) {
+                (_a = this.visibilityObserver) === null || _a === void 0 ? void 0 : _a.disconnect();
+                this.visibilityObserver = undefined;
+                this.resume();
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
     /**
      * @inheritDoc
      */
     SciChartSurfaceBase.prototype.delete = function (clearHtml) {
         var _this = this;
-        var _a;
+        var _a, _b, _c, _d;
         if (clearHtml === void 0) { clearHtml = true; }
         this.isDeletedProperty = true;
+        (_b = (_a = this.suspender) === null || _a === void 0 ? void 0 : _a.destroy) === null || _b === void 0 ? void 0 : _b.call(_a);
+        this.suspender = undefined;
         // TODO probably this should be moved outside for Proxy === this comparison issue exists
-        var currentSurfaceIndex = (_a = this.destinations) === null || _a === void 0 ? void 0 : _a.findIndex(function (dest) { return dest.sciChartSurface.id === _this.id; });
+        var currentSurfaceIndex = (_c = this.destinations) === null || _c === void 0 ? void 0 : _c.findIndex(function (dest) { return dest.sciChartSurface.id === _this.id; });
         if (currentSurfaceIndex >= 0) {
             this.destinations.splice(currentSurfaceIndex, 1);
         }
@@ -481,8 +539,8 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         this.modifierAnnotations.asArray().forEach(function (annotation) { return annotation.delete(); });
         this.annotations.asArray().forEach(function (annotation) { return annotation.delete(); });
         this.adornerLayer = undefined;
-        for (var _i = 0, _b = this.deletables; _i < _b.length; _i++) {
-            var deletable = _b[_i];
+        for (var _i = 0, _e = this.deletables; _i < _e.length; _i++) {
+            var deletable = _e[_i];
             (0, Deleter_1.deleteSafe)(deletable);
         }
         this.domChartRoot = undefined;
@@ -495,6 +553,8 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         this.domDivContainer = undefined;
         this.sharedWasmContext = undefined;
         this.deletables = [];
+        (_d = this.visibilityObserver) === null || _d === void 0 ? void 0 : _d.disconnect();
+        this.visibilityObserver = undefined;
     };
     SciChartSurfaceBase.prototype.addDeletable = function (deletable) {
         this.deletables.push(deletable);
@@ -581,14 +641,6 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    SciChartSurfaceBase.prototype.enableRenderListener = function () {
-        var _this = this;
-        var listener = function (isInvalidated) {
-            perfomance_1.PerformanceDebugHelper.mark(isInvalidated ? perfomance_1.EPerformanceMarkType.Rendered : perfomance_1.EPerformanceMarkType.FullStateRendered, { contextId: _this.id });
-        };
-        this.rendered.subscribe(listener);
-        this.addDeletable({ delete: function () { return _this.rendered.unsubscribe(listener); } });
-    };
     SciChartSurfaceBase.prototype.clearRootElement = function (clearHtml) {
         if (clearHtml && this.domChartRoot) {
             var style = this.domChartRoot.style;
@@ -606,11 +658,12 @@ var SciChartSurfaceBase = /** @class */ (function (_super) {
         }
     };
     SciChartSurfaceBase.prototype.applyOptions = function (options) {
-        var _a;
+        var _a, _b;
         this.idProperty = (_a = options === null || options === void 0 ? void 0 : options.id) !== null && _a !== void 0 ? _a : this.idProperty;
         this.widthAspect = options === null || options === void 0 ? void 0 : options.widthAspect;
         this.heightAspect = options === null || options === void 0 ? void 0 : options.heightAspect;
         this.disableAspect = options === null || options === void 0 ? void 0 : options.disableAspect;
+        this.freezeWhenOutOfView = (_b = options === null || options === void 0 ? void 0 : options.freezeWhenOutOfView) !== null && _b !== void 0 ? _b : false;
     };
     /**
      * Detaches a {@link ChartModifierBase2D} from the {@link SciChartSurfaceBase}

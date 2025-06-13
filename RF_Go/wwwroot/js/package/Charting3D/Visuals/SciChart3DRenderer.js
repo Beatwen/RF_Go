@@ -78,12 +78,16 @@ var SciChart3DRenderer = /** @class */ (function () {
      * The main render loop
      */
     SciChart3DRenderer.prototype.render = function () {
-        var _a;
+        var _this = this;
+        var _a, _b;
         if (this.scs.isDeleted || !this.scs.isInitialized) {
             return;
         }
         this.isInvalidated = false;
-        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderStart, { contextId: this.scs.id });
+        var renderStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderStart, {
+            contextId: this.scs.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         // Step 1: Sanity checks
         this.isSurfaceValid(this.scs); // Throws errors if false
         // Enable/disable hit test as required.
@@ -94,19 +98,28 @@ var SciChart3DRenderer = /** @class */ (function () {
             console.warn("SciChart3DRenderer: Undefined scene world!");
             return;
         }
-        this.scs.preRender.raiseEvent();
         this.wasmContext.SCRTSetActiveWorld(sceneWorld);
         this.updateWorldDimensions(sceneWorld, this.scs.worldDimensions);
         var tsrCamera = sceneWorld.GetMainCamera();
         var typescriptCamera = this.scs.camera;
         typescriptCamera.updateEngineCamera(tsrCamera);
-        var _b = this.scs.viewportManager, width = _b.width, height = _b.height;
+        var _c = this.scs.viewportManager, width = _c.width, height = _c.height;
         var viewRect = new Rect_1.Rect(0, 0, width, height);
         this.scs.setSeriesViewRect(viewRect);
         // Animation Step
         var timeElapsed = this.previousTime ? Date.now() - this.previousTime : undefined;
         this.previousTime = Date.now();
+        var animationStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.GenericAnimationStart, {
+            contextId: this.scs.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
+        this.scs.genericAnimationsRun.raiseEvent();
         this.scs.onAnimate(timeElapsed);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.GenericAnimationEnd, {
+            contextId: this.scs.id,
+            relatedId: (_a = animationStartMark === null || animationStartMark === void 0 ? void 0 : animationStartMark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         // Step 2: Update background of the chart
         this.scs.updateBackground();
         // Step 3: Prepare the Axes
@@ -124,19 +137,34 @@ var SciChart3DRenderer = /** @class */ (function () {
                 el.type === IAnnotation_1.EAnnotationType.SVGTextAnnotation ||
                 el.type === IAnnotation_1.EAnnotationType.SVGCustomAnnotation;
         });
-        svgAnnotations.forEach(function (svg) { return svg.update(undefined, undefined, 0, 0); });
+        svgAnnotations.forEach(function (svg) {
+            var _a;
+            var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAnnotationStart, {
+                contextId: svg.id,
+                parentContextId: _this.scs.id,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
+            svg.update(undefined, undefined, 0, 0);
+            perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAnnotationEnd, {
+                contextId: svg.id,
+                parentContextId: _this.scs.id,
+                relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
+        });
         // We add the same padding as we have for 2D 6px
         this.updateWatermark();
-        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderEnd, {
-            contextId: this.scs.id,
-            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId
-        });
         // Step 6: Notify that scene is about to be drawn
         this.scs.onSciChartRendered();
         // Invalidate for the animations
         if (this.scs.isRunningAnimation) {
             setTimeout(this.scs.invalidateElement, 0);
         }
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderEnd, {
+            contextId: this.scs.id,
+            relatedId: (_b = renderStartMark === null || renderStartMark === void 0 ? void 0 : renderStartMark.detail) === null || _b === void 0 ? void 0 : _b.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     SciChart3DRenderer.prototype.updateWatermark = function () {
         var chartHeight = this.scs.getMainCanvas().clientHeight;

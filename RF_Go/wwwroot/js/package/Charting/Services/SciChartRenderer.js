@@ -50,12 +50,13 @@ var SciChartRenderer = /** @class */ (function () {
      */
     SciChartRenderer.prototype.render = function (renderContext) {
         var _this = this;
-        var _a, _b;
+        var _a, _b, _c, _d, _e, _f;
         if (this.sciChartSurface.isDeleted) {
             return;
         }
-        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderStart, {
-            contextId: this.sciChartSurface.id
+        var renderStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
         });
         logger_1.Logger.debug("render start");
         this.isInvalidated = false;
@@ -67,24 +68,47 @@ var SciChartRenderer = /** @class */ (function () {
             nativeContext.SetBlendMode(wasmContext.eSCRTBlendMode.BlendAdditiveOneAlpha);
         }
         // Step 1 validate the chart and show errors
-        var _c = this.getAxisDictionaries(), xAxesById = _c.xAxesById, yAxesById = _c.yAxesById;
+        var _g = this.getAxisDictionaries(), xAxesById = _g.xAxesById, yAxesById = _g.yAxesById;
         this.validate();
         // Animation Step
         var timeElapsed = this.previousTime ? Date.now() - this.previousTime : 0;
         this.previousTime = Date.now();
+        var animationStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.GenericAnimationStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         this.sciChartSurface.onAnimate(timeElapsed);
+        this.sciChartSurface.genericAnimationsRun.raiseEvent();
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.GenericAnimationEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_a = animationStartMark === null || animationStartMark === void 0 ? void 0 : animationStartMark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         renderContext.enqueueLayeredDraw(function () {
             _this.sciChartSurface.updateBackground();
         }, this.getAbsoluteLayer(DefaultRenderLayer_1.EDefaultRenderLayer.Background));
         // Step 2 autorange x
         this.sciChartSurface.updateStackedCollectionAccumulatedVectors();
+        var autoRangeStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.AutoRangeStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         this.sciChartSurface.xAxes.asArray().forEach(function (axis) { return _this.tryPerformAutoRangeOn(axis, _this.sciChartSurface); });
         // Step 3 prepare render data
-        var viewRect = (_a = this.sciChartSurface.seriesViewRect) !== null && _a !== void 0 ? _a : Rect_1.Rect.create(0, 0, renderContext.viewportSize.width, renderContext.viewportSize.height);
+        var viewRect = (_b = this.sciChartSurface.seriesViewRect) !== null && _b !== void 0 ? _b : Rect_1.Rect.create(0, 0, renderContext.viewportSize.width, renderContext.viewportSize.height);
         var renderPassInfo = this.prepareSeriesRenderData(viewRect);
         // Step 4 autorange y using resampled data if available.
         this.sciChartSurface.yAxes.asArray().forEach(function (axis) { return _this.tryPerformAutoRangeOn(axis, _this.sciChartSurface); });
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.AutoRangeEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_c = autoRangeStartMark === null || autoRangeStartMark === void 0 ? void 0 : autoRangeStartMark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         // Step 3 layout
+        var layoutStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.LayoutStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var titleOffset = this.measureTitle(renderContext);
         var seriesViewRect = this.sciChartSurface.layoutManager.layoutChart(renderContext.viewportSize, titleOffset);
         var viewportSvgRect = this.getViewportSvgRect(renderContext.viewportSize, seriesViewRect);
@@ -92,6 +116,12 @@ var SciChartRenderer = /** @class */ (function () {
         this.resizeAnnotationRootElements(viewportSvgRect);
         this.layoutTitle(seriesViewRect);
         this.scheduleTitleDraw(renderContext);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.LayoutEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_d = layoutStartMark === null || layoutStartMark === void 0 ? void 0 : layoutStartMark.detail) === null || _d === void 0 ? void 0 : _d.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
+        this.sciChartSurface.layoutMeasured.raiseEvent();
         // Initialise axes coordinate calculators.  Must happen after layout.
         this.prepareAxesRenderData();
         // Draw seriesViewRect border
@@ -151,11 +181,11 @@ var SciChartRenderer = /** @class */ (function () {
         else if (renderContext.doDraw) {
             this.updateWatermark(renderContext, this.sciChartSurface.parentSurface.seriesViewRect);
         }
-        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderEnd, {
-            contextId: this.sciChartSurface.id,
-            relatedId: (_b = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _b === void 0 ? void 0 : _b.relatedId
-        });
         // Step 10 Call OnParentSurfaceRendered
+        var postDrawActionsStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PostDrawActionsStart, {
+            contextId: this.sciChartSurface.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         this.onParentSurfaceRendered();
         if (!app_1.IS_TEST_ENV) {
             nativeContext.SetBlendMode(oldBlendMode);
@@ -164,12 +194,24 @@ var SciChartRenderer = /** @class */ (function () {
         if (this.sciChartSurface.isRunningAnimation) {
             setTimeout(this.sciChartSurface.invalidateElement, 0);
         }
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PostDrawActionsEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_e = postDrawActionsStartMark === null || postDrawActionsStartMark === void 0 ? void 0 : postDrawActionsStartMark.detail) === null || _e === void 0 ? void 0 : _e.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderEnd, {
+            contextId: this.sciChartSurface.id,
+            relatedId: (_f = renderStartMark === null || renderStartMark === void 0 ? void 0 : renderStartMark.detail) === null || _f === void 0 ? void 0 : _f.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         logger_1.Logger.debug("render end");
     };
     SciChartRenderer.prototype.drawRenderContextAnnotations = function (annotations, xAxisById, yAxisById, annotationLayer, renderContext, seriesViewRect) {
+        var _this = this;
         annotations
             .filter(function (a) { return a.annotationLayer === annotationLayer; })
             .forEach(function (a) {
+            var _a;
             if (xAxisById.count === 0 || yAxisById.count === 0) {
                 console.error("Cannot draw annotations before axes have been configured. Add axes first, or use suspendUpdates to pause drawing until axes are available.");
             }
@@ -186,13 +228,26 @@ var SciChartRenderer = /** @class */ (function () {
                     a.showWarning = false;
                 }
                 if (!a.isHidden) {
+                    var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAnnotationStart, {
+                        contextId: a.id,
+                        parentContextId: _this.sciChartSurface.id,
+                        level: perfomance_1.EPerformanceDebugLevel.Verbose
+                    });
                     a.drawWithContext(renderContext, xAxis.getCurrentCoordinateCalculator(), yAxis.getCurrentCoordinateCalculator(), seriesViewRect);
+                    perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAnnotationEnd, {
+                        contextId: a.id,
+                        parentContextId: _this.sciChartSurface.id,
+                        relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+                        level: perfomance_1.EPerformanceDebugLevel.Verbose
+                    });
                 }
             }
         });
     };
     SciChartRenderer.prototype.drawSvgAnnotations = function (annotations, xAxisById, yAxisById, coordSvgTranslation) {
+        var _this = this;
         annotations.forEach(function (a) {
+            var _a;
             var xAxis = xAxisById.item(a.xAxisId) || xAxisById.values[0];
             var yAxis = yAxisById.item(a.yAxisId) || yAxisById.values[0];
             if (a.showWarning) {
@@ -204,7 +259,16 @@ var SciChartRenderer = /** @class */ (function () {
                 }
                 a.showWarning = false;
             }
+            var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAnnotationStart, {
+                contextId: _this.sciChartSurface.id,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
             a.update(xAxis.getCurrentCoordinateCalculator(), yAxis.getCurrentCoordinateCalculator(), coordSvgTranslation.x / DpiHelper_1.DpiHelper.PIXEL_RATIO, coordSvgTranslation.y / DpiHelper_1.DpiHelper.PIXEL_RATIO);
+            perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAnnotationEnd, {
+                contextId: _this.sciChartSurface.id,
+                relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
         });
     };
     SciChartRenderer.prototype.validate = function () {
@@ -293,6 +357,7 @@ var SciChartRenderer = /** @class */ (function () {
         });
     };
     SciChartRenderer.prototype.prepareSeriesRenderData = function (seriesViewRect) {
+        var _a;
         var seriesCount = this.sciChartSurface.renderableSeries.size();
         var renderPassInfo = new RenderPassInfo_1.RenderPassInfo(seriesCount, seriesViewRect);
         for (var i = 0; i < this.sciChartSurface.renderableSeries.size(); i++) {
@@ -305,6 +370,11 @@ var SciChartRenderer = /** @class */ (function () {
                 throw new Error("SciChartSurface.renderableSeries[index=".concat(i, "] dataSeries has been deleted. ") +
                     "This is an invalid state for SciChart. Have you shared this DataSeries between chart surfaces?");
             }
+            var resampleSingleSeriesStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.ResampleSingleSeriesStart, {
+                contextId: series.id,
+                parentContextId: this.sciChartSurface.id,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
             var xAxis = series.xAxis;
             var yAxis = series.yAxis;
             var seriesRenderPassInfo = ExtremeResamplerHelper_1.ExtremeResamplerHelper.resampleSeries(xAxis, series, seriesViewRect);
@@ -312,6 +382,12 @@ var SciChartRenderer = /** @class */ (function () {
             var renderPassData = new RenderPassData_1.RenderPassData(seriesRenderPassInfo.indicesRange, xAxis.getCurrentCoordinateCalculator, yAxis.getCurrentCoordinateCalculator, xAxis.isVerticalChart, seriesRenderPassInfo.pointSeries, seriesRenderPassInfo.resamplingHash);
             // Set the renderPassData early
             series.setCurrentRenderPassData(renderPassData);
+            perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.ResampleSingleSeriesEnd, {
+                contextId: series.id,
+                parentContextId: this.sciChartSurface.id,
+                relatedId: (_a = resampleSingleSeriesStartMark === null || resampleSingleSeriesStartMark === void 0 ? void 0 : resampleSingleSeriesStartMark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
         }
         return renderPassInfo;
     };
@@ -324,6 +400,8 @@ var SciChartRenderer = /** @class */ (function () {
         });
     };
     SciChartRenderer.prototype.drawSeries = function (scs, renderPassInfo, renderContext) {
+        var _this = this;
+        var _a;
         var renderableSeriesArray = renderPassInfo.renderableSeriesArray;
         var nativeContext = renderContext.getNativeContext();
         var viewRect = this.sciChartSurface.seriesViewRect;
@@ -348,12 +426,33 @@ var SciChartRenderer = /** @class */ (function () {
         });
         // Perform global text layout
         if (this.sciChartSurface.dataLabelLayoutManager) {
+            var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PerformTextLayoutStart, {
+                contextId: this.sciChartSurface.id,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
             this.sciChartSurface.dataLabelLayoutManager.performTextLayout(this.sciChartSurface, renderPassInfo);
+            perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.PerformTextLayoutEnd, {
+                contextId: this.sciChartSurface.id,
+                relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
         }
         // Draw series text
         renderableSeriesArray.forEach(function (rs, index) {
+            var _a;
             if (rs.isVisible && rs.dataLabelProvider) {
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawDataLabelsStart, {
+                    contextId: rs.id,
+                    parentContextId: _this.sciChartSurface.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 rs.dataLabelProvider.draw(renderContext);
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawDataLabelsEnd, {
+                    contextId: rs.id,
+                    parentContextId: _this.sciChartSurface.id,
+                    relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }
         });
         nativeContext.PopMatrix();
@@ -400,10 +499,6 @@ var SciChartRenderer = /** @class */ (function () {
                 cm.onParentSurfaceRendered();
             });
         });
-        // TODO add another event handler for multichart
-        if (!this.sciChartSurface.isCopyCanvasSurface || this.sciChartSurface.isSubSurface) {
-            this.sciChartSurface.rendered.raiseEvent(this.isInvalidated);
-        }
     };
     SciChartRenderer.prototype.updateWatermark = function (renderContext, seriesViewRect) {
         var chartHeight = this.sciChartSurface.isCopyCanvasSurface

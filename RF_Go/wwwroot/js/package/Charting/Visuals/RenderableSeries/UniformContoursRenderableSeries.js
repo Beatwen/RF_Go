@@ -50,7 +50,7 @@ var UniformContoursRenderableSeries = /** @class */ (function (_super) {
      */
     function UniformContoursRenderableSeries(webAssemblyContext, options) {
         var _this = this;
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         _this = _super.call(this, webAssemblyContext, options) || this;
         _this.type = SeriesType_1.ESeriesType.UniformContoursSeries;
         _this.colorMapPropertyChanged = _this.colorMapPropertyChanged.bind(_this);
@@ -62,7 +62,7 @@ var UniformContoursRenderableSeries = /** @class */ (function (_super) {
         _this.colorMap = options === null || options === void 0 ? void 0 : options.colorMap;
         _this.dataSeries = options === null || options === void 0 ? void 0 : options.dataSeries;
         _this.xAxisId = (_a = options === null || options === void 0 ? void 0 : options.xAxisId) !== null && _a !== void 0 ? _a : AxisCore_1.AxisCore.DEFAULT_AXIS_ID;
-        _this.xAxisId = (options === null || options === void 0 ? void 0 : options.yAxisId) || AxisCore_1.AxisCore.DEFAULT_AXIS_ID;
+        _this.yAxisId = (_b = options === null || options === void 0 ? void 0 : options.yAxisId) !== null && _b !== void 0 ? _b : AxisCore_1.AxisCore.DEFAULT_AXIS_ID;
         _this.zMin = (options === null || options === void 0 ? void 0 : options.zMin) || NaN;
         _this.zMax = (options === null || options === void 0 ? void 0 : options.zMax) || NaN;
         _this.zStep = (options === null || options === void 0 ? void 0 : options.zStep) || NaN;
@@ -72,8 +72,8 @@ var UniformContoursRenderableSeries = /** @class */ (function (_super) {
         _this.majorLineStyleProperty = options === null || options === void 0 ? void 0 : options.majorLineStyle;
         _this.minorLineStyleProperty = options === null || options === void 0 ? void 0 : options.minorLineStyle;
         // Must be called here for the series type to be available
-        if ((_b = _this.paletteProvider) === null || _b === void 0 ? void 0 : _b.onAttached) {
-            (_c = _this.paletteProvider) === null || _c === void 0 ? void 0 : _c.onAttached(_this);
+        if ((_c = _this.paletteProvider) === null || _c === void 0 ? void 0 : _c.onAttached) {
+            (_d = _this.paletteProvider) === null || _d === void 0 ? void 0 : _d.onAttached(_this);
         }
         if (!_this.dataLabelProviderProperty) {
             _this.dataLabelProviderProperty = new ContoursDataLabelProvider_1.ContoursDataLabelProvider(options === null || options === void 0 ? void 0 : options.dataLabels);

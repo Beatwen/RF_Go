@@ -1,9 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChartLayoutState = void 0;
-/**
- * @ignore
- */
 var ChartLayoutState = /** @class */ (function () {
     function ChartLayoutState() {
         this.leftInnerAreaSize = ChartLayoutState.DEFAULT_SIZE;

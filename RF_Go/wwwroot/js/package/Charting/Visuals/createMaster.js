@@ -57,9 +57,11 @@ var WebGlHelper_1 = require("../../Core/WebGlHelper");
 var logger_1 = require("../../utils/logger");
 var copyCanvasUtils_1 = require("./copyCanvasUtils");
 var perfomance_1 = require("../../utils/perfomance");
+var guid_1 = require("../../utils/guid");
 // Global variables
 /** @ignore */
 var sciChartMaster = {
+    id: undefined,
     wasmContext: undefined,
     getChildSurfaces: undefined,
     createChildSurface: undefined
@@ -80,11 +82,11 @@ var createMultichart = function (divElement, options) { return __awaiter(void 0,
                 _f.label = 1;
             case 1:
                 _f.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, (0, exports.initializeChartEngine2D)()];
+                return [4 /*yield*/, (0, exports.initializeChartEngine2D)({ destinationCanvas: canvases.domCanvas2D })];
             case 2:
                 _f.sent();
                 createChildSurface = sciChartMaster.createChildSurface, wasmContext_1 = sciChartMaster.wasmContext;
-                divElementId = canvases.domChartRoot.id;
+                divElementId = canvases ? canvases.domChartRoot.id : "divElementId";
                 sciChartSurface_1 = createChildSurface(divElementId, canvases, options === null || options === void 0 ? void 0 : options.theme);
                 return [2 /*return*/, new Promise(function (resolve) {
                         setTimeout(function () {
@@ -124,13 +126,14 @@ var getSharedWasmContext = function () { return __awaiter(void 0, void 0, void 0
     });
 }); };
 exports.getSharedWasmContext = getSharedWasmContext;
-var initializeChartEngine2D = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var mark, master;
-    var _a;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+var initializeChartEngine2D = function (options) { return __awaiter(void 0, void 0, void 0, function () {
+    var canvas2DId, mark, master;
+    var _a, _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
-                mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitStart);
+                canvas2DId = (_a = options === null || options === void 0 ? void 0 : options.destinationCanvas) === null || _a === void 0 ? void 0 : _a.id;
+                mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitStart, { parentContextId: canvas2DId });
                 WebGlHelper_1.WebGlHelper.initialize();
                 if (!(!sciChartMaster.wasmContext || !sciChartMaster.createChildSurface || !sciChartMaster.getChildSurfaces)) return [3 /*break*/, 2];
                 if (!sciChartMasterPromise) {
@@ -139,15 +142,20 @@ var initializeChartEngine2D = function () { return __awaiter(void 0, void 0, voi
                 }
                 return [4 /*yield*/, sciChartMasterPromise];
             case 1:
-                master = _b.sent();
+                master = _c.sent();
+                sciChartMaster.id = master.id;
                 sciChartMaster.wasmContext = master.wasmContext;
                 (0, BuildStamp_1.checkBuildStamp)(master.wasmContext);
                 sciChartMaster.createChildSurface = master.createChildSurface;
                 sciChartMaster.getChildSurfaces = master.getChildSurfaces;
                 (0, exports.monitorWebGL)(master.wasmContext);
-                _b.label = 2;
+                _c.label = 2;
             case 2:
-                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitEnd, { relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId });
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.EngineInitEnd, {
+                    relatedId: (_b = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _b === void 0 ? void 0 : _b.relatedId,
+                    contextId: sciChartMaster.id,
+                    parentContextId: canvas2DId
+                });
                 return [2 /*return*/, sciChartMasterPromise];
         }
     });
@@ -162,6 +170,7 @@ var disposeMultiChart = function () {
     sciChartMaster.createChildSurface = undefined;
     sciChartMaster.getChildSurfaces = undefined;
     sciChartMaster.wasmContext = undefined;
+    sciChartMaster.id = undefined;
     sciChartMasterPromise = undefined;
     // TODO make sure it works properly in combination with createSingle & 3D
     licenseManager2D_1.licenseManager.clear();
@@ -225,7 +234,8 @@ var createMaster = function () {
         // @ts-ignore
         new WasmModule2D({ locateFile: locateFile, noInitialRun: true })
             .then(function (originalWasmContext, anythingElse) {
-            var revocable = (0, DeletableEntity_1.createWasmContextRevocableProxy)(originalWasmContext);
+            var wasmContextId = (0, guid_1.generateGuid)();
+            var revocable = (0, DeletableEntity_1.createWasmContextRevocableProxy)(originalWasmContext, wasmContextId);
             var wasmContext = revocable.proxy;
             cleanupWasmContext = function () {
                 LabelCache_1.labelCache.resetCache();
@@ -312,7 +322,7 @@ var createMaster = function () {
             var chartInitializer = {
                 InitializeChart: function () {
                     logger_1.Logger.debug("InitializeChart");
-                    resolve({ getChildSurfaces: getChildSurfaces, createChildSurface: createChildSurface, wasmContext: wasmContext });
+                    resolve({ id: wasmContextId, getChildSurfaces: getChildSurfaces, createChildSurface: createChildSurface, wasmContext: wasmContext });
                 },
                 Draw: function (canvasId) {
                     logger_1.Logger.debug("Draw", canvasId);

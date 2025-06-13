@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebGlHelper = exports.EWebGLSupport = void 0;
 var app_1 = require("../constants/app");
@@ -24,7 +35,7 @@ var WebGlHelper = /** @class */ (function () {
         if (!WebGlHelper.initialized) {
             if (!WebGlHelper.webGlSupport && !app_1.IS_TEST_ENV) {
                 var canvas = document.createElement("canvas");
-                if (canvas.getContext("webgl2")) {
+                if (canvas.getContext("webgl2", { powerPreference: "high-performance" })) {
                     WebGlHelper.webGlSupport = EWebGLSupport.WebGL2;
                 }
                 else if (canvas.getContext("webgl")) {
@@ -53,10 +64,10 @@ var WebGlHelper = /** @class */ (function () {
             return undefined;
         }
         if (WebGlHelper.webGlSupport === EWebGLSupport.WebGL1) {
-            return canvas.getContext("webgl", options);
+            return canvas.getContext("webgl", __assign({}, options));
         }
         if (WebGlHelper.webGlSupport === EWebGLSupport.WebGL2) {
-            return canvas.getContext("webgl2", options);
+            return canvas.getContext("webgl2", __assign(__assign({}, options), { powerPreference: "high-performance" }));
         }
         throw new Error("SciChart: WebGL not supported!");
     };

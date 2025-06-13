@@ -26,6 +26,7 @@ var constants_1 = require("./constants");
 var XyPointSeriesWrapped_1 = require("../../Model/PointSeries/XyPointSeriesWrapped");
 var StackedCollectionDataLabelProvider_1 = require("./DataLabels/StackedCollectionDataLabelProvider");
 var DataPointWidthMode_1 = require("../../../types/DataPointWidthMode");
+var perfomance_1 = require("../../../utils/perfomance");
 /**
  * @summary A {@link StackedColumnCollection} allows grouping multiple {@link StackedColumnRenderableSeries}
  * to create a JavaScript Stacked Column, 100 Stacked Column or Stacked Bar chart
@@ -152,11 +153,17 @@ var StackedColumnCollection = /** @class */ (function (_super) {
     /** @inheritDoc */
     StackedColumnCollection.prototype.draw = function (renderContext, renderPassData) {
         var _this = this;
+        var _a, _b, _c;
         if (this.canDraw) {
             this.updateHitTestProviders(renderPassData);
             if (!this.isEnoughDataToDraw()) {
                 return;
             }
+            var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawCollectionSeriesStart, {
+                contextId: this.id,
+                parentContextId: (_a = this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
             this.updateAccumulatedVectors();
             var isCategoryAxis = renderPassData.xCoordinateCalculator.isCategoryCoordinateCalculator;
             var firstDataSeries = this.getFirstSeries().dataSeries;
@@ -183,6 +190,12 @@ var StackedColumnCollection = /** @class */ (function (_super) {
                     drawColumns(_this.webAssemblyContext, renderContext, xCoordinateCalculator_1, yCoordinateCalculator_1, isVerticalChart_1, _this.nativeDrawingProvider, xValues_1, bottomVector, topVector, el.getFillBrush(), el.getStrokePen(), viewRect_1, columnWidth_1, _this.spacingProperty, stackedColumnsCount_1, groupIndex);
                     previousEl = el;
                 });
+            });
+            perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawCollectionSeriesEnd, {
+                contextId: this.id,
+                parentContextId: (_b = this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+                relatedId: (_c = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
             });
         }
     };

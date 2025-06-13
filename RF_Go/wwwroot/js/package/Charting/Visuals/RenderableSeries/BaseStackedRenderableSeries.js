@@ -20,6 +20,7 @@ var classFactory_1 = require("../../../Builder/classFactory");
 var Deleter_1 = require("../../../Core/Deleter");
 var BaseType_1 = require("../../../types/BaseType");
 var DataLabelProviderType_1 = require("../../../types/DataLabelProviderType");
+var perfomance_1 = require("../../../utils/perfomance");
 var StackedXySeriesInfo_1 = require("../../Model/ChartData/StackedXySeriesInfo");
 var IDataSeries_1 = require("../../Model/IDataSeries");
 var ResamplingMode_1 = require("../../Numerics/Resamplers/ResamplingMode");
@@ -76,13 +77,24 @@ var BaseStackedRenderableSeries = /** @class */ (function (_super) {
     // PUBLIC
     /** @inheritdoc */
     BaseStackedRenderableSeries.prototype.draw = function (renderContext, renderPassData) {
-        var _a;
+        var _a, _b, _c, _d;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawSingleSeriesStart, {
+            contextId: this.id,
+            parentContextId: (_a = this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         this.currentRenderPassData = renderPassData;
-        (_a = this.hitTestProvider) === null || _a === void 0 ? void 0 : _a.update(renderPassData);
+        (_b = this.hitTestProvider) === null || _b === void 0 ? void 0 : _b.update(renderPassData);
         if (this.dataLabelProvider) {
             this.dataLabelProvider.generateDataLabels(renderContext, renderPassData);
             // Don't draw Text here. Renderer will call draw once all text has been created to allow for global layout adjustments
         }
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawSingleSeriesEnd, {
+            contextId: this.id,
+            parentContextId: (_c = this.parentSurface) === null || _c === void 0 ? void 0 : _c.id,
+            relatedId: (_d = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _d === void 0 ? void 0 : _d.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * @inheritDoc

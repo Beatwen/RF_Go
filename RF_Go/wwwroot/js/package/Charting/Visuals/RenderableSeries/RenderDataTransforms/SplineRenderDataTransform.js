@@ -36,7 +36,7 @@ var SplineRenderDataTransform = /** @class */ (function (_super) {
             ? renderPassData.pointSeries.indexes
             : renderPassData.pointSeries.xValues;
         var initialSize = xValues.size();
-        if (initialSize == 0) {
+        if (initialSize == 0 || initialSize === 1) {
             // Nothing to do
             return renderPassData.pointSeries;
         }

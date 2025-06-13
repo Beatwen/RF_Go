@@ -46,7 +46,7 @@ var BottomAlignedOuterHorizontallyStackedAxisLayoutStrategy = /** @class */ (fun
         var lastStackedAxis = axes[axes.length - 1];
         this.updateLeftAndRightChartLayoutState(chartLayoutState, firstStackedAxis === null || firstStackedAxis === void 0 ? void 0 : firstStackedAxis.axisLayoutState.additionalLeftSize, lastStackedAxis === null || lastStackedAxis === void 0 ? void 0 : lastStackedAxis.axisLayoutState.additionalRightSize);
         var bottomViewportBorder = sciChartSurface.bottomViewportBorder, bottomCanvasBorder = sciChartSurface.bottomCanvasBorder, adjustedPadding = sciChartSurface.adjustedPadding;
-        requiredSize += (_a = bottomViewportBorder + bottomCanvasBorder + (adjustedPadding === null || adjustedPadding === void 0 ? void 0 : adjustedPadding.bottom)) !== null && _a !== void 0 ? _a : 0;
+        requiredSize += bottomViewportBorder + bottomCanvasBorder + ((_a = adjustedPadding === null || adjustedPadding === void 0 ? void 0 : adjustedPadding.bottom) !== null && _a !== void 0 ? _a : 0);
         chartLayoutState.bottomOuterAreaSize = Math.max(chartLayoutState.bottomOuterAreaSize, requiredSize);
     };
     BottomAlignedOuterHorizontallyStackedAxisLayoutStrategy.prototype.layoutAxes = function (left, top, right, bottom, axes) {

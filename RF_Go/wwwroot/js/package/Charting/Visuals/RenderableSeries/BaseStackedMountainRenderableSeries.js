@@ -16,6 +16,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseStackedMountainRenderableSeries = void 0;
+var perfomance_1 = require("../../../utils/perfomance");
 var XyPointSeriesWrapped_1 = require("../../Model/PointSeries/XyPointSeriesWrapped");
 var IThemeProvider_1 = require("../../Themes/IThemeProvider");
 var SciChartSurfaceBase_1 = require("../SciChartSurfaceBase");
@@ -83,9 +84,14 @@ var BaseStackedMountainRenderableSeries = /** @class */ (function (_super) {
     /** @inheritDoc */
     BaseStackedMountainRenderableSeries.prototype.draw = function (renderContext, renderPassData) {
         var _this = this;
-        var _a;
+        var _a, _b, _c, _d;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawSingleSeriesStart, {
+            contextId: this.id,
+            parentContextId: (_a = this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         this.currentRenderPassData = renderPassData;
-        (_a = this.hitTestProvider) === null || _a === void 0 ? void 0 : _a.update(renderPassData);
+        (_b = this.hitTestProvider) === null || _b === void 0 ? void 0 : _b.update(renderPassData);
         try {
             renderContext.pushShaderEffect(this.effect);
             this.drawingProviders.forEach(function (dp) {
@@ -101,6 +107,12 @@ var BaseStackedMountainRenderableSeries = /** @class */ (function (_super) {
         finally {
             renderContext.popShaderEffect();
         }
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawSingleSeriesEnd, {
+            contextId: this.id,
+            parentContextId: (_c = this.parentSurface) === null || _c === void 0 ? void 0 : _c.id,
+            relatedId: (_d = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _d === void 0 ? void 0 : _d.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * @inheritDoc

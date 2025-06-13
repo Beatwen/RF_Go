@@ -2,7 +2,7 @@
   "name": "scichart",
   "description": "Fast WebGL JavaScript Charting Library and Framework",
   "homepage": "https://www.scichart.com",
-  "version": "3.5.711",
+  "version": "3.5.762",
   "main": "index.js",
   "types": "index.d.ts",
   "keywords": [

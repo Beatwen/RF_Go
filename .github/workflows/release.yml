@@ -130,6 +130,17 @@ jobs:
       with:
         dotnet-version: 8.0.x
     
+    - name: Install Apple Certificate
+      uses: apple-actions/import-codesign-certs@v1
+      with:
+        p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
+        p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+    - name: Install Provisioning Profile
+      run: |
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        echo "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/RF_Go_Development.mobileprovision
+
     - name: Install MAUI Workloads
       run: |
         dotnet workload install maui
@@ -160,10 +171,10 @@ jobs:
           echo "macOS build directory not found"
         fi
       continue-on-error: true
-    
+
     - name: Publish iOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignKey="Christophe Simon R Bouserez" -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -p:ApplicationId="com.christophebouserez.rfgo"
         
         if [ -d "./publish/ios-arm64" ]; then
           if [ "$(ls -A ./publish/ios-arm64)" ]; then
@@ -204,7 +215,7 @@ jobs:
         name: windows-android-builds
         path: ./
 
-    - name: Download macOS/iOS Artifacts
+    - name: Download macOS Artifacts
       uses: actions/download-artifact@v4
       with:
         name: macos-ios-builds
@@ -240,6 +251,7 @@ jobs:
         | **Windows 10/11** | ✅ Prêt | Installateur EXE |
         | **Android (API 24+)** | ✅ Prêt | APK |
         | **macOS (Mac Catalyst)** | ✅ Prêt | PKG |
+        | **iOS** | ✅ Prêt | IPA |
 
         ## 📥 Installation
 
@@ -258,12 +270,18 @@ jobs:
         2. Extrayez l'archive
         3. Glissez RF_Go.app vers Applications
 
+        ### 📱 iOS
+        1. Téléchargez \`RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz\`
+        2. Extrayez l'archive
+        3. Glissez RF_Go.app vers Applications
+
         ## ⚙️ Exigences techniques
 
         - **.NET 8.0** (inclus dans les versions self-contained)
         - **Windows** : Windows 10 version 1809 ou supérieure
         - **Android** : API Level 24 (Android 7.0) ou supérieure  
         - **macOS** : macOS 11.0 (Big Sur) ou supérieure
+        - **iOS** : iOS 14.0 ou supérieure
 
         ## 🐛 Problèmes connus
 

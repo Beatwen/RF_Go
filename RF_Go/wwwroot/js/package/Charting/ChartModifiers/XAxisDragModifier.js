@@ -187,18 +187,24 @@ var XAxisDragModifier = /** @class */ (function (_super) {
         this.pointFrom = pointTo;
     };
     XAxisDragModifier.prototype.doScaling = function (pointTo) {
-        var seriesViewRect = this.parentSurface.seriesViewRect;
+        var _this = this;
         if (this.isVerticalChart) {
-            var yFromTrans = (0, translate_1.translateFromCanvasToSeriesViewRectY)(this.pointFrom.y, seriesViewRect);
-            var isMoreThanHalf = yFromTrans >= seriesViewRect.height / 2;
-            var yDelta = (pointTo.y - this.pointFrom.y) / seriesViewRect.width;
-            (0, ChartModifierBase2D_1.scaleAxes)(this.activeAxes, this.initialVisibleRanges, yDelta, isMoreThanHalf);
+            this.activeAxes.forEach(function (axis, index) {
+                var axisViewRect = axis.viewRect;
+                var yFromTrans = (0, translate_1.translateFromCanvasToSeriesViewRectY)(_this.pointFrom.y, axisViewRect);
+                var isMoreThanHalf = yFromTrans >= axisViewRect.height / 2;
+                var yDelta = (pointTo.y - _this.pointFrom.y) / axisViewRect.height;
+                axis.scale(_this.initialVisibleRanges[index], yDelta, isMoreThanHalf);
+            });
         }
         else {
-            var xFromTrans = (0, translate_1.translateFromCanvasToSeriesViewRectX)(this.pointFrom.x, seriesViewRect);
-            var isMoreThanHalf = xFromTrans >= seriesViewRect.width / 2;
-            var xDelta = (pointTo.x - this.pointFrom.x) / seriesViewRect.width;
-            (0, ChartModifierBase2D_1.scaleAxes)(this.activeAxes, this.initialVisibleRanges, xDelta, isMoreThanHalf);
+            this.activeAxes.forEach(function (axis, index) {
+                var axisViewRect = axis.viewRect;
+                var xFromTrans = (0, translate_1.translateFromCanvasToSeriesViewRectX)(_this.pointFrom.x, axisViewRect);
+                var isMoreThanHalf = xFromTrans >= axisViewRect.width / 2;
+                var xDelta = (pointTo.x - _this.pointFrom.x) / axisViewRect.width;
+                axis.scale(_this.initialVisibleRanges[index], xDelta, isMoreThanHalf);
+            });
         }
     };
     XAxisDragModifier.prototype.getHorizontalXAxes = function () {

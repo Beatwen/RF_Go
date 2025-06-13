@@ -56,10 +56,10 @@ var bezierTransform = function (xValues, yValues, indexes, oldX, oldY, iStart, i
         }
         return y1;
     };
-    var pPrev = getPoint(iStart);
+    var pPrev = getPoint(Math.max(iStart - 1, 0));
     var pCur = getPoint(iStart);
     var pNext = getPoint(iStart + 1);
-    var pAfter = getPoint(iStart + 2);
+    var pAfter = getPoint(Math.min(iStart + 2, oldX.size() - 1));
     var p3;
     var index = 0;
     for (var i = iStart; i < iEnd; i++) {
@@ -82,7 +82,7 @@ var bezierTransform = function (xValues, yValues, indexes, oldX, oldY, iStart, i
             pPrev = pCur;
         pCur = pNext;
         pNext = pAfter;
-        if (i < iEnd - 2)
+        if (i < oldX.size() - 3)
             pAfter = getPoint(i + 3);
     }
     xValues.push_back(pNext.x);

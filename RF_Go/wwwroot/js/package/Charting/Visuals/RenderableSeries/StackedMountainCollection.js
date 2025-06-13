@@ -19,6 +19,7 @@ exports.StackedMountainCollection = void 0;
 var NumberRange_1 = require("../../../Core/NumberRange");
 var SeriesType_1 = require("../../../types/SeriesType");
 var copyVector_1 = require("../../../utils/copyVector");
+var perfomance_1 = require("../../../utils/perfomance");
 var XyyPointSeriesWrapped_1 = require("../../Model/PointSeries/XyyPointSeriesWrapped");
 var RenderPassData_1 = require("../../Services/RenderPassData");
 var BaseStackedCollection_1 = require("./BaseStackedCollection");
@@ -105,7 +106,7 @@ var StackedMountainCollection = /** @class */ (function (_super) {
     /** @inheritDoc */
     StackedMountainCollection.prototype.draw = function (renderContext, renderPassData) {
         var _this = this;
-        var _a;
+        var _a, _b, _c, _d;
         if (this.canDraw) {
             this.updateHitTestProviders(renderPassData);
             if (!this.isEnoughDataToDraw()) {
@@ -114,6 +115,11 @@ var StackedMountainCollection = /** @class */ (function (_super) {
             if ((_a = this.getFirstSeries().dataSeries) === null || _a === void 0 ? void 0 : _a.fifoCapacity) {
                 throw new Error("Sorry, fifo is not currently supported for stacked series");
             }
+            var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawCollectionSeriesStart, {
+                contextId: this.id,
+                parentContextId: (_b = this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
             this.updateAccumulatedVectors();
             var xAxis_1 = this.parentSurface.getXAxisById(this.xAxisId);
             var visibleSeries_1 = this.getVisibleSeries();
@@ -142,6 +148,12 @@ var StackedMountainCollection = /** @class */ (function (_super) {
                 series.draw(renderContext, renderData);
                 return series;
             }, undefined);
+            perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawCollectionSeriesEnd, {
+                contextId: this.id,
+                parentContextId: (_c = this.parentSurface) === null || _c === void 0 ? void 0 : _c.id,
+                relatedId: (_d = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _d === void 0 ? void 0 : _d.relatedId,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
         }
     };
     /** @inheritDoc */

@@ -3,6 +3,7 @@ import { EventHandler } from "../../Core/EventHandler";
 import { IDeletable } from "../../Core/IDeletable";
 import { MouseManager } from "../../Core/Mouse/MouseManager";
 import { ObservableArray } from "../../Core/ObservableArray";
+import { VisibilityObserver } from "../../Core/ObserveVisibility";
 import { PropertyChangedEventArgs } from "../../Core/PropertyChangedEventArgs";
 import { Rect } from "../../Core/Rect";
 import { Thickness } from "../../Core/Thickness";
@@ -79,6 +80,11 @@ export interface ISurfaceOptionsBase {
      * If false - the {@link SciChartSurfaceBase} will take the height and width of parent div without scaling.
      */
     disableAspect?: boolean;
+    /**
+     * Optional - when true, charts that are out of the viewport will be frozen (pausing rendering). Data updates can resume
+     * Once the chart is in view again, rendering will resume. This can be useful for performance optimization.
+     */
+    freezeWhenOutOfView?: boolean;
 }
 export declare const DebugForDpi: boolean;
 /**
@@ -277,10 +283,32 @@ export declare abstract class SciChartSurfaceBase extends DeletableEntity implem
     adornerLayer: AdornerLayer;
     abstract isInvalidated: boolean;
     /**
-     * An event handler which notifies its subscribers when a render operation has finished. Use this
-     * to time render performance, or to update elements of the chart or your UI on redraw.
+     * An event handler which notifies its subscribers when a layout stage in render process has finished.
+     */
+    layoutMeasured: EventHandler<any>;
+    /**
+     * An event handler which notifies its subscribers when animations stage in render process has finished.
+     */
+    genericAnimationsRun: EventHandler<any>;
+    /**
+     * An event handler which notifies its subscribers when a chart was rendered to WebgL Canvas.
+     * @remarks Not applicable to sub-charts
+     */
+    renderedToWebGl: EventHandler<any>;
+    /**
+     * An event handler which notifies its subscribers when a render operation has finished.
      */
     rendered: EventHandler<boolean>;
+    /**
+     * An event handler which notifies its subscribers when a chart was rendered to a display canvas.
+     * @remarks Not applicable to sub-charts
+     */
+    renderedToDestination: EventHandler<any>;
+    /**
+     * An event handler which notifies its subscribers when a chart was visually painted a display canvas.
+     * @remarks Not applicable to sub-charts
+     */
+    painted: EventHandler<any>;
     protected destinations: TSciChartDestination[];
     protected themeProviderProperty: IThemeProvider;
     protected previousThemeProviderProperty: IThemeProvider;
@@ -295,11 +323,13 @@ export declare abstract class SciChartSurfaceBase extends DeletableEntity implem
     protected loaderJson: any;
     protected suspender: UpdateSuspender;
     protected createSuspended: boolean;
+    protected visibilityObserver: VisibilityObserver;
     private sharedWasmContext;
     private readonly suspendableIdProperty;
     private seriesViewRectProperty;
     private isAlphaEnabledProperty;
     private deletables;
+    private freezeWhenOutOfViewProperty;
     /**
      * Creates an instance of a SciChartSurfaceBase
      * @param webAssemblyContext  The {@link TSciChart | SciChart 2D WebAssembly Context} or {@link TSciChart | SciChart 3D WebAssembly Context}
@@ -382,6 +412,16 @@ export declare abstract class SciChartSurfaceBase extends DeletableEntity implem
      */
     get previousThemeProvider(): IThemeProvider;
     /**
+     * When true, charts that are out of the viewport will be frozen (pausing rendering). Data updates can resume
+     * Once the chart is in view again, rendering will resume. This can be useful for performance optimization.
+     */
+    set freezeWhenOutOfView(freezeWhenOutOfView: boolean);
+    /**
+     * When true, charts that are out of the viewport will be frozen (pausing rendering). Data updates can resume
+     * Once the chart is in view again, rendering will resume. This can be useful for performance optimization.
+     */
+    get freezeWhenOutOfView(): boolean;
+    /**
      * @inheritDoc
      */
     delete(clearHtml?: boolean): void;
@@ -445,7 +485,6 @@ export declare abstract class SciChartSurfaceBase extends DeletableEntity implem
         invalidateOnResume?: boolean;
     }): Promise<unknown>;
     get chartModifierGroups(): string[];
-    protected enableRenderListener(): void;
     protected clearRootElement(clearHtml: boolean): void;
     protected applyOptions(options: ISurfaceOptionsBase): void;
     /**

@@ -2,8 +2,7 @@
 declare type TWeakRef<T = any> = {
     deref: () => T;
 };
-/** @ignore */
-declare type TObjectEntryInfo = {
+export declare type TObjectEntryInfo = {
     isWasmObject: boolean;
     /** WeakRef for the original object */
     objectRef: TWeakRef;
@@ -12,8 +11,7 @@ declare type TObjectEntryInfo = {
     /** revocableToken for the proxy of the object */
     revocableTokenRef?: TWeakRef<ReturnType<ProxyConstructor["revocable"]>>;
 };
-/** @ignore */
-declare type TObjectEntryOptions = {
+export declare type TObjectEntryOptions = {
     isWasmObject?: boolean;
     revocableToken?: ReturnType<ProxyConstructor["revocable"]>;
     proxy?: any;

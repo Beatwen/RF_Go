@@ -275,9 +275,12 @@ var SvgAnnotationBase = /** @class */ (function (_super) {
         configurable: true
     });
     SvgAnnotationBase.prototype.getSvgDomRect = function () {
+        var _a, _b, _c;
         if (!this.svgDOMRect) {
-            // @ts-ignore
-            this.svgDOMRect = this.svg.getBBox();
+            // getBBox has issue measuring the inner content of SVG on Firefox SCJS-1936,
+            // thus here we try to measure the contents, e.g. background element if it exists
+            // @ts-ignore property doesn't exist warning
+            this.svgDOMRect = (_c = (_b = (_a = this.svg.firstChild) === null || _a === void 0 ? void 0 : _a.getBBox) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : this.svg.getBBox();
         }
         return this.svgDOMRect;
     };

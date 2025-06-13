@@ -120,8 +120,8 @@ var WasmContextProxyHandler = /** @class */ (function () {
 }());
 exports.WasmContextProxyHandler = WasmContextProxyHandler;
 /** @ignore */
-var createWasmContextRevocableProxy = function (wasmContext) {
-    MemoryUsageHelper_1.MemoryUsageHelper.register(wasmContext, "wasmContext");
+var createWasmContextRevocableProxy = function (wasmContext, id) {
+    MemoryUsageHelper_1.MemoryUsageHelper.register(wasmContext, "wasmContext_".concat(id));
     var proxyHandler = {};
     try {
         if (process.env.NODE_ENV !== "production") {

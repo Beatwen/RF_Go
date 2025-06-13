@@ -1,4 +1,3 @@
-import { NumberRange } from "../../Core/NumberRange";
 import { Point } from "../../Core/Point";
 import { EChart2DModifierType } from "../../types/ChartModifierType";
 import { EExecuteOn } from "../../types/ExecuteOn";
@@ -96,4 +95,3 @@ export declare abstract class ChartModifierBase2D extends ChartModifierBase<SciC
 }
 export declare const testIsOverAxes: (xAxisArr: AxisBase2D[], mousePoint: Point) => boolean;
 export declare const getActiveAxes: (xAxisArr: AxisBase2D[], mousePoint: Point) => AxisBase2D[];
-export declare const scaleAxes: (axes: AxisBase2D[], initialVisibleRanges: NumberRange[], delta: number, isMoreThanHalf: boolean) => void;

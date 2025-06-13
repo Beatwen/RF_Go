@@ -3,6 +3,7 @@ import { Point } from "../../Core/Point";
 import { Rect } from "../../Core/Rect";
 import { EChart2DModifierType } from "../../types/ChartModifierType";
 import { EMousePosition } from "../../types/MousePosition";
+import { TPositionPoperties } from "../../utils/tooltip";
 import { SeriesInfo } from "../Model/ChartData/SeriesInfo";
 import { IThemeProvider } from "../Themes/IThemeProvider";
 import { LineAnnotation } from "../Visuals/Annotations/LineAnnotation";
@@ -203,6 +204,10 @@ export declare class RolloverModifier extends ChartModifierBase2D implements IIn
      */
     modifierMouseMove(args: ModifierMouseArgs): void;
     /**
+     * Hides all tooltips
+     */
+    hideAllTooltips(): void;
+    /**
      * @inheritDoc
      */
     modifierMouseLeave(args: ModifierMouseArgs): void;
@@ -303,5 +308,32 @@ export declare const calcTooltipProps: (index: number, rs: IRenderableSeries, ro
  * @param isVerticalChart
  */
 export declare const calcTooltipPositions: (tooltipArray: TTooltipProps[], allowTooltipOverlapping: boolean, spacing: number, seriesViewRect: Rect, pixelRatio: number, isVerticalChart?: boolean) => TTooltipProps[];
+/**
+ * @description Splits tooltips into clusters based on their proximity
+ * @param tooltipArray
+ * @param spacing
+ * @param pixelRatio
+ * @param positionProperties
+ * @returns Array of tooltip clusters
+ */
+export declare const splitIntoClusters: (tooltipArray: TTooltipProps[], spacing: number, pixelRatio: number, positionProperties: TPositionPoperties) => TTooltipProps[][];
+/**
+ * Merges clusters that might overlap after internal positioning
+ * @param clusters Array of tooltip clusters
+ * @param spacing Minimum spacing between tooltips
+ * @param pixelRatio Display pixel ratio
+ * @param positionProperties Position property names
+ * @returns Merged clusters array
+ */
+export declare const mergeOverlappingClusters: (clusters: TTooltipProps[][], spacing: number, pixelRatio: number, positionProperties: TPositionPoperties) => TTooltipProps[][];
+/**
+ * Adjust positioning of entire clusters if they overlap after internal positioning
+ * @param clusters Array of tooltip clusters
+ * @param spacing Minimum spacing between tooltips
+ * @param pixelRatio Display pixel ratio
+ * @param positionProperties Position property names
+ * @param seriesViewRect Chart view rectangle
+ */
+export declare const adjustClusterPositions: (clusters: TTooltipProps[][], spacing: number, pixelRatio: number, positionProperties: TPositionPoperties, seriesViewRect: Rect) => void;
 /** @ignore */
 export declare const updateRolloverModifierProps: (rolloverRSProps: RolloverModifierRenderableSeriesProps, rs: IRenderableSeries, tooltipProps: TTooltipProps, showTooltip: boolean, showMarker: boolean, placementDivId?: string) => void;

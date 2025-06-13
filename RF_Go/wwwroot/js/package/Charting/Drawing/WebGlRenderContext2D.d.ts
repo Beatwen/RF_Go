@@ -8,7 +8,10 @@ import { ShaderEffect } from "../Visuals/RenderableSeries/ShaderEffect";
 import { IBrush2D } from "./IBrush2D";
 import { IPen2D } from "./IPen2D";
 import { IRenderContext2D } from "./IRenderContext2D";
+import { WebGlBrush } from "./WebGlBrush";
 import { DeletableEntity } from "../../Core/DeletableEntity";
+import { EHorizontalAnchorPoint, EVerticalAnchorPoint } from "../../types/AnchorPoint";
+import { Thickness } from "../../Core/Thickness";
 declare type TDrawFunction = () => void;
 /**
  *
@@ -124,6 +127,8 @@ export declare class WebGlRenderContext2D extends DeletableEntity implements IRe
      * @inheritDoc
      */
     drawRect(rect: Rect, viewRect: Rect, strokePen?: IPen2D, fillBrush?: IBrush2D): void;
+    private drawTextBackground;
+    drawNativeText(rotationRadians: number, xCoord: number, yCoord: number, seriesViewRect: Rect, chartViewRect: Rect, fontFamily: string, fontSize: number, textColor: string, textColorOpacity: number, backgroundFillBrush: WebGlBrush | undefined, verticalAnchorPoint: EVerticalAnchorPoint, horizontalAnchorPoint: EHorizontalAnchorPoint, text: string, padding: Thickness, drawImmediately?: boolean, scale?: number): void;
     printBlendMode(): void;
     /**
      * Get a native font.  Fonts are cached and shared within webassembly so there is no need to cache them in JS.

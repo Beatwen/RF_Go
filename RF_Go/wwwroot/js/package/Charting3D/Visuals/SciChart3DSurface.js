@@ -159,7 +159,6 @@ var SciChart3DSurface = /** @class */ (function (_super) {
         _this.axisCubeEntity = new AxisCubeEntity_1.AxisCubeEntity(webAssemblyContext, _this);
         _this.rootEntity.children.add(_this.axisCubeEntity);
         _this.gizmoEntity = new GizmoEntity_1.GizmoEntity(webAssemblyContext);
-        _this.gizmoEntity.enableGizmo = true;
         _this.rootEntity.children.add(_this.gizmoEntity);
         // Watermark
         if (!app_1.IS_TEST_ENV) {
@@ -185,6 +184,7 @@ var SciChart3DSurface = /** @class */ (function (_super) {
             var _a;
             result.sciChart3DSurface.applyOptions(options);
             perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.InitializationEnd, {
+                parentContextId: result.sciChart3DSurface.domCanvas2D.id,
                 contextId: result.sciChart3DSurface.id,
                 relatedId: (_a = startMark === null || startMark === void 0 ? void 0 : startMark.detail) === null || _a === void 0 ? void 0 : _a.relatedId
             });
@@ -242,6 +242,7 @@ var SciChart3DSurface = /** @class */ (function (_super) {
             var _a, _b;
             result.sciChart3DSurface.applyOptions(options);
             perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.InitializationEnd, {
+                parentContextId: result.sciChart3DSurface.domCanvas2D.id,
                 contextId: (_a = result.sciChart3DSurface) === null || _a === void 0 ? void 0 : _a.id,
                 relatedId: (_b = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _b === void 0 ? void 0 : _b.relatedId
             });
@@ -595,16 +596,29 @@ var SciChart3DSurface = /** @class */ (function (_super) {
         this.chartModifiers.asArray().forEach(function (cm) {
             cm.onParentSurfaceRendered();
         });
-        if (!this.isCopyCanvasSurface) {
-            this.rendered.raiseEvent(this.sciChart3DRenderer.isInvalidated);
-        }
     };
     /**
      * Called internally - the main drawing loop
      */
     SciChart3DSurface.prototype.doDrawingLoop = function () {
+        var _this = this;
         try {
+            this.preRender.raiseEvent();
             this.sciChart3DRenderer.render();
+            var isInvalidated = this.isInvalidated;
+            perfomance_1.PerformanceDebugHelper.mark(isInvalidated ? perfomance_1.EPerformanceMarkType.Rendered : perfomance_1.EPerformanceMarkType.FullStateRendered, { contextId: this.id });
+            this.rendered.raiseEvent(isInvalidated);
+            this.renderedToWebGl.raiseEvent(this.isInvalidated);
+            if (!this.isCopyCanvasSurface) {
+                this.renderedToDestination.raiseEvent(this.isInvalidated);
+            }
+            // @ts-ignore access to private field
+            if (this.painted.handlers.length > 0 || perfomance_1.PerformanceDebugHelper.enableDebug) {
+                (0, perfomance_1.runAfterFramePaint)(function () {
+                    perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.Painted, { contextId: _this.id });
+                    _this.painted.raiseEvent();
+                });
+            }
         }
         catch (err) {
             // @ts-ignore

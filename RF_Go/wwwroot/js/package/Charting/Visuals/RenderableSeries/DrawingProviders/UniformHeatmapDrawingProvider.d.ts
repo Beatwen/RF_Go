@@ -1,6 +1,8 @@
+import { TGradientStop } from "../../../../types/TGradientStop";
 import { TSciChart } from "../../../../types/TSciChart";
 import { WebGlRenderContext2D } from "../../../Drawing/WebGlRenderContext2D";
 import { RenderPassData } from "../../../Services/RenderPassData";
+import { CanvasTexture } from "../../TextureManager/CanvasTexture";
 import { UniformHeatmapRenderableSeries } from "../UniformHeatmapRenderableSeries";
 import { BaseSeriesDrawingProvider } from "./BaseSeriesDrawingProvider";
 /**
@@ -34,7 +36,7 @@ export declare class UniformHeatmapDrawingProvider extends BaseSeriesDrawingProv
      * @inheritDoc
      */
     draw(renderContext: WebGlRenderContext2D, renderPassData: RenderPassData): void;
-    private createPaletteTexture;
+    protected createPaletteTexture(width: number, height: number, gradientStops: TGradientStop[], globalOpacity: number, hasNaNs: boolean): CanvasTexture;
     private recreatePalette;
     private drawHeatmap;
 }

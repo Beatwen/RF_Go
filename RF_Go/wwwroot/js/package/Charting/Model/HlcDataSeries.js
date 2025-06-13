@@ -429,7 +429,7 @@ var HlcDataSeries = /** @class */ (function (_super) {
             try {
                 minMax = this.webAssemblyContext.NumberUtil.MinMaxWithIndex(yValues, iMin, iMax - iMin + 1);
                 if (!(0, isRealNumber_1.isRealNumber)(minMax.minD) || !(0, isRealNumber_1.isRealNumber)(minMax.maxD)) {
-                    return new NumberRange_1.NumberRange(0, 0);
+                    return undefined;
                 }
                 yMin = minMax.minD;
                 yMax = minMax.maxD;
@@ -445,12 +445,12 @@ var HlcDataSeries = /** @class */ (function (_super) {
             try {
                 minMax = this.webAssemblyContext.NumberUtil.MinMaxWithIndex(maxValues, iMin, iMax - iMin + 1);
                 if (!(0, isRealNumber_1.isRealNumber)(minMax.minD) || !(0, isRealNumber_1.isRealNumber)(minMax.maxD)) {
-                    return new NumberRange_1.NumberRange(0, 0);
+                    return undefined;
                 }
                 yMax = minMax.maxD;
                 minMax = this.webAssemblyContext.NumberUtil.MinMaxWithIndex(minValues, iMin, iMax - iMin + 1);
                 if (!(0, isRealNumber_1.isRealNumber)(minMax.minD) || !(0, isRealNumber_1.isRealNumber)(minMax.maxD)) {
-                    return new NumberRange_1.NumberRange(0, 0);
+                    return undefined;
                 }
                 yMin = minMax.minD;
             }

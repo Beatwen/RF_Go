@@ -299,6 +299,8 @@ var FastErrorBarsRenderableSeries = /** @class */ (function (_super) {
             ? IDataSeries_1.EDataSeriesValueType.FinalAnimationValues
             : IDataSeries_1.EDataSeriesValueType.Default;
         var range = this.dataSeries.getWindowedYRange(xVisibleRange, true, isXCategoryAxis, dataSeriesValueType, this.yRangeMode, isHorizontalDirection, hasHighCap, hasLowCap);
+        if (range === undefined)
+            return undefined;
         // Not sure how to adjust this sensibly without having the dataPointWidth in pixels.  Not sure if we can reliably get a valid coordCacluator
         if (this.yAxis.type === AxisType_1.EAxisType.LogarithmicAxis)
             return range;

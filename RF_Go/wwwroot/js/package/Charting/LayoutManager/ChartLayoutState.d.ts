@@ -1,6 +1,3 @@
-/**
- * @ignore
- */
 export declare class ChartLayoutState {
     static readonly DEFAULT_SIZE = 0;
     leftInnerAreaSize: number;

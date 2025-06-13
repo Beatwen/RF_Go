@@ -759,7 +759,7 @@ isSorted, minSearchMode, maxSearchMode) {
     }
     var iMin = 0;
     var iMax = count;
-    if (isXCategoryAxis && count > xRange.max) {
+    if (isXCategoryAxis) {
         iMin = Math.max(Math.floor(xRange.min), 0);
         iMax = Math.min(Math.ceil(xRange.max), count - 1);
     }

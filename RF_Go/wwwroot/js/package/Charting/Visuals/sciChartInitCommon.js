@@ -83,7 +83,11 @@ var getMaxHeight = function (divElement) {
  * ECanvasType.svg for SciChartPieSurface
  */
 var initCanvas = function (divElement, aspectWidth, aspectHeight, activeCanvas, disableAspect, touchAction) {
+    var _a;
     if (activeCanvas === void 0) { activeCanvas = ECanvasType.canvasWebGL; }
+    var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.CanvasInitializationStart, {
+        level: perfomance_1.EPerformanceDebugLevel.Verbose
+    });
     WebGlHelper_1.WebGlHelper.initialize();
     DpiHelper_1.DpiHelper.initialize();
     var chartRoot = getChartRootDomElement(divElement);
@@ -95,7 +99,7 @@ var initCanvas = function (divElement, aspectWidth, aspectHeight, activeCanvas, 
     var divElementId = chartRoot.id;
     var divWidth = chartRoot.offsetWidth, divHeight = chartRoot.offsetHeight;
     var maxHeight = getMaxHeight(chartRoot);
-    var _a = getCanvasSizes(divWidth, divHeight, maxHeight, aspectWidth, aspectHeight), width = _a.width, height = _a.height, aspectRatio = _a.aspectRatio;
+    var _b = getCanvasSizes(divWidth, divHeight, maxHeight, aspectWidth, aspectHeight), width = _b.width, height = _b.height, aspectRatio = _b.aspectRatio;
     // if aspect ration is defined we use is to calc height
     if (!disableAspect && aspectRatio) {
         // @ts-ignore
@@ -191,6 +195,11 @@ var initCanvas = function (divElement, aspectWidth, aspectHeight, activeCanvas, 
             location.reload();
         }, !1);
     }
+    perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.CanvasInitializationEnd, {
+        level: perfomance_1.EPerformanceDebugLevel.Verbose,
+        contextId: canvas2D.id,
+        relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId
+    });
     return {
         domChartRoot: chartRoot,
         domCanvasWebGL: canvasWebGL,

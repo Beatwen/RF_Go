@@ -63,7 +63,6 @@ var ErrorSeriesDrawingProvider = /** @class */ (function (_super) {
      */
     ErrorSeriesDrawingProvider.prototype.onDetachSeries = function () {
         _super.prototype.onDetachSeries.call(this);
-        this.delete();
     };
     /**
      * @inheritDoc

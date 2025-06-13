@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkBuildStamp = exports.libraryVersion = void 0;
-var buildStamp = "2024-12-20T00:00:00";
+var buildStamp = "2025-06-02T00:00:00";
 var result;
 // tslint:disable-next-line:no-var-requires
-exports.libraryVersion = "3.5.711";
+exports.libraryVersion = "3.5.762";
 var checkBuildStamp = function (wasmContext) {
     if (result !== undefined)
         return result;

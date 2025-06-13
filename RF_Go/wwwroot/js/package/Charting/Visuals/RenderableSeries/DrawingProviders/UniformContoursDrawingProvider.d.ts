@@ -1,6 +1,8 @@
+import { TGradientStop } from "../../../../types/TGradientStop";
 import { TSciChart } from "../../../../types/TSciChart";
 import { WebGlRenderContext2D } from "../../../Drawing/WebGlRenderContext2D";
 import { RenderPassData } from "../../../Services/RenderPassData";
+import { CanvasTexture } from "../../TextureManager/CanvasTexture";
 import { UniformContoursRenderableSeries } from "../UniformContoursRenderableSeries";
 import { BaseSeriesDrawingProvider } from "./BaseSeriesDrawingProvider";
 /**
@@ -32,6 +34,6 @@ export declare class UniformContoursDrawingProvider extends BaseSeriesDrawingPro
     draw(renderContext: WebGlRenderContext2D, renderPassData: RenderPassData): void;
     private drawContours;
     private computeHeightMap;
-    private createPaletteTexture;
+    protected createPaletteTexture(width: number, height: number, gradientStops: TGradientStop[]): CanvasTexture;
     private getDefaultColorMap;
 }

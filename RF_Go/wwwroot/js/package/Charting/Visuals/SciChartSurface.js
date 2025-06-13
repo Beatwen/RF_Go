@@ -156,6 +156,7 @@ var SciChartSurface = /** @class */ (function (_super) {
          * to update elements of the chart for the current render.  Any updates made here will not trigger a subsequent render.
          */
         _this.preRender = new EventHandler_1.EventHandler();
+        _this.preRenderAll = new EventHandler_1.EventHandler();
         // TODO make these properties internal only; or add some provider
         _this.layersOffset = 0;
         _this.stepBetweenLayers = 10;
@@ -310,6 +311,7 @@ var SciChartSurface = /** @class */ (function (_super) {
                 var _a;
                 result.sciChartSurface.applyOptions(options);
                 perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.InitializationEnd, {
+                    parentContextId: result.sciChartSurface.domCanvas2D.id,
                     contextId: result.sciChartSurface.id,
                     relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId
                 });
@@ -343,6 +345,7 @@ var SciChartSurface = /** @class */ (function (_super) {
                 var _a;
                 result.sciChartSurface.applyOptions(options);
                 perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.InitializationEnd, {
+                    parentContextId: result.sciChartSurface.domCanvas2D.id,
                     contextId: result.sciChartSurface.id,
                     relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId
                 });
@@ -422,6 +425,12 @@ var SciChartSurface = /** @class */ (function (_super) {
      * Modifiers using modifierGroup will work across other subcharts on the surface, but not to any other surface.
      */
     SciChartSurface.prototype.addSubChart = function (options) {
+        var _a;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.AddSubSurfaceStart, {
+            contextId: options === null || options === void 0 ? void 0 : options.id,
+            parentContextId: this.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var optionsBase = SciChartSurface.resolveOptions(options);
         options = __assign(__assign({}, options), optionsBase);
         this.subChartCounter++;
@@ -475,6 +484,12 @@ var SciChartSurface = /** @class */ (function (_super) {
         this.subChartsProperty.push(subSurface);
         this.onAttachSubSurface(subSurface);
         subSurface.setIsInitialized();
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.AddSubSurfaceEnd, {
+            contextId: subSurface.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            parentContextId: this.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         return subSurface;
     };
     /**
@@ -744,8 +759,13 @@ var SciChartSurface = /** @class */ (function (_super) {
     };
     // Step_5: Get context and pass drawing to SciChartRenderer
     SciChartSurface.prototype.doDrawingLoop = function (context) {
+        var _a;
         if (this.isDeleted)
             return;
+        var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawingLoopStart, {
+            contextId: this.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         context = context !== null && context !== void 0 ? context : this.renderSurface.getRenderContext();
         this.currentWebGlRenderContextProperty = context;
         try {
@@ -769,9 +789,11 @@ var SciChartSurface = /** @class */ (function (_super) {
             }
             finally {
                 sus.resume();
-                sus.delete();
             }
             this.sciChartRenderer.render(context);
+            var isInvalidated = this.isInvalidated;
+            perfomance_1.PerformanceDebugHelper.mark(isInvalidated ? perfomance_1.EPerformanceMarkType.Rendered : perfomance_1.EPerformanceMarkType.FullStateRendered, { contextId: this.id });
+            this.rendered.raiseEvent(isInvalidated);
         }
         catch (err) {
             // @ts-ignore
@@ -788,6 +810,11 @@ var SciChartSurface = /** @class */ (function (_super) {
                 throw err;
             }
         }
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawingLoopEnd, {
+            contextId: this.id,
+            relatedId: (_a = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _a === void 0 ? void 0 : _a.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
     };
     /**
      * @inheritDoc
@@ -1270,7 +1297,8 @@ var SciChartSurface = /** @class */ (function (_super) {
             disableAspect: this.disableAspect,
             createSuspended: this.createSuspended,
             autoColorMode: this.autoColorMode,
-            touchAction: this.touchActionProperty
+            touchAction: this.touchActionProperty,
+            freezeWhenOutOfView: this.freezeWhenOutOfView
         };
         var definition = {
             surface: options,
@@ -1416,7 +1444,12 @@ var SciChartSurface = /** @class */ (function (_super) {
     };
     // Step_4: Start drawing
     SciChartSurface.prototype.onRenderSurfaceDraw = function () {
-        var _a;
+        var _this = this;
+        var _a, _b;
+        var renderSurfaceDrawStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderSurfaceDrawStart, {
+            contextId: this.id
+        });
+        this.preRenderAll.raiseEvent();
         if (this.subChartsProperty.length > 0) {
             var batchContext_1 = new BatchRenderContext_1.BatchRenderContext(this.webAssemblyContext2D, this.renderSurface.viewportSize, (_a = this.domCanvas2D) === null || _a === void 0 ? void 0 : _a.id);
             var visibleSubCharts_1 = this.subChartsProperty.filter(function (sc) { return sc.isVisible; });
@@ -1439,7 +1472,22 @@ var SciChartSurface = /** @class */ (function (_super) {
         else {
             this.doDrawingLoop();
         }
+        this.renderedToWebGl.raiseEvent(this.sciChartRenderer.isInvalidated);
+        if (!this.isCopyCanvasSurface) {
+            this.renderedToDestination.raiseEvent(this.sciChartRenderer.isInvalidated);
+        }
+        // @ts-ignore access to private field
+        if (this.painted.handlers.length > 0 || perfomance_1.PerformanceDebugHelper.enableDebug) {
+            (0, perfomance_1.runAfterFramePaint)(function () {
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.Painted, { contextId: _this.id });
+                _this.painted.raiseEvent(_this.sciChartRenderer.isInvalidated);
+            });
+        }
         this.currentWebGlRenderContextProperty = (0, Deleter_1.deleteSafe)(this.currentWebGlRenderContext);
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.RenderSurfaceDrawEnd, {
+            contextId: this.id,
+            relatedId: (_b = renderSurfaceDrawStartMark === null || renderSurfaceDrawStartMark === void 0 ? void 0 : renderSurfaceDrawStartMark.detail) === null || _b === void 0 ? void 0 : _b.relatedId
+        });
     };
     SciChartSurface.prototype.detachSeries = function (renderableSeries) {
         if (renderableSeries.type === SeriesType_1.ESeriesType.StackedColumnSeries ||

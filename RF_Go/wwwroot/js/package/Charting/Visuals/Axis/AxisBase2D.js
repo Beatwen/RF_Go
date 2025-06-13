@@ -39,6 +39,7 @@ var DefaultRenderLayer_1 = require("../../../types/DefaultRenderLayer");
 var LabelAlignment_1 = require("../../../types/LabelAlignment");
 var XyDirection_1 = require("../../../types/XyDirection");
 var parseColor_1 = require("../../../utils/parseColor");
+var perfomance_1 = require("../../../utils/perfomance");
 var Pen2DCache_1 = require("../../Drawing/Pen2DCache");
 var SolidBrushCache_1 = require("../../Drawing/SolidBrushCache");
 var WebGlRenderContext2D_1 = require("../../Drawing/WebGlRenderContext2D");
@@ -709,15 +710,39 @@ var AxisBase2D = /** @class */ (function (_super) {
      */
     AxisBase2D.prototype.draw = function (renderContext) {
         var _this = this;
+        var _a, _b, _c;
         if (!this.getIsValidForDrawing()) {
             return;
         }
         // Draw the Axis borders
         var axisBordersLayer = (0, WebGlRenderContext2D_1.calculateAbsoluteRenderLayer)(this.parentSurface.layersOffset, this.parentSurface.stepBetweenLayers, DefaultRenderLayer_1.EDefaultRenderLayer.AxisBordersLayer);
         renderContext.enqueueLayeredDraw(function () {
+            var _a, _b, _c;
+            var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisBorderStart, {
+                contextId: _this.id,
+                parentContextId: (_a = _this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
             (0, drawBorder_1.drawBorder)(renderContext, _this.webAssemblyContext2D, _this.solidBrushCacheBorder, _this.viewRect, _this.axisBorder.borderLeft || _this.axisBorder.border, _this.axisBorder.borderTop || _this.axisBorder.border, _this.axisBorder.borderRight || _this.axisBorder.border, _this.axisBorder.borderBottom || _this.axisBorder.border, _this.axisBorder.color);
+            perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisBorderEnd, {
+                contextId: _this.id,
+                parentContextId: (_b = _this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+                relatedId: (_c = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+                level: perfomance_1.EPerformanceDebugLevel.Verbose
+            });
         }, axisBordersLayer);
+        var getTicksStartMark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.GetTicksStart, {
+            contextId: this.id,
+            parentContextId: (_a = this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var tickObject = this.getTicksWithCoords();
+        perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.GetTicksEnd, {
+            contextId: this.id,
+            parentContextId: (_b = this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+            relatedId: (_c = getTicksStartMark === null || getTicksStartMark === void 0 ? void 0 : getTicksStartMark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+            level: perfomance_1.EPerformanceDebugLevel.Verbose
+        });
         var minorGridStyle = this.minorGridLineStyle;
         var majorGridStyle = this.majorGridLineStyle;
         var minorTickStyle = this.minorTickLineStyle;
@@ -735,8 +760,14 @@ var AxisBase2D = /** @class */ (function (_super) {
         var axisLayer = (0, WebGlRenderContext2D_1.calculateAbsoluteRenderLayer)(this.parentSurface.layersOffset, this.parentSurface.stepBetweenLayers, DefaultRenderLayer_1.EDefaultRenderLayer.AxesLayer);
         // make sure axes is drawn at the last stage
         renderContext.enqueueLayeredDraw(function () {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
             // Draw background
             if (_this.backgroundColorProperty) {
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisBackgroundStart, {
+                    contextId: _this.id,
+                    parentContextId: (_a = _this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 var viewAxisRect = _this.axisRenderer.viewRect;
                 var viewTitleRect = _this.axisTitleRenderer.viewRect;
                 var brush = _this.solidBrushCacheAxisBackground.newBrush(_this.backgroundColorProperty, false);
@@ -773,20 +804,59 @@ var AxisBase2D = /** @class */ (function (_super) {
                     vecRects.push_back(nativeAxisRect);
                     renderContext.drawRects(vecRects, brush, _this.viewRect.x, _this.viewRect.y);
                 }
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisBackgroundEnd, {
+                    contextId: _this.id,
+                    parentContextId: (_b = _this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+                    relatedId: (_c = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }
             // Draw axis labels
             if (_this.drawLabels) {
                 if (SciChartSurfaceBase_1.DebugForDpi) {
                     console.log("Draw. fontSize: ".concat(_this.labelStyle.fontSize, ", dpiAdjusted: ").concat(_this.dpiAdjustedLabelStyle.fontSize));
                 }
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisLabelsStart, {
+                    contextId: _this.id,
+                    parentContextId: (_d = _this.parentSurface) === null || _d === void 0 ? void 0 : _d.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 _this.axisRenderer.drawLabels(renderContext, _this.axisAlignment, _this.isInnerAxis, tickObject.majorTickLabels, tickObject.majorTickCoords, _this.offset, _this.dpiAdjustedLabelStyle, _this.isVerticalChart, _this.flippedCoordinates, _this.labelProvider);
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisLabelsEnd, {
+                    contextId: _this.id,
+                    parentContextId: (_e = _this.parentSurface) === null || _e === void 0 ? void 0 : _e.id,
+                    relatedId: (_f = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _f === void 0 ? void 0 : _f.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }
             // Draw ticks
             if (_this.drawMinorTickLines) {
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMinorTicksStart, {
+                    contextId: _this.id,
+                    parentContextId: (_g = _this.parentSurface) === null || _g === void 0 ? void 0 : _g.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 _this.axisRenderer.drawTicks(renderContext, _this.axisAlignment, _this.isInnerAxis, tickObject.minorTickCoords, _this.offset, penForMinorTickLines, minorTickStyle);
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMinorTicksEnd, {
+                    contextId: _this.id,
+                    parentContextId: (_h = _this.parentSurface) === null || _h === void 0 ? void 0 : _h.id,
+                    relatedId: (_j = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _j === void 0 ? void 0 : _j.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }
             if (_this.drawMajorTickLines) {
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMajorTicksStart, {
+                    contextId: _this.id,
+                    parentContextId: (_k = _this.parentSurface) === null || _k === void 0 ? void 0 : _k.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 _this.axisRenderer.drawTicks(renderContext, _this.axisAlignment, _this.isInnerAxis, tickObject.majorTickCoords, _this.offset, penForMajorTickLines, majorTickStyle);
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMajorTicksEnd, {
+                    contextId: _this.id,
+                    parentContextId: (_l = _this.parentSurface) === null || _l === void 0 ? void 0 : _l.id,
+                    relatedId: (_m = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _m === void 0 ? void 0 : _m.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }
             // Draw axis title
             _this.axisTitleRenderer.draw(renderContext);
@@ -951,7 +1021,8 @@ var AxisBase2D = /** @class */ (function (_super) {
         var toValue = coordCalc.getDataValue(toCoord);
         var min = fromValue < toValue ? fromValue : toValue;
         var max = fromValue < toValue ? toValue : fromValue;
-        var newVisibleRange = this.applyVisibleRangeSizeLimit(new NumberRange_1.NumberRange(min, max));
+        var newVisibleRange1 = this.applyVisibleRangeLimit(new NumberRange_1.NumberRange(min, max));
+        var newVisibleRange = this.applyVisibleRangeSizeLimit(newVisibleRange1);
         this.animateVisibleRange(newVisibleRange, duration, easingFunction);
     };
     AxisBase2D.prototype.scale = function (initialRange, delta, isMoreThanHalf) {
@@ -968,7 +1039,8 @@ var AxisBase2D = /** @class */ (function (_super) {
             newMax = initialRange.max;
             newMin = delta2 > 0 ? newMax - deltaRange * (1 + delta2) : newMax - deltaRange / (1 + Math.abs(delta2));
         }
-        this.visibleRange = new NumberRange_1.NumberRange(newMin, newMax);
+        var newVisibleRange = this.applyVisibleRangeLimit(new NumberRange_1.NumberRange(newMin, newMax));
+        this.visibleRange = this.applyVisibleRangeSizeLimit(newVisibleRange);
     };
     /**
      * @inheritDoc
@@ -1057,7 +1129,9 @@ var AxisBase2D = /** @class */ (function (_super) {
      */
     AxisBase2D.prototype.getTicksMaxSize = function () {
         var _a, _b, _c, _d;
+        // @ts-ignore
         var majorTickSize = (_b = ((_a = this.majorTickLineStyle) === null || _a === void 0 ? void 0 : _a.tickSize) * DpiHelper_1.DpiHelper.PIXEL_RATIO) !== null && _b !== void 0 ? _b : 0;
+        // @ts-ignore
         var minorTickSize = (_d = ((_c = this.minorTickLineStyle) === null || _c === void 0 ? void 0 : _c.tickSize) * DpiHelper_1.DpiHelper.PIXEL_RATIO) !== null && _d !== void 0 ? _d : 0;
         return Math.max(majorTickSize, minorTickSize);
     };
@@ -1081,21 +1155,57 @@ var AxisBase2D = /** @class */ (function (_super) {
             var solidBrush_1 = this.solidBrushCacheAxisBands.newBrush(this.axisBandsFill, true);
             var axisBandsLayer = (0, WebGlRenderContext2D_1.calculateAbsoluteRenderLayer)(this.parentSurface.layersOffset, this.parentSurface.stepBetweenLayers, DefaultRenderLayer_1.EDefaultRenderLayer.AxisBandsLayer);
             renderContext.enqueueLayeredDraw(function () {
+                var _a, _b, _c;
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisBandsStart, {
+                    contextId: _this.id,
+                    parentContextId: (_a = _this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 _this.drawAxisBands(renderContext, tickObject.majorTicks, tickObject.majorTickCoords, solidBrush_1);
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawAxisBandsEnd, {
+                    contextId: _this.id,
+                    parentContextId: (_b = _this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+                    relatedId: (_c = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }, axisBandsLayer);
         }
         // Draw minor grid lines
         if (this.drawMinorGridLines) {
             var minorGridLinesLayer = (0, WebGlRenderContext2D_1.calculateAbsoluteRenderLayer)(this.parentSurface.layersOffset, this.parentSurface.stepBetweenLayers, DefaultRenderLayer_1.EDefaultRenderLayer.MinorGridLinesLayer);
             renderContext.enqueueLayeredDraw(function () {
+                var _a, _b, _c;
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMinorGridLinesStart, {
+                    contextId: _this.id,
+                    parentContextId: (_a = _this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 _this.drawGridLines(renderContext, tickObject.minorTickCoords, penForMinorGridLines);
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMinorGridLinesEnd, {
+                    contextId: _this.id,
+                    parentContextId: (_b = _this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+                    relatedId: (_c = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }, minorGridLinesLayer);
         }
         // Draw major grid lines
         if (this.drawMajorGridLines) {
             var majorGridLinesLayer = (0, WebGlRenderContext2D_1.calculateAbsoluteRenderLayer)(this.parentSurface.layersOffset, this.parentSurface.stepBetweenLayers, DefaultRenderLayer_1.EDefaultRenderLayer.MajorGridLinesLayer);
             renderContext.enqueueLayeredDraw(function () {
+                var _a, _b, _c;
+                var mark = perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMajorGridLinesStart, {
+                    contextId: _this.id,
+                    parentContextId: (_a = _this.parentSurface) === null || _a === void 0 ? void 0 : _a.id,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
                 _this.drawGridLines(renderContext, tickObject.majorTickCoords, penForMajorGridLines);
+                perfomance_1.PerformanceDebugHelper.mark(perfomance_1.EPerformanceMarkType.DrawMajorGridLinesEnd, {
+                    contextId: _this.id,
+                    parentContextId: (_b = _this.parentSurface) === null || _b === void 0 ? void 0 : _b.id,
+                    relatedId: (_c = mark === null || mark === void 0 ? void 0 : mark.detail) === null || _c === void 0 ? void 0 : _c.relatedId,
+                    level: perfomance_1.EPerformanceDebugLevel.Verbose
+                });
             }, majorGridLinesLayer);
         }
     };

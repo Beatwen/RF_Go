@@ -46,7 +46,7 @@ var RightAlignedOuterVerticallyStackedAxisLayoutStrategy = /** @class */ (functi
         var lastStackedAxis = axes[axes.length - 1];
         this.updateTopAndBottomChartLayoutState(chartLayoutState, firstStackedAxis === null || firstStackedAxis === void 0 ? void 0 : firstStackedAxis.axisLayoutState.additionalTopSize, lastStackedAxis === null || lastStackedAxis === void 0 ? void 0 : lastStackedAxis.axisLayoutState.additionalBottomSize);
         var rightViewportBorder = sciChartSurface.rightViewportBorder, rightCanvasBorder = sciChartSurface.rightCanvasBorder, adjustedPadding = sciChartSurface.adjustedPadding;
-        requiredSize += (_a = rightViewportBorder + rightCanvasBorder + (adjustedPadding === null || adjustedPadding === void 0 ? void 0 : adjustedPadding.right)) !== null && _a !== void 0 ? _a : 0;
+        requiredSize += rightViewportBorder + rightCanvasBorder + ((_a = adjustedPadding === null || adjustedPadding === void 0 ? void 0 : adjustedPadding.right) !== null && _a !== void 0 ? _a : 0);
         chartLayoutState.rightOuterAreaSize = Math.max(chartLayoutState.rightOuterAreaSize, requiredSize);
     };
     RightAlignedOuterVerticallyStackedAxisLayoutStrategy.prototype.layoutAxes = function (left, top, right, bottom, axes) {

@@ -95,13 +95,16 @@ var UpdateSuspender = /** @class */ (function (_super) {
      */
     UpdateSuspender.prototype.resume = function () {
         this.targetProperty.decrementSuspend();
+        this.delete();
         if (this.decrement(this.targetProperty) === 0) {
             this.remove();
             this.targetProperty.resumeUpdates(this);
         }
     };
-    UpdateSuspender.prototype.delete = function () {
+    UpdateSuspender.prototype.delete = function () { };
+    UpdateSuspender.prototype.destroy = function () {
         this.remove();
+        this.delete();
         this.targetProperty = undefined;
     };
     UpdateSuspender.prototype.remove = function () {

@@ -14,8 +14,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRolloverModifierProps = exports.calcTooltipPositions = exports.calcTooltipProps = exports.RolloverModifier = exports.TOOLTIP_SPACING = void 0;
+exports.updateRolloverModifierProps = exports.adjustClusterPositions = exports.mergeOverlappingClusters = exports.splitIntoClusters = exports.calcTooltipPositions = exports.calcTooltipProps = exports.RolloverModifier = exports.TOOLTIP_SPACING = void 0;
 var classFactory_1 = require("../../Builder/classFactory");
 var BaseType_1 = require("../../types/BaseType");
 var ChartModifierType_1 = require("../../types/ChartModifierType");
@@ -260,9 +269,10 @@ var RolloverModifier = /** @class */ (function (_super) {
      */
     RolloverModifier.prototype.onAttachSeries = function (rs) {
         _super.prototype.onAttachSeries.call(this, rs);
-        var index = this.parentSurface.renderableSeries.size() - 1;
-        this.addSeriesAnnotationsToParentSurface(rs);
-        this.legendAnnotation.seriesInfos = this.getSeriesInfos();
+        if (this.getIncludedRenderableSeries().includes(rs)) {
+            this.addSeriesAnnotationsToParentSurface(rs);
+            this.legendAnnotation.seriesInfos = this.getSeriesInfos();
+        }
     };
     /**
      * @inheritDoc
@@ -299,12 +309,18 @@ var RolloverModifier = /** @class */ (function (_super) {
         }
     };
     /**
+     * Hides all tooltips
+     */
+    RolloverModifier.prototype.hideAllTooltips = function () {
+        this.mousePosition = MousePosition_1.EMousePosition.OutOfCanvas;
+        this.update();
+    };
+    /**
      * @inheritDoc
      */
     RolloverModifier.prototype.modifierMouseLeave = function (args) {
         _super.prototype.modifierMouseLeave.call(this, args);
-        this.mousePosition = MousePosition_1.EMousePosition.OutOfCanvas;
-        this.update();
+        this.hideAllTooltips();
     };
     /**
      * @inheritDoc
@@ -568,12 +584,13 @@ var RolloverModifier = /** @class */ (function (_super) {
             props.tooltip.y1 = undefined;
             // TODO should be more general than looking at series type
             if (rs.type === SeriesType_1.ESeriesType.BandSeries) {
-                props.marker.suspendInvalidate();
-                props.tooltip.suspendInvalidate();
-                props.marker.isHidden = true;
-                props.tooltip.isHidden = true;
-                props.tooltip.x1 = undefined;
-                props.tooltip.y1 = undefined;
+                var props1 = _this.getRolloverProps1(rs);
+                props1.marker.suspendInvalidate();
+                props1.tooltip.suspendInvalidate();
+                props1.marker.isHidden = true;
+                props1.tooltip.isHidden = true;
+                props1.tooltip.x1 = undefined;
+                props1.tooltip.y1 = undefined;
             }
         });
         if (this.mousePosition !== MousePosition_1.EMousePosition.SeriesArea) {
@@ -582,9 +599,9 @@ var RolloverModifier = /** @class */ (function (_super) {
                 props.marker.resumeInvalidate();
                 props.tooltip.resumeInvalidate();
                 if (rs.type === SeriesType_1.ESeriesType.BandSeries) {
-                    // leave for now
-                    _this.getRolloverProps1(rs).marker.resumeInvalidate();
-                    _this.getRolloverProps1(rs).tooltip.resumeInvalidate();
+                    var props1 = _this.getRolloverProps1(rs);
+                    props1.marker.resumeInvalidate();
+                    props1.tooltip.resumeInvalidate();
                 }
             });
             return;
@@ -754,8 +771,6 @@ var calcTooltipProps = function (index, rs, rolloverProps, seriesViewRect, xValu
         seriesInfo: seriesInfo
     };
     return newRecord;
-    // }
-    // return undefined;
 };
 exports.calcTooltipProps = calcTooltipProps;
 /**
@@ -783,14 +798,185 @@ var calcTooltipPositions = function (tooltipArray, allowTooltipOverlapping, spac
     var hasOverlap = (0, tooltip_1.checkHasOverlap)(tooltipArray, spacing, pixelRatio, positionProperties);
     var length = tooltipArray.length;
     if (!allowTooltipOverlapping && length >= 2 && hasOverlap) {
-        var spreadMap_1 = (0, tooltip_1.spreadTooltips)(tooltipArray, pixelRatio, positionProperties, spacing, seriesViewRect);
-        tooltipArray.forEach(function (tooltip) {
-            tooltip[positionProperties.shiftPropertyName] = spreadMap_1.get(tooltip.index);
+        var clusters = (0, exports.splitIntoClusters)(tooltipArray, spacing, pixelRatio, positionProperties);
+        clusters = (0, exports.mergeOverlappingClusters)(clusters, spacing, pixelRatio, positionProperties);
+        clusters.forEach(function (cluster) {
+            if (cluster.length >= 2) {
+                var spreadMap_1 = (0, tooltip_1.spreadTooltips)(cluster, pixelRatio, positionProperties, spacing, seriesViewRect);
+                cluster.forEach(function (tooltip) {
+                    tooltip[positionProperties.shiftPropertyName] = spreadMap_1.get(tooltip.index);
+                });
+            }
         });
+        // After positioning, check for cluster overlap
+        (0, exports.adjustClusterPositions)(clusters, spacing, pixelRatio, positionProperties, seriesViewRect);
     }
     return tooltipArray;
 };
 exports.calcTooltipPositions = calcTooltipPositions;
+/**
+ * @description Splits tooltips into clusters based on their proximity
+ * @param tooltipArray
+ * @param spacing
+ * @param pixelRatio
+ * @param positionProperties
+ * @returns Array of tooltip clusters
+ */
+var splitIntoClusters = function (tooltipArray, spacing, pixelRatio, positionProperties) {
+    var sorted = __spreadArray([], tooltipArray, true).sort(function (a, b) { return a[positionProperties.coordPropertyName] - b[positionProperties.coordPropertyName]; });
+    var clusters = [];
+    var currentCluster = [];
+    for (var _i = 0, sorted_1 = sorted; _i < sorted_1.length; _i++) {
+        var tooltip = sorted_1[_i];
+        if (currentCluster.length === 0) {
+            currentCluster.push(tooltip);
+        }
+        else {
+            var currentStart = (0, tooltip_1.getStartPoint)(tooltip[positionProperties.coordPropertyName], tooltip[positionProperties.shiftPropertyName], pixelRatio);
+            var lastTooltip = currentCluster[currentCluster.length - 1];
+            var lastEnd = (0, tooltip_1.getEndPoint)(lastTooltip[positionProperties.coordPropertyName], lastTooltip[positionProperties.shiftPropertyName], pixelRatio, lastTooltip[positionProperties.sizePropertyName]);
+            if (currentStart < lastEnd + spacing / pixelRatio) {
+                currentCluster.push(tooltip);
+            }
+            else {
+                clusters.push(currentCluster);
+                currentCluster = [tooltip];
+            }
+        }
+    }
+    if (currentCluster.length > 0) {
+        clusters.push(currentCluster);
+    }
+    return clusters;
+};
+exports.splitIntoClusters = splitIntoClusters;
+/**
+ * Merges clusters that might overlap after internal positioning
+ * @param clusters Array of tooltip clusters
+ * @param spacing Minimum spacing between tooltips
+ * @param pixelRatio Display pixel ratio
+ * @param positionProperties Position property names
+ * @returns Merged clusters array
+ */
+var mergeOverlappingClusters = function (clusters, spacing, pixelRatio, positionProperties) {
+    if (clusters.length <= 1)
+        return clusters;
+    var merged = true;
+    while (merged) {
+        merged = false;
+        for (var i = 0; i < clusters.length - 1; i++) {
+            var cluster1 = clusters[i];
+            var cluster2 = clusters[i + 1];
+            // rightmost tooltip in 1st cluster
+            var rightmost = cluster1.reduce(function (max, tooltip) {
+                var end = (0, tooltip_1.getEndPoint)(tooltip[positionProperties.coordPropertyName], tooltip[positionProperties.shiftPropertyName], pixelRatio, tooltip[positionProperties.sizePropertyName]);
+                return end > max ? end : max;
+            }, -Infinity);
+            // leftmost tooltip in 2nd cluster
+            var leftmost = cluster2.reduce(function (min, tooltip) {
+                var start = (0, tooltip_1.getStartPoint)(tooltip[positionProperties.coordPropertyName], tooltip[positionProperties.shiftPropertyName], pixelRatio);
+                return start < min ? start : min;
+            }, Infinity);
+            var avgWidth1 = cluster1.reduce(function (sum, t) { return sum + t[positionProperties.sizePropertyName] / pixelRatio; }, 0) /
+                cluster1.length;
+            var avgWidth2 = cluster2.reduce(function (sum, t) { return sum + t[positionProperties.sizePropertyName] / pixelRatio; }, 0) /
+                cluster2.length;
+            var safetyMargin = (spacing * 2) / pixelRatio + Math.max(avgWidth1, avgWidth2) * 0.5;
+            if (leftmost - rightmost < safetyMargin) {
+                // merge
+                clusters[i] = __spreadArray(__spreadArray([], cluster1, true), cluster2, true);
+                clusters.splice(i + 1, 1);
+                merged = true;
+                break;
+            }
+        }
+    }
+    return clusters;
+};
+exports.mergeOverlappingClusters = mergeOverlappingClusters;
+/**
+ * Adjust positioning of entire clusters if they overlap after internal positioning
+ * @param clusters Array of tooltip clusters
+ * @param spacing Minimum spacing between tooltips
+ * @param pixelRatio Display pixel ratio
+ * @param positionProperties Position property names
+ * @param seriesViewRect Chart view rectangle
+ */
+var adjustClusterPositions = function (clusters, spacing, pixelRatio, positionProperties, seriesViewRect) {
+    if (clusters.length <= 1)
+        return;
+    // Sort clusters by their leftmost point
+    clusters.sort(function (a, b) {
+        var aLeft = Math.min.apply(Math, a.map(function (t) {
+            return (0, tooltip_1.getStartPoint)(t[positionProperties.coordPropertyName], t[positionProperties.shiftPropertyName], pixelRatio);
+        }));
+        var bLeft = Math.min.apply(Math, b.map(function (t) {
+            return (0, tooltip_1.getStartPoint)(t[positionProperties.coordPropertyName], t[positionProperties.shiftPropertyName], pixelRatio);
+        }));
+        return aLeft - bLeft;
+    });
+    var _loop_1 = function (i) {
+        var currentCluster = clusters[i];
+        var nextCluster = clusters[i + 1];
+        // Find rightmost point of current cluster
+        var currentRight = Math.max.apply(Math, currentCluster.map(function (t) {
+            return (0, tooltip_1.getEndPoint)(t[positionProperties.coordPropertyName], t[positionProperties.shiftPropertyName], pixelRatio, t[positionProperties.sizePropertyName]);
+        }));
+        // Find leftmost point of next cluster
+        var nextLeft = Math.min.apply(Math, nextCluster.map(function (t) {
+            return (0, tooltip_1.getStartPoint)(t[positionProperties.coordPropertyName], t[positionProperties.shiftPropertyName], pixelRatio);
+        }));
+        // If clusters overlap or are too close
+        if (nextLeft < currentRight + spacing / pixelRatio) {
+            var overlap_1 = currentRight + spacing / pixelRatio - nextLeft;
+            // Check if we have room to shift right
+            var nextClusterWidth = Math.max.apply(Math, nextCluster.map(function (t) {
+                return (0, tooltip_1.getEndPoint)(t[positionProperties.coordPropertyName], t[positionProperties.shiftPropertyName], pixelRatio, t[positionProperties.sizePropertyName]);
+            })) - nextLeft;
+            var chartRight = seriesViewRect.x + seriesViewRect.width;
+            var rightBoundary = (chartRight - nextLeft - nextClusterWidth) * pixelRatio;
+            if (overlap_1 * pixelRatio <= rightBoundary) {
+                // We have room to shift the next cluster right
+                nextCluster.forEach(function (tooltip) {
+                    var currentShift = tooltip[positionProperties.shiftPropertyName] || 0;
+                    tooltip[positionProperties.shiftPropertyName] = currentShift + overlap_1;
+                });
+            }
+            else {
+                // Not enough room to shift right fully, distribute the adjustment
+                var maxRightShift_1 = Math.max(0, rightBoundary / pixelRatio);
+                var remainingShift = overlap_1 - maxRightShift_1;
+                // Shift next cluster right as much as possible
+                if (maxRightShift_1 > 0) {
+                    nextCluster.forEach(function (tooltip) {
+                        var currentShift = tooltip[positionProperties.shiftPropertyName] || 0;
+                        tooltip[positionProperties.shiftPropertyName] = currentShift + maxRightShift_1;
+                    });
+                }
+                // Shift current cluster left with the remaining amount
+                if (remainingShift > 0) {
+                    // Check if we have room to shift left
+                    var currentClusterLeft = Math.min.apply(Math, currentCluster.map(function (t) {
+                        return (0, tooltip_1.getStartPoint)(t[positionProperties.coordPropertyName], t[positionProperties.shiftPropertyName], pixelRatio);
+                    }));
+                    var leftBoundary = (currentClusterLeft - seriesViewRect.x) * pixelRatio;
+                    var maxLeftShift_1 = Math.min(remainingShift, leftBoundary / pixelRatio);
+                    if (maxLeftShift_1 > 0) {
+                        currentCluster.forEach(function (tooltip) {
+                            var currentShift = tooltip[positionProperties.shiftPropertyName] || 0;
+                            tooltip[positionProperties.shiftPropertyName] = currentShift - maxLeftShift_1;
+                        });
+                    }
+                }
+            }
+        }
+    };
+    // Check for overlaps between clusters and adjust
+    for (var i = 0; i < clusters.length - 1; i++) {
+        _loop_1(i);
+    }
+};
+exports.adjustClusterPositions = adjustClusterPositions;
 /**
  * @ignore
  * @description Creates MarkerAnnotation and TooltipAnnotation and assigns to rolloverSeries properties

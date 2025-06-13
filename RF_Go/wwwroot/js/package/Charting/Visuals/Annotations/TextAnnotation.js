@@ -254,7 +254,7 @@ var TextAnnotation = /** @class */ (function (_super) {
         return svgNode;
     };
     TextAnnotation.prototype.attachSvgBackgroundRect = function (svgRoot, background, padding) {
-        var textAnnotationRect = svgRoot.getBoundingClientRect();
+        var textAnnotationRect = svgRoot.getBBox();
         var rectWidth = textAnnotationRect.width + padding.left + padding.right;
         var rectHeight = textAnnotationRect.height + padding.top + padding.bottom;
         var namespace = "http://www.w3.org/2000/svg";
