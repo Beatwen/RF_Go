@@ -46,7 +46,7 @@ jobs:
       run: |
         echo "=== CURRENT CONFIGURATION ==="
         echo "Target Framework: net8.0-ios"
-        echo "Expected ApplicationId: FT3A4TV42D.com.christophebouserez.rfgo"
+        echo "Expected ApplicationId: com.christophebouserez.rfgo"
         echo "Expected CodesignProvision: RF Go iOS"
         echo "Expected TeamId: FT3A4TV42D"
         
@@ -80,11 +80,18 @@ jobs:
         echo "Checking if provisioning profile exists:"
         ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
         
-        echo "Checking project ApplicationId for iOS:"
+        echo "=== CLEANING BUILD CACHE ==="
+        dotnet clean RF_Go/RF_Go.csproj -c Release -f net8.0-ios
+        rm -rf RF_Go/obj RF_Go/bin
+        
+        echo "=== CHECKING APPLICATIONID PROPERTY ==="
         dotnet msbuild RF_Go/RF_Go.csproj -t:_GetApplicationId -p:TargetFramework=net8.0-ios -v:minimal || echo "Could not get ApplicationId"
         
+        echo "=== FORCE DISPLAY APPLICATIONID ==="
+        dotnet msbuild RF_Go/RF_Go.csproj -p:TargetFramework=net8.0-ios -t:_ShowApplicationId -v:minimal || echo "Custom target not found"
+        
         echo "=== STARTING iOS BUILD ==="
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF Go iOS" -p:ApplicationId="FT3A4TV42D.com.christophebouserez.rfgo" -p:CreatePackage=true -v detailed
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF Go iOS" -p:ApplicationId="com.christophebouserez.rfgo" -v detailed
         
         echo "=== POST-BUILD VERIFICATION ==="
         if [ -d "./publish/ios-arm64" ]; then

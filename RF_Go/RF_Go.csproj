@@ -18,7 +18,7 @@
         <ApplicationTitle>RF_Go</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>FT3A4TV42D.com.christophebouserez.rfgo</ApplicationId>
+        <ApplicationId>com.christophebouserez.rfgo</ApplicationId>
         <ApplicationIdGuid>F1280CF3-71B1-40BF-A5C9-2F6267D27C2F</ApplicationIdGuid>
 
         <!-- Versions -->
@@ -172,5 +172,11 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android' OR '$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios'">
 	  <TrimmerRootDescriptor Include="ILLink.Substitutions.xml" />
 	</ItemGroup>
+
+	<!-- Target pour déboguer l'ApplicationId -->
+	<Target Name="_ShowApplicationId">
+		<Message Text="=== DEBUG: ApplicationId = $(ApplicationId) ===" Importance="high" />
+		<Message Text="=== DEBUG: TargetFramework = $(TargetFramework) ===" Importance="high" />
+	</Target>
 
 </Project>
