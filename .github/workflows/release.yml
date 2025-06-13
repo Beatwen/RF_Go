@@ -118,12 +118,15 @@ jobs:
           RF_Go-${{ steps.get_version.outputs.VERSION }}-android.apk
 
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-14
     
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -174,7 +177,7 @@ jobs:
 
     - name: Publish iOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignKey="Christophe Simon R Bouserez" -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -p:ApplicationId="com.christophebouserez.rfgo"
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios17.5 -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=false -p:CodesignKey="Christophe Simon R Bouserez" -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -p:ApplicationId="com.christophebouserez.rfgo"
         
         if [ -d "./publish/ios-arm64" ]; then
           if [ "$(ls -A ./publish/ios-arm64)" ]; then
