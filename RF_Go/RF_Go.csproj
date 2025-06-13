@@ -51,6 +51,9 @@
 	    <ProvisioningType>manual</ProvisioningType>
 	    <!-- Force iOS 15.0 deployment target to avoid iOS 18.0 APIs -->
 	    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+	    <!-- iOS requires PublishTrimmed=true, but we disable linking to avoid errors -->
+	    <PublishTrimmed>true</PublishTrimmed>
+	    <MtouchLink>None</MtouchLink>
     </PropertyGroup>
 
     <!-- Désactivation de ReadyToRun pour éviter les problèmes de compilation -->
@@ -88,8 +91,8 @@
     </PropertyGroup>
 
     <!-- Configuration du trimming par plateforme -->
-    <!-- macOS/iOS : TEMPORAIREMENT DÉSACTIVÉ pour test rapide -->
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios'">
+    <!-- macOS : TEMPORAIREMENT DÉSACTIVÉ pour test rapide -->
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-maccatalyst'">
       <PublishTrimmed>false</PublishTrimmed>
       <TrimmerDefaultAction>link</TrimmerDefaultAction>
     </PropertyGroup>
