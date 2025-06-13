@@ -33,8 +33,31 @@ jobs:
     - name: Install Provisioning Profile
       run: |
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        echo "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/RF_Go_Development.mobileprovision
+        echo "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/RF_Go_iOS.mobileprovision
         ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        echo "=== PROVISIONING PROFILE DETAILS ==="
+        security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/RF_Go_iOS.mobileprovision | grep -A 5 -B 5 "application-identifier\|Name\|TeamIdentifier\|UUID"
+        
+        echo "=== AVAILABLE PROVISIONING PROFILES ==="
+        find ~/Library/MobileDevice/Provisioning\ Profiles/ -name "*.mobileprovision" -exec basename {} \;
+
+    - name: Debug iOS Configuration
+      run: |
+        echo "=== CURRENT CONFIGURATION ==="
+        echo "Target Framework: net8.0-ios"
+        echo "Expected ApplicationId: FT3A4TV42D.com.christophebouserez.rfgo"
+        echo "Expected CodesignProvision: RF Go iOS"
+        echo "Expected TeamId: FT3A4TV42D"
+        
+        echo "=== CHECKING PROJECT FILE ==="
+        grep -A 10 -B 5 "net8.0-ios" RF_Go/RF_Go.csproj || echo "iOS section not found"
+        
+        echo "=== AVAILABLE CERTIFICATES ==="
+        security find-identity -v -p codesigning
+        
+        echo "=== KEYCHAIN LIST ==="
+        security list-keychain
 
     - name: Install MAUI Workloads
       run: |
@@ -53,9 +76,20 @@ jobs:
     
     - name: Publish iOS
       run: |
-        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -v detailed
+        echo "=== PRE-BUILD VERIFICATION ==="
+        echo "Checking if provisioning profile exists:"
+        ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
         
+        echo "Checking project ApplicationId for iOS:"
+        dotnet msbuild RF_Go/RF_Go.csproj -t:_GetApplicationId -p:TargetFramework=net8.0-ios -v:minimal || echo "Could not get ApplicationId"
+        
+        echo "=== STARTING iOS BUILD ==="
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignProvision="RF Go iOS" -p:CreatePackage=true -v detailed
+        
+        echo "=== POST-BUILD VERIFICATION ==="
         if [ -d "./publish/ios-arm64" ]; then
+          echo "Build directory contents:"
+          ls -la ./publish/ios-arm64/
           if [ "$(ls -A ./publish/ios-arm64)" ]; then
             tar -czf ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz -C ./publish/ios-arm64 .
             echo "iOS build archived successfully"
