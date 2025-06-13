@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0-maccatalyst;net8.0-ios17.5;net8.0-android</TargetFrameworks>
+        <TargetFrameworks>net8.0-maccatalyst;net8.0-ios;net8.0-android</TargetFrameworks>
 		
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.26100.0</TargetFrameworks>
 		<SelfContained>true</SelfContained>
@@ -45,10 +45,12 @@
         <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios17.5'">
+    <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
       <CodesignProvision>RF Go iOS</CodesignProvision>
 	    <CodesignTeamId>FT3A4TV42D</CodesignTeamId>
 	    <ProvisioningType>manual</ProvisioningType>
+	    <!-- Force iOS 15.0 deployment target to avoid iOS 18.0 APIs -->
+	    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     </PropertyGroup>
 
     <!-- Désactivation de ReadyToRun pour éviter les problèmes de compilation -->
@@ -71,11 +73,11 @@
       <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios17.5|AnyCPU'">
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|AnyCPU'">
       <CodesignExtraArgs>269570</CodesignExtraArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios17.5|x64'">
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|x64'">
       <CodesignExtraArgs>269570</CodesignExtraArgs>
     </PropertyGroup>
 
@@ -87,7 +89,7 @@
 
     <!-- Configuration du trimming par plateforme -->
     <!-- macOS/iOS : TEMPORAIREMENT DÉSACTIVÉ pour test rapide -->
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios17.5'">
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios'">
       <PublishTrimmed>false</PublishTrimmed>
       <TrimmerDefaultAction>link</TrimmerDefaultAction>
     </PropertyGroup>
@@ -168,7 +170,7 @@
 	</ItemGroup>
 
 	<!-- Configuration du trimmer pour Android, macOS et iOS -->
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android' OR '$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios17.5'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android' OR '$(TargetFramework)' == 'net8.0-maccatalyst' OR '$(TargetFramework)' == 'net8.0-ios'">
 	  <TrimmerRootDescriptor Include="ILLink.Substitutions.xml" />
 	</ItemGroup>
 
