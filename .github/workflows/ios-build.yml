@@ -1,0 +1,93 @@
+name: iOS Build
+
+on:
+  push:
+    tags:
+      - 'ios-*'
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: Install Apple Certificate
+      uses: apple-actions/import-codesign-certs@v1
+      with:
+        p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
+        p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+    - name: Install Provisioning Profile
+      run: |
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        echo "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/RF_Go_Development.mobileprovision
+
+    - name: Install MAUI Workloads
+      run: |
+        dotnet workload install maui
+        dotnet workload install ios
+        dotnet workload restore
+    
+    - name: Extract Version
+      id: get_version
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        echo "VERSION=$TAG" >> $GITHUB_OUTPUT
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Publish iOS
+      run: |
+        dotnet publish RF_Go/RF_Go.csproj -c Release -f net8.0-ios -r ios-arm64 --self-contained -o ./publish/ios-arm64 -p:PublishReadyToRun=false -p:PublishTrimmed=true -p:CodesignKey="Christophe Simon R Bouserez" -p:CodesignProvision="RF_Go_Development" -p:CreatePackage=true -p:ApplicationId="com.christophebouserez.rfgo"
+        
+        if [ -d "./publish/ios-arm64" ]; then
+          if [ "$(ls -A ./publish/ios-arm64)" ]; then
+            tar -czf ./RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz -C ./publish/ios-arm64 .
+            echo "iOS build archived successfully"
+          else
+            echo "iOS build directory is empty"
+          fi
+        else
+          echo "iOS build directory not found"
+        fi
+
+    - name: Upload iOS Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-build
+        path: RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref }}
+        name: RF_Go iOS Build ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: true
+        files: RF_Go-${{ steps.get_version.outputs.VERSION }}-ios-arm64.tar.gz
+        body: |
+          # iOS Build Test
+          
+          Ceci est un build de test pour iOS.
+          
+          ## Installation
+          
+          1. Téléchargez l'archive
+          2. Extrayez le contenu
+          3. Installez via TestFlight
+          
+          ## Notes
+          
+          - Build iOS uniquement
+          - Version: ${{ steps.get_version.outputs.VERSION }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
