@@ -47,7 +47,6 @@
 
     <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
       <ApplicationId>com.christophebouserez.rfgo</ApplicationId>
-      <CodesignKey>Christophe Simon R Bouserez</CodesignKey>
       <CodesignProvision>RF_Go_Development</CodesignProvision>
 	    <CodesignTeamId>FT3A4TV42D</CodesignTeamId>
 	    <ProvisioningType>manual</ProvisioningType>
